@@ -357,9 +357,9 @@ export default function NotificationsPage() {
         <p className="text-muted-foreground">
           {tNotifications("noNotifications")}
         </p>
-        <Link href="/auth/signin">
-          <Button>{tNotifications("notifications")}</Button>
-        </Link>
+        <Button asChild>
+          <Link href="/auth/signin">{tNotifications("notifications")}</Link>
+        </Button>
       </PageContainer>
     );
   }
@@ -368,11 +368,11 @@ export default function NotificationsPage() {
     <PageContainer size="sm" maxWidth="max-w-2xl">
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
-        <Link href="/feed">
-          <Button variant="ghost" size="icon" className="shrink-0">
+        <Button variant="ghost" size="icon" className="shrink-0" asChild>
+          <Link href="/feed">
             <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <div className="flex-1">
           <h1 className="text-xl font-bold sm:text-2xl">
             {tNotifications("notifications")}

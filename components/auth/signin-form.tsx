@@ -62,6 +62,7 @@ export function SignInForm({
   showDemoUsers = false,
 }: Readonly<SignInFormProps>) {
   const t = useTranslations("signIn");
+  const tCommon = useTranslations("common");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -298,6 +299,11 @@ export function SignInForm({
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isLoading}
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                aria-label={
+                  showPassword
+                    ? tCommon("hidePassword")
+                    : tCommon("showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4 text-muted-foreground" />

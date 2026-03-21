@@ -39,7 +39,6 @@ import { UserNav } from "@/components/user-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
 import { AnalysisButton } from "@/components/analysis-button";
-import { SkipLink } from "@/components/skip-link";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -174,6 +173,7 @@ export default async function RootLayout({
 
   // Get footer translations
   const tFooter = await getTranslations("footer");
+  const tCommon = await getTranslations("common");
 
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -189,19 +189,31 @@ export default async function RootLayout({
           data-account="4LNSLNsFfe"
           strategy="afterInteractive"
         />
+        <Script
+          id="userway-tabindex-fix"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var o=new MutationObserver(function(){var e=document.getElementById("userwayAccessibilityIcon");if(e){e.setAttribute("tabindex","-1");o.disconnect()}});o.observe(document.body,{childList:true,subtree:true})})();`,
+          }}
+        />
         <StructuredData data={organizationSchema} />
         <StructuredData data={websiteSchema} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
+        {/* Skip to main content: must be the very first focusable element (WCAG 2.4.1) */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          {tCommon("skipToMainContent")}
+        </a>
         {gaId && <GoogleAnalytics gaId={gaId} />}
         <NavigationProgress />
         <ThemeProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>
             <SessionProvider>
-              {/* Skip to main content link for accessibility (WCAG 2.4.1) */}
-              <SkipLink />
               <div className="flex min-h-screen">
                 {/* Sidebar - Desktop only */}
                 <AppSidebar />
@@ -301,6 +313,12 @@ export default async function RootLayout({
                         >
                           {tFooter("accessibility")}
                         </Link>
+                        <Link
+                          href="/acessibilidade"
+                          className="transition-colors hover:text-foreground"
+                        >
+                          {tFooter("declaration")}
+                        </Link>
                       </nav>
 
                       {/* Social + Apps + Copyright */}
@@ -310,7 +328,7 @@ export default async function RootLayout({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                          aria-label={tFooter("followOnInstagram")}
+                          aria-label={`${tFooter("followOnInstagram")} ${tFooter("opensInNewTab")}`}
                         >
                           <svg
                             className="h-4 w-4"
@@ -341,7 +359,7 @@ export default async function RootLayout({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                          aria-label={tFooter("downloadIos")}
+                          aria-label={`${tFooter("downloadIos")} ${tFooter("opensInNewTab")}`}
                         >
                           <svg
                             className="h-4 w-4"
@@ -361,7 +379,7 @@ export default async function RootLayout({
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                              aria-label={tFooter("downloadAndroid")}
+                              aria-label={`${tFooter("downloadAndroid")} ${tFooter("opensInNewTab")}`}
                             >
                               <Smartphone
                                 className="h-4 w-4"

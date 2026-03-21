@@ -15,8 +15,8 @@ interface TemplateAppDownloadProps {
 
 /**
  * Template T13: App Download Promo
- * Promotes the app on Google Play with badge, features, and CTA
- * Follows Google Play badge guidelines: clear space, contrast, prominence
+ * Promotes the app on Google Play or App Store with badge, features, and CTA
+ * Follows store badge guidelines: clear space, contrast, prominence
  */
 export function TemplateAppDownload({
   payload,
@@ -28,11 +28,17 @@ export function TemplateAppDownload({
     headline,
     subheadline,
     features,
+    platform,
     badgeUrl,
     legalText,
     cta,
     background,
   } = payload;
+
+  const badgeAlt =
+    platform === "app-store"
+      ? "Download on the App Store"
+      : "Get it on Google Play";
 
   const headlineScale = getAutoFontScale(headline.length, 50);
   const subScale = getAutoFontScale(subheadline.length, 60);
@@ -122,7 +128,7 @@ export function TemplateAppDownload({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={badgeUrl}
-              alt="Get it on Google Play"
+              alt={badgeAlt}
               style={{
                 height: isVertical ? "80px" : "72px",
                 width: "auto",

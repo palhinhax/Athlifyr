@@ -172,12 +172,12 @@ export function EventComments({
             You need to be signed in to join the discussion
           </p>
           <div className="flex justify-center gap-4">
-            <Link href="/auth/signin">
-              <Button variant="default">Sign In</Button>
-            </Link>
-            <Link href="/auth/signup">
-              <Button variant="outline">Sign Up</Button>
-            </Link>
+            <Button variant="default" asChild>
+              <Link href="/auth/signin">Sign In</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/auth/signup">Sign Up</Link>
+            </Button>
           </div>
         </div>
       )}

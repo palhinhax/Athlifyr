@@ -55,6 +55,7 @@ export default async function Home({
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: "home" });
+  const tNav = await getTranslations({ locale, namespace: "navigation" });
 
   // Get user's country from headers
   const headersList = await headers();
@@ -94,7 +95,7 @@ export default async function Home({
           <h2 className="text-xl font-bold sm:text-2xl md:text-3xl">
             {t("upcomingEventsTitle", { country: userCountry })}
           </h2>
-          <HomeSeeAllButton seeAll={t("seeAll")} />
+          <HomeSeeAllButton seeAll={t("seeAll")} eventsLabel={tNav("events")} />
         </div>
 
         {upcomingEvents.length === 0 ? (
@@ -108,6 +109,7 @@ export default async function Home({
             <HomeNoEventsCta
               locale={locale}
               exploreAllEvents={t("exploreAllEvents")}
+              eventsLabel={tNav("events")}
             />
           </div>
         ) : (
@@ -129,6 +131,7 @@ export default async function Home({
         ctaTitle={t("ctaTitle")}
         ctaDescription={t("ctaDescription")}
         exploreAllEvents={t("exploreAllEvents")}
+        eventsLabel={tNav("events")}
       />
     </div>
   );

@@ -170,11 +170,14 @@ export interface GiveawayPromoPayload {
 }
 
 // Template T13: App Download Promo (Google Play / App Store promotion)
+export type AppDownloadPlatform = "google-play" | "app-store";
+
 export interface AppDownloadPayload {
   headline: string; // required, max 50 chars - main headline
   subheadline: string; // required, max 60 chars - supporting text
   features: string[]; // 2-4 feature highlights, each max 40 chars
-  badgeUrl: string; // Google Play badge image path (default: /images/badges/google-play-pt.png)
+  platform: AppDownloadPlatform; // which store badge to show
+  badgeUrl: string; // badge image path, auto-computed from platform
   legalText?: string; // optional, trademark attribution
   cta?: string; // optional, max 30 chars
   background: Background;

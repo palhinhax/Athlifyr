@@ -45,12 +45,14 @@
     "terms": "Conditions",
     "cookies": "Cookies",
     "accessibility": "Accessibilit\u00e9",
+    "declaration": "D\u00e9claration d'Accessibilit\u00e9",
     "contact": "Contact",
     "gymManagement": "Gestion de Salle",
     "liveRace": "Live Race",
-    "followOnInstagram": "Suivez-nous sur Instagram",
-    "downloadIos": "Télécharger sur l'App Store",
-    "downloadAndroid": "Télécharger sur Google Play",
+    "followOnInstagram": "@athlifyr — Suivez-nous sur Instagram",
+    "downloadIos": "iOS — Télécharger sur l'App Store",
+    "downloadAndroid": "Android — Télécharger sur Google Play",
+    "opensInNewTab": "(s'ouvre dans un nouvel onglet)",
     "allRightsReserved": "© {year} Athlifyr. Tous droits réservés."
   },
   "search": {

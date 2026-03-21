@@ -2,18 +2,19 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
+import type { AppDownloadPlatform } from "@/types/instagram";
 
 interface AppDownloadFormProps {
   headline: string;
   subheadline: string;
   features: string[];
-  badgeUrl: string;
+  platform: AppDownloadPlatform;
   legalText: string;
   cta: string;
   onHeadlineChange: (value: string) => void;
   onSubheadlineChange: (value: string) => void;
   onFeaturesChange: (value: string[]) => void;
-  onBadgeUrlChange: (value: string) => void;
+  onPlatformChange: (value: AppDownloadPlatform) => void;
   onLegalTextChange: (value: string) => void;
   onCtaChange: (value: string) => void;
 }
@@ -22,13 +23,13 @@ export function AppDownloadForm({
   headline,
   subheadline,
   features,
-  badgeUrl,
+  platform,
   legalText,
   cta,
   onHeadlineChange,
   onSubheadlineChange,
   onFeaturesChange,
-  onBadgeUrlChange,
+  onPlatformChange,
   onLegalTextChange,
   onCtaChange,
 }: AppDownloadFormProps) {
@@ -126,16 +127,27 @@ export function AppDownloadForm({
       </div>
 
       <div>
-        <Label>URL do Badge Google Play</Label>
-        <Input
-          value={badgeUrl}
-          onChange={(e) => onBadgeUrlChange(e.target.value)}
-          placeholder="/images/badges/google-play-pt.png"
-          autoComplete="off"
-        />
-        <p className="mt-1 text-xs text-muted-foreground">
-          Caminho para a imagem do badge Google Play
-        </p>
+        <Label>Plataforma</Label>
+        <div className="mt-2 flex gap-2">
+          <Button
+            type="button"
+            variant={platform === "google-play" ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPlatformChange("google-play")}
+            className="flex-1"
+          >
+            Google Play
+          </Button>
+          <Button
+            type="button"
+            variant={platform === "app-store" ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPlatformChange("app-store")}
+            className="flex-1"
+          >
+            App Store
+          </Button>
+        </div>
       </div>
 
       <div>

@@ -277,10 +277,11 @@ export default async function FeedPage({
               <p className="mb-6 text-muted-foreground">
                 {t("emptyDescription")}
               </p>
-              <Link href="/events">
-                <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                  {t("exploreEvents")}
-                </button>
+              <Link
+                href="/events"
+                className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {t("exploreEvents")}
               </Link>
             </Card>
           ) : (

@@ -25,7 +25,13 @@ pydantic-settings==2.7.1
 # PDF handling
 PyPDF2==3.0.1
 
+# Storage (S3-compatible — Backblaze B2)
+aioboto3==13.4.0
+
 # Utils
 python-slugify==8.0.4
 python-dotenv==1.0.1
 aiofiles==24.1.0
+
+# AI
+openai==1.58.1

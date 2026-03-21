@@ -38,6 +38,7 @@ class EventReviewStatus(str, enum.Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     EDITED = "edited"
+    HIDDEN = "hidden"
 
 
 class SportType(str, enum.Enum):
@@ -53,6 +54,29 @@ class SportType(str, enum.Enum):
     SWIMMING = "SWIMMING"
     WALKING = "WALKING"
     OTHER = "OTHER"
+
+
+# ── Source Config ─────────────────────────────────────────────────────────────
+
+
+class SourceConfig(Base):
+    """Per-source runtime configuration persisted in the DB."""
+
+    __tablename__ = "source_configs"
+
+    source_name: Mapped[str] = mapped_column(String(100), primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    interval_hours: Mapped[int] = mapped_column(Integer, default=24)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_success_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_error: Mapped[str | None] = mapped_column(Text)
+    events_total: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
 
 # ── Scraping Run ──────────────────────────────────────────────────────────────
@@ -75,6 +99,7 @@ class ScrapingRun(Base):
     events_found: Mapped[int] = mapped_column(Integer, default=0)
     events_created: Mapped[int] = mapped_column(Integer, default=0)
     events_updated: Mapped[int] = mapped_column(Integer, default=0)
+    events_failed: Mapped[int] = mapped_column(Integer, default=0)
     error_message: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -130,6 +155,9 @@ class ScrapedEvent(Base):
     external_url: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(Text)
 
+    # ── Raw pricing text (sent to AI instead of structured phases) ──
+    raw_pricing_text: Mapped[str | None] = mapped_column(Text)
+
     # ── Review workflow ──
     review_status: Mapped[EventReviewStatus] = mapped_column(
         Enum(EventReviewStatus), default=EventReviewStatus.PENDING, index=True
@@ -140,8 +168,14 @@ class ScrapedEvent(Base):
     # ── Link to production (after approval pushed to main DB) ──
     athlifyr_event_id: Mapped[str | None] = mapped_column(String(255))
 
+    # ── Visibility ──
+    is_hidden: Mapped[bool] = mapped_column(Boolean, default=False)
+
     # ── Timestamps ──
     raw_data: Mapped[str | None] = mapped_column(Text)  # JSON dump of raw scraped data
+    ai_input: Mapped[str | None] = mapped_column(Text)  # JSON sent to AI for generation
+    ai_output: Mapped[str | None] = mapped_column(Text)  # JSON received from AI
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -239,3 +273,32 @@ class ScrapedDocument(Base):
     )
 
     event: Mapped[ScrapedEvent] = relationship(back_populates="documents")
+
+
+# ── Event Change Log ─────────────────────────────────────────────────────────
+
+
+class EventChangeLog(Base):
+    """Tracks field-level changes to a scraped event across runs."""
+
+    __tablename__ = "event_change_logs"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    event_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("scraped_events.id", ondelete="CASCADE"),
+        index=True,
+    )
+    scraping_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("scraping_runs.id", ondelete="SET NULL")
+    )
+    field_name: Mapped[str] = mapped_column(String(100))
+    old_value: Mapped[str | None] = mapped_column(Text)
+    new_value: Mapped[str | None] = mapped_column(Text)
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    event: Mapped[ScrapedEvent] = relationship()
+    scraping_run: Mapped[ScrapingRun | None] = relationship()

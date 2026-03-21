@@ -86,13 +86,13 @@ alembic upgrade head
 ### 6. Start the server
 
 ```bash
-uvicorn app.main:app --reload --port 8001
+uvicorn app.main:app --reload --port 8000
 ```
 
-The API is available at `http://localhost:8001`.
+The API is available at `http://localhost:8000`.
 
-- Swagger docs: `http://localhost:8001/docs`
-- Health check: `http://localhost:8001/health`
+- Swagger docs: `http://localhost:8000/docs`
+- Health check: `http://localhost:8000/health`
 
 ## API Endpoints
 
@@ -160,3 +160,46 @@ That's it — the API, scheduler and persistence layer work automatically.
 | ----------------- | ------------------- | --------------------------- |
 | Lap2Go            | `lap2go`            | https://lap2go.com          |
 | Correr Por Prazer | `correr_por_prazer` | https://correrporprazer.com |
+
+## Deployment (Railway)
+
+The service is designed to deploy on [Railway](https://railway.app) via Docker.
+
+### Setup
+
+1. Create a new project on Railway
+2. Add a **PostgreSQL** database service
+3. Add a new service pointing to this repo, set the **Root Directory** to `/scraping`
+4. Railway auto-detects the `Dockerfile` and `railway.toml`
+
+### Environment Variables (Railway dashboard)
+
+| Variable                     | Description                                   | Example                    |
+| ---------------------------- | --------------------------------------------- | -------------------------- |
+| `SCRAPING_DATABASE_URL`      | PostgreSQL connection (Railway provides this) | `postgresql+asyncpg://...` |
+| `SCRAPING_SCHEDULER_ENABLED` | Enable auto-scraping                          | `true`                     |
+| `SCRAPING_DEBUG`             | Enable debug logging                          | `false`                    |
+| `PORT`                       | Injected by Railway automatically             | —                          |
+
+### How it works
+
+- Railway injects `PORT` — the `Dockerfile` CMD binds uvicorn to `0.0.0.0:$PORT`
+- The health check is at `/health` (configured in `railway.toml`)
+- On first deploy, tables are auto-created; for subsequent schema changes use Alembic
+
+### Docker locally
+
+```bash
+docker build -t athlifyr-scraping .
+docker run -p 8000:8000 \
+  -e SCRAPING_DATABASE_URL="postgresql+asyncpg://user:pass@host:5432/db" \
+  athlifyr-scraping
+```
+
+### Connecting from Next.js
+
+Set in your `.env` (or Vercel environment):
+
+```
+NEXT_PUBLIC_SCRAPING_API_URL="https://your-railway-service.up.railway.app/api/v1"
+```

@@ -42,6 +42,7 @@ class ScrapedEventData:
     pricing_phases: list[ScrapedPricingData] = field(default_factory=list)
     documents: list[ScrapedDocumentData] = field(default_factory=list)
 
+    raw_pricing_text: str | None = None  # Raw text from pricing section
     raw_data: str | None = None  # JSON string of raw scraped payload
 
 

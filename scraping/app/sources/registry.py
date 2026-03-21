@@ -3,13 +3,33 @@
 from __future__ import annotations
 
 from app.sources.base.scraper import BaseScraper
+from app.sources.acorrer.scraper import ACorrerScraper
+from app.sources.apedalar.scraper import APedalerScraper
 from app.sources.correr_por_prazer.scraper import CorrerPorPrazerScraper
 from app.sources.lap2go.scraper import Lap2GoScraper
+from app.sources.stopandgo.scraper import StopAndGoScraper
+from app.sources.triatlo.scraper import TriatloScraper
+from app.sources.cyclones.scraper import CyclonesScraper
+from app.sources.portimer.scraper import PortimerScraper
+from app.sources.trilhoperdido.scraper import TrilhoPerdidoScraper
+from app.sources.waitastart.scraper import WaitAStartScraper
+from app.sources.turresevents.scraper import TurresEventsScraper
+from app.sources.werun.scraper import WeRunScraper
 
 # Register new scrapers here ↓
 _SCRAPERS: dict[str, type[BaseScraper]] = {
     "lap2go": Lap2GoScraper,
     "correr_por_prazer": CorrerPorPrazerScraper,
+    "stopandgo": StopAndGoScraper,
+    "apedalar": APedalerScraper,
+    "acorrer": ACorrerScraper,
+    "triatlo": TriatloScraper,
+    "cyclones": CyclonesScraper,
+    "portimer": PortimerScraper,
+    "trilhoperdido": TrilhoPerdidoScraper,
+    "waitastart": WaitAStartScraper,
+    "turresevents": TurresEventsScraper,
+    "werun": WeRunScraper,
 }
 
 

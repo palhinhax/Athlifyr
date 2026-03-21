@@ -1,13 +1,14 @@
-"""Document storage abstraction — local backend today, S3/R2 later."""
+"""Document storage abstraction — local & S3-compatible (Backblaze B2)."""
 
 from __future__ import annotations
 
 import abc
 import logging
-import os
+from io import BytesIO
 from pathlib import Path
 
 import aiofiles
+import aioboto3
 
 from app.core.config import settings
 
@@ -50,9 +51,45 @@ class LocalStorageBackend(StorageBackend):
         return (self._base / key).exists()
 
 
+class S3StorageBackend(StorageBackend):
+    """S3-compatible backend — works with Backblaze B2, AWS S3, R2, etc."""
+
+    def __init__(self) -> None:
+        self._bucket = settings.storage_s3_bucket
+        self._session = aioboto3.Session()
+        self._client_kwargs = {
+            "service_name": "s3",
+            "endpoint_url": settings.storage_s3_endpoint,
+            "region_name": settings.storage_s3_region,
+            "aws_access_key_id": settings.storage_s3_access_key,
+            "aws_secret_access_key": settings.storage_s3_secret_key,
+        }
+
+    async def save(self, key: str, data: bytes) -> str:
+        async with self._session.client(**self._client_kwargs) as s3:
+            await s3.upload_fileobj(BytesIO(data), self._bucket, key)
+        url = f"{settings.storage_s3_endpoint}/{self._bucket}/{key}"
+        logger.info("Uploaded %d bytes → %s", len(data), url)
+        return url
+
+    async def read(self, key: str) -> bytes:
+        async with self._session.client(**self._client_kwargs) as s3:
+            resp = await s3.get_object(Bucket=self._bucket, Key=key)
+            return await resp["Body"].read()
+
+    async def exists(self, key: str) -> bool:
+        async with self._session.client(**self._client_kwargs) as s3:
+            try:
+                await s3.head_object(Bucket=self._bucket, Key=key)
+                return True
+            except s3.exceptions.ClientError:
+                return False
+
+
 def get_storage() -> StorageBackend:
     """Factory — returns the configured backend."""
     if settings.storage_backend == "local":
         return LocalStorageBackend()
-    # Future: add S3StorageBackend here
+    if settings.storage_backend == "s3":
+        return S3StorageBackend()
     raise ValueError(f"Unknown storage backend: {settings.storage_backend}")

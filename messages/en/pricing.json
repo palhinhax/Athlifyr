@@ -1,0 +1,70 @@
+{
+  "pricing": {
+    "meta": {
+      "title": "Pricing - 100% Free | Athlifyr",
+      "description": "Athlifyr is 100% free for gyms, CrossFit boxes, yoga studios, personal trainers and event organizers. No subscriptions, no hidden fees, no credit card required."
+    },
+    "hero": {
+      "badge": "100% Free",
+      "title": "Free. Forever.",
+      "subtitle": "No subscriptions. No hidden fees. No credit card required.",
+      "description": "Athlifyr is completely free for all gyms, CrossFit boxes, yoga studios, personal trainers, massage therapists and event organizers. We believe in making sports management accessible to everyone."
+    },
+    "features": {
+      "title": "Everything included, zero cost",
+      "gymManagement": {
+        "title": "Gym & Studio Management",
+        "description": "Manage your clients, bookings, trial classes, memberships and coaches — all for free.",
+        "price": "Free"
+      },
+      "eventManagement": {
+        "title": "Event Management",
+        "description": "Create and manage running, trail, HYROX, CrossFit and other sports events with online registration.",
+        "price": "Free"
+      },
+      "liveRace": {
+        "title": "Live Race Tracking",
+        "description": "Real-time GPS tracking for races and events with live leaderboards for athletes and spectators.",
+        "price": "Free"
+      },
+      "athletes": {
+        "title": "For Athletes",
+        "description": "Discover events, track your performance, connect with your community — always free.",
+        "price": "Free"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "question": "Is Athlifyr really free?",
+        "answer": "Yes, 100% free. There are no subscription fees, no hidden charges and no credit card required. All features — gym management, event creation, live race tracking — are included at no cost."
+      },
+      "q2": {
+        "question": "How does Athlifyr make money?",
+        "answer": "Athlifyr generates revenue through a small processing fee on event registrations paid by athletes, not by venue owners. Gym and studio management is completely free with no transaction fees."
+      },
+      "q3": {
+        "question": "Will Athlifyr become paid in the future?",
+        "answer": "No. Our core platform — gym management, event discovery, and community features — will remain free forever. We are committed to making sports management accessible to everyone."
+      },
+      "q4": {
+        "question": "What is included in the free plan?",
+        "answer": "Everything. Client management, class scheduling, trial class bookings, subscription management, coach management, WOD publishing, event creation, live race tracking, community feed, multi-language support and more."
+      },
+      "q5": {
+        "question": "Do I need a credit card to sign up?",
+        "answer": "No. You can create your account and start using Athlifyr immediately with no payment information required."
+      },
+      "q6": {
+        "question": "How much does it cost to list my gym on Athlifyr?",
+        "answer": "Nothing. Listing your gym, CrossFit box, yoga studio or any fitness venue on Athlifyr is completely free. You get full access to all management tools at zero cost."
+      }
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Join hundreds of venues already using Athlifyr for free.",
+      "venueButton": "Add your venue",
+      "eventsButton": "Explore events"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "pricing": {
+    "meta": {
+      "title": "Prezzi - 100% Gratuito | Athlifyr",
+      "description": "Athlifyr è 100% gratuito per palestre, box CrossFit, studi yoga, personal trainer e organizzatori di eventi. Senza abbonamenti, senza costi nascosti, senza carta di credito."
+    },
+    "hero": {
+      "badge": "100% Gratuito",
+      "title": "Gratuito. Per sempre.",
+      "subtitle": "Senza abbonamenti. Senza costi nascosti. Senza carta di credito.",
+      "description": "Athlifyr è completamente gratuito per tutte le palestre, box CrossFit, studi yoga, personal trainer, massaggiatori e organizzatori di eventi. Crediamo nel rendere la gestione sportiva accessibile a tutti."
+    },
+    "features": {
+      "title": "Tutto incluso, costo zero",
+      "gymManagement": {
+        "title": "Gestione Palestra e Studio",
+        "description": "Gestisci i tuoi clienti, prenotazioni, lezioni di prova, abbonamenti e coach — tutto gratuitamente.",
+        "price": "Gratuito"
+      },
+      "eventManagement": {
+        "title": "Gestione Eventi",
+        "description": "Crea e gestisci eventi di running, trail, HYROX, CrossFit e altri sport con iscrizioni online.",
+        "price": "Gratuito"
+      },
+      "liveRace": {
+        "title": "Live Race Tracking",
+        "description": "Tracking GPS in tempo reale per gare ed eventi con classifiche live per atleti e spettatori.",
+        "price": "Gratuito"
+      },
+      "athletes": {
+        "title": "Per gli Atleti",
+        "description": "Scopri eventi, monitora le tue prestazioni, connettiti con la tua community — sempre gratuito.",
+        "price": "Gratuito"
+      }
+    },
+    "faq": {
+      "title": "Domande Frequenti",
+      "q1": {
+        "question": "Athlifyr è davvero gratuito?",
+        "answer": "Sì, 100% gratuito. Non ci sono canoni di abbonamento, costi nascosti né è necessaria la carta di credito. Tutte le funzionalità — gestione palestra, creazione eventi, live race tracking — sono incluse senza alcun costo."
+      },
+      "q2": {
+        "question": "Come guadagna Athlifyr?",
+        "answer": "Athlifyr genera ricavi attraverso una piccola commissione sulle iscrizioni agli eventi, pagata dagli atleti, non dai proprietari degli spazi. La gestione palestra e studio è completamente gratuita senza commissioni sulle transazioni."
+      },
+      "q3": {
+        "question": "Athlifyr diventerà a pagamento in futuro?",
+        "answer": "No. La nostra piattaforma base — gestione palestra, scoperta eventi e funzionalità community — resterà gratuita per sempre. Siamo impegnati a rendere la gestione sportiva accessibile a tutti."
+      },
+      "q4": {
+        "question": "Cosa è incluso nel piano gratuito?",
+        "answer": "Tutto. Gestione clienti, programmazione lezioni, prenotazione lezioni di prova, gestione abbonamenti, gestione coach, pubblicazione WOD, creazione eventi, live race tracking, feed community, supporto multilingua e molto altro."
+      },
+      "q5": {
+        "question": "Ho bisogno di una carta di credito per registrarmi?",
+        "answer": "No. Puoi creare il tuo account e iniziare a usare Athlifyr immediatamente senza alcuna informazione di pagamento."
+      },
+      "q6": {
+        "question": "Quanto costa inserire la mia palestra su Athlifyr?",
+        "answer": "Niente. Inserire la tua palestra, box CrossFit, studio yoga o qualsiasi spazio fitness su Athlifyr è completamente gratuito. Hai accesso completo a tutti gli strumenti di gestione a costo zero."
+      }
+    },
+    "cta": {
+      "title": "Pronto per iniziare?",
+      "subtitle": "Unisciti a centinaia di spazi che già usano Athlifyr gratuitamente.",
+      "venueButton": "Aggiungi il tuo spazio",
+      "eventsButton": "Esplora gli eventi"
+    }
+  }
+}

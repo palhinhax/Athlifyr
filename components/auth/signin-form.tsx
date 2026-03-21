@@ -256,7 +256,9 @@ export function SignInForm({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">{t("email")}</Label>
+            <Label htmlFor="email">
+              {t("email")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="email"
               name="email"
@@ -266,12 +268,15 @@ export function SignInForm({
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
+              aria-required="true"
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">{t("password")}</Label>
+              <Label htmlFor="password">
+                {t("password")} <span className="text-destructive">*</span>
+              </Label>
               <Link
                 href="/auth/forgot-password"
                 className="text-sm text-primary hover:underline"
@@ -289,6 +294,7 @@ export function SignInForm({
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
                 required
+                aria-required="true"
                 disabled={isLoading}
                 className="pr-10"
               />

@@ -200,7 +200,7 @@ export function ContactForm({
       {!isLoggedIn && (
         <div className={compact ? "space-y-2" : ""}>
           <Label htmlFor="contact-name" className={compact ? "text-sm" : ""}>
-            {t("form.name")} *
+            {t("form.name")} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="contact-name"
@@ -208,6 +208,7 @@ export function ContactForm({
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder={t("form.namePlaceholder")}
             required
+            aria-required="true"
             className={compact ? "h-9" : ""}
           />
         </div>
@@ -217,7 +218,7 @@ export function ContactForm({
       {!isLoggedIn && (
         <div className={compact ? "space-y-2" : ""}>
           <Label htmlFor="contact-email" className={compact ? "text-sm" : ""}>
-            {t("form.email")} *
+            {t("form.email")} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="contact-email"
@@ -228,6 +229,7 @@ export function ContactForm({
             }
             placeholder={t("form.emailPlaceholder")}
             required
+            aria-required="true"
             className={compact ? "h-9" : ""}
           />
         </div>
@@ -236,7 +238,7 @@ export function ContactForm({
       {/* Type */}
       <div className={compact ? "space-y-2" : ""}>
         <Label htmlFor="contact-type" className={compact ? "text-sm" : ""}>
-          {t("form.type")} *
+          {t("form.type")} <span className="text-destructive">*</span>
         </Label>
         <Select
           value={formData.type}
@@ -262,7 +264,9 @@ export function ContactForm({
       {/* Subject - only show in full page mode */}
       {showSubject && (
         <div>
-          <Label htmlFor="contact-subject">{t("form.subject")} *</Label>
+          <Label htmlFor="contact-subject">
+            {t("form.subject")} <span className="text-destructive">*</span>
+          </Label>
           <Input
             id="contact-subject"
             value={formData.subject}
@@ -278,7 +282,7 @@ export function ContactForm({
       {/* Message */}
       <div className={compact ? "space-y-2" : ""}>
         <Label htmlFor="contact-message" className={compact ? "text-sm" : ""}>
-          {t("form.message")} *
+          {t("form.message")} <span className="text-destructive">*</span>
         </Label>
         <Textarea
           id="contact-message"

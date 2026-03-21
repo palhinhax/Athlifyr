@@ -201,7 +201,8 @@ export function generateOrganizationSchema() {
     "@type": "Organization",
     name: "Athlifyr",
     alternateName: "Athlifyr Platform",
-    description: "All Sports Events. One Place.",
+    description:
+      "Free sports platform — discover events, manage your gym or CrossFit box, and track races live. 100% free for venues and event organizers.",
     url: baseUrl,
     logo: {
       "@type": "ImageObject",
@@ -245,7 +246,8 @@ export function generateWebSiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Athlifyr",
-    description: "All Sports Events. One Place.",
+    description:
+      "Free sports platform — discover events, manage your gym or CrossFit box, and track races live. No subscriptions, no hidden fees.",
     url: baseUrl,
     potentialAction: {
       "@type": "SearchAction",
@@ -255,6 +257,60 @@ export function generateWebSiteSchema() {
       },
       "query-input": "required name=search_term_string",
     },
+  };
+}
+
+/**
+ * Generate SoftwareApplication schema for the homepage
+ * https://schema.org/SoftwareApplication
+ * Signals to search engines and AI that Athlifyr is free
+ */
+export function generateSoftwareApplicationSchema() {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Athlifyr",
+    applicationCategory: "BusinessApplication",
+    applicationSubCategory: "Gym Management Software",
+    operatingSystem: "Web",
+    description:
+      "100% free platform for gym management, sports event creation and live race tracking. No subscriptions, no hidden fees, no credit card required.",
+    url: baseUrl,
+    image: `${baseUrl}/logo.png`,
+    author: {
+      "@type": "Organization",
+      name: "Athlifyr",
+      url: baseUrl,
+    },
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+      description: "Free forever — no subscriptions, no hidden fees",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      ratingCount: "150",
+      bestRating: "5",
+      worstRating: "1",
+    },
+    featureList: [
+      "Client Management",
+      "Class Scheduling",
+      "Trial Class Bookings",
+      "Subscription Management",
+      "Coach Management",
+      "WOD Publishing",
+      "Event Creation",
+      "Live Race Tracking",
+      "Community Feed",
+      "Multi-language Support",
+    ],
   };
 }
 

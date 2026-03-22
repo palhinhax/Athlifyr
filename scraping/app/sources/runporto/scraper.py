@@ -99,6 +99,16 @@ def _guess_distance(text: str) -> float | None:
     return None
 
 
+def _normalize_url(url: str) -> str:
+    """Ensure RunPorto URL uses /pt/ prefix (without it, sub-pages 404)."""
+    # https://www.runporto.com/eventos/... → https://www.runporto.com/pt/eventos/...
+    return re.sub(
+        r"(https?://www\.runporto\.com)(/eventos/)",
+        r"\1/pt\2",
+        url,
+    )
+
+
 def _extract_city(text: str) -> str | None:
     """Extract city from typical RunPorto date text like '…na Cidade do Porto…'."""
     m = re.search(r"(?:cidade\s+d[eo]\s+|cidade\s+)(\w[\w\s]*?)(?:[,.]|\s+com\b)", text, re.I)
@@ -133,6 +143,7 @@ class RunPortoScraper(BaseScraper):
 
     async def scrape_event(self, url: str) -> ScrapedEventData | None:
         """Scrape a single RunPorto event given its detail-page URL."""
+        url = _normalize_url(url)
         html = await self.fetch_page(url)
         soup = BeautifulSoup(html, "lxml")
 
@@ -219,6 +230,7 @@ class RunPortoScraper(BaseScraper):
             if not href:
                 continue
             full = href if href.startswith("http") else urljoin(_BASE, href)
+            full = _normalize_url(full)
             # Must be an edition URL (has at least /eventos/{series}/{edition}/)
             if not _EDITION_RE.search(full):
                 continue

@@ -533,6 +533,20 @@ async def generate_event(
     # Generate event JSON via OpenAI
     generated = await generate_event_json(event_data, doc_texts)
 
+    # If AI rejected the event as not sports-relevant, mark it as hidden and return
+    if generated.get("rejected"):
+        reason = generated.get("reason", "Not a sports event")
+        event.review_status = EventReviewStatus.REJECTED
+        event.review_notes = f"AI auto-rejected: {reason}"
+        event.is_hidden = True
+        event.ai_pending = False
+        event.ai_output = json.dumps(generated, ensure_ascii=False, default=str)
+        await db.commit()
+        raise HTTPException(
+            status_code=422,
+            detail=f"Event rejected by AI — not sports-relevant: {reason}",
+        )
+
     # Save AI debug data to the event for inspection
     ai_input_data = {"event_data": event_data, "documents": [{"name": d["name"], "content_length": len(d["content"])} for d in doc_texts]}
     event.ai_input = json.dumps(ai_input_data, ensure_ascii=False, default=str)
@@ -589,6 +603,7 @@ async def generate_event(
     event.review_status = EventReviewStatus.APPROVED
     event.athlifyr_event_id = resp.json().get("id")
     event.reviewed_at = datetime.now(timezone.utc)
+    event.ai_pending = False
     await db.commit()
 
     return resp.json()
@@ -729,3 +744,172 @@ async def get_stats(db: AsyncSession = Depends(get_db)) -> StatsOut:
         sources_active=active_count,
         sources_total=len(sources),
     )
+
+
+# ── AI Queue Processing ──────────────────────────────────────────────────────
+
+
+@router.post("/ai/process-queue")
+async def process_ai_queue(
+    limit: int = Query(default=10, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Process pending AI queue: generate event JSON for events marked ai_pending.
+
+    Processes events one by one to avoid overloading the AI.
+    Skips events without images (required for generation).
+    Events previously rejected by AI are skipped.
+    """
+    from app.services.ai_generator import generate_event_json, _read_document_text
+    from app.core.config import settings as cfg
+
+    result = await db.execute(
+        select(ScrapedEvent)
+        .options(
+            selectinload(ScrapedEvent.variants),
+            selectinload(ScrapedEvent.pricing_phases),
+            selectinload(ScrapedEvent.documents),
+        )
+        .where(
+            ScrapedEvent.ai_pending == True,  # noqa: E712
+            ScrapedEvent.is_hidden == False,  # noqa: E712
+            ScrapedEvent.review_status != EventReviewStatus.REJECTED,
+        )
+        .order_by(ScrapedEvent.created_at.asc())
+        .limit(limit)
+    )
+    events = list(result.scalars().all())
+
+    if not events:
+        return {"processed": 0, "results": [], "message": "No events in AI queue"}
+
+    results: list[dict] = []
+
+    for event in events:
+        event_result: dict = {"id": str(event.id), "title": event.title}
+
+        # Skip events without images
+        if not event.image_url:
+            event.ai_pending = False
+            event_result["status"] = "skipped"
+            event_result["reason"] = "No image"
+            results.append(event_result)
+            continue
+
+        try:
+            # Build event data dict for AI
+            event_data = {
+                "title": event.title,
+                "source_url": event.source_url,
+                "description": event.description,
+                "sport_types": event.sport_types,
+                "start_date": str(event.start_date) if event.start_date else None,
+                "end_date": str(event.end_date) if event.end_date else None,
+                "registration_deadline": str(event.registration_deadline) if event.registration_deadline else None,
+                "city": event.city,
+                "country": event.country,
+                "latitude": event.latitude,
+                "longitude": event.longitude,
+                "organizer_name": event.organizer_name,
+                "external_url": event.external_url,
+                "image_url": event.image_url,
+                "variants": [
+                    {
+                        "name": v.name,
+                        "distance_km": v.distance_km,
+                        "elevation_gain_m": v.elevation_gain_m,
+                        "elevation_loss_m": v.elevation_loss_m,
+                        "price": v.price,
+                        "currency": v.currency,
+                        "start_time": v.start_time,
+                    }
+                    for v in event.variants
+                ],
+                "raw_pricing_text": event.raw_pricing_text,
+            }
+
+            # Extract text from documents
+            docs = [
+                d for d in event.documents
+                if d.original_url and (
+                    (d.mime_type and "pdf" in d.mime_type)
+                    or (d.file_name and d.file_name.lower().endswith(".pdf"))
+                    or (d.original_url and d.original_url.lower().endswith(".pdf"))
+                    or d.document_type == "regulation"
+                )
+            ]
+
+            doc_texts: list[dict[str, str]] = []
+            for doc in docs:
+                text = await _read_document_text(doc.original_url)
+                if text:
+                    doc_texts.append({"name": doc.file_name or doc.document_type, "content": text})
+
+            if not doc_texts and event.external_url:
+                page_text = await _read_document_text(event.external_url)
+                if page_text:
+                    doc_texts.append({"name": "event_page", "content": page_text})
+
+            # Generate via AI
+            generated = await generate_event_json(event_data, doc_texts)
+
+            # Save AI debug data
+            event.ai_output = json.dumps(generated, ensure_ascii=False, default=str)
+            event.ai_pending = False
+
+            # If AI rejected the event
+            if generated.get("rejected"):
+                reason = generated.get("reason", "Not a sports event")
+                event.review_status = EventReviewStatus.REJECTED
+                event.review_notes = f"AI auto-rejected: {reason}"
+                event.is_hidden = True
+                event_result["status"] = "rejected"
+                event_result["reason"] = reason
+                logger.info("AI queue: rejected %s — %s", event.title, reason)
+            else:
+                # Inject image and external URL
+                generated["imageUrl"] = event.image_url
+                if not generated.get("externalUrl"):
+                    generated["externalUrl"] = event.external_url or event.source_url
+                generated["scrapedEventId"] = str(event.id)
+
+                # Forward to Next.js
+                nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"
+                headers: dict[str, str] = {"Content-Type": "application/json"}
+                if cfg.nextjs_import_secret:
+                    headers["X-Import-Secret"] = cfg.nextjs_import_secret
+
+                async with httpx.AsyncClient(timeout=180) as client:
+                    resp = await client.post(nextjs_url, json=generated, headers=headers)
+
+                if resp.status_code in (200, 201):
+                    event.review_status = EventReviewStatus.APPROVED
+                    event.athlifyr_event_id = resp.json().get("id")
+                    event.reviewed_at = datetime.now(timezone.utc)
+                    event_result["status"] = "imported"
+                    event_result["athlifyr_id"] = event.athlifyr_event_id
+                    logger.info("AI queue: imported %s → %s", event.title, event.athlifyr_event_id)
+                else:
+                    event_result["status"] = "import_failed"
+                    event_result["reason"] = f"Next.js {resp.status_code}: {resp.text[:200]}"
+                    logger.error("AI queue: import failed for %s — %s", event.title, resp.text[:200])
+
+        except Exception as exc:
+            event.ai_pending = False
+            event_result["status"] = "error"
+            event_result["reason"] = str(exc)[:200]
+            logger.exception("AI queue: error processing %s", event.title)
+
+        results.append(event_result)
+
+    await db.commit()
+
+    summary = {
+        "processed": len(results),
+        "imported": sum(1 for r in results if r.get("status") == "imported"),
+        "rejected": sum(1 for r in results if r.get("status") == "rejected"),
+        "skipped": sum(1 for r in results if r.get("status") == "skipped"),
+        "errors": sum(1 for r in results if r.get("status") in ("error", "import_failed")),
+        "results": results,
+    }
+    return summary

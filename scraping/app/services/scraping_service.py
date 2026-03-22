@@ -94,6 +94,8 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
     db.add(run)
     await db.flush()
 
+    ai_event_ids: list[uuid.UUID] = []
+
     try:
         events_data = await scraper.scrape()
         created = 0
@@ -104,10 +106,23 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
             try:
                 async with db.begin_nested():
                     is_new = await _upsert_scraped_event(db, run.id, source_name, ev_data)
+                # Fetch the event for auto-generation check
+                row = await db.execute(
+                    select(ScrapedEvent.id, ScrapedEvent.ai_pending).where(
+                        ScrapedEvent.source_name == source_name,
+                        ScrapedEvent.source_url == ev_data.source_url,
+                    )
+                )
+                ev_row = row.one_or_none()
                 if is_new:
                     created += 1
+                    if ev_row:
+                        ai_event_ids.append(ev_row[0])
                 else:
                     updated += 1
+                    # Also queue for AI if something changed (ai_pending=True)
+                    if ev_row and ev_row[1]:
+                        ai_event_ids.append(ev_row[0])
             except Exception:
                 logger.exception("Failed to upsert event: %s", ev_data.source_url)
                 failed += 1
@@ -144,6 +159,20 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
 
     await db.commit()
     await db.refresh(run)
+
+    # Auto-generate AI + import to Next.js for new / changed events
+    if run.status == ScrapingRunStatus.COMPLETED and ai_event_ids:
+        logger.info(
+            "Auto-generating AI for %d new/changed events from %s",
+            len(ai_event_ids), source_name,
+        )
+        for eid in ai_event_ids:
+            try:
+                await generate_and_import_event(eid, db)
+                await db.commit()
+            except Exception:
+                logger.exception("Auto-generate failed for event %s", eid)
+
     return run
 
 
@@ -569,3 +598,175 @@ def _apply_event_fields(event: ScrapedEvent, data: ScrapedEventData) -> None:
     event.image_url = data.image_url
     event.raw_pricing_text = data.raw_pricing_text
     event.raw_data = data.raw_data
+
+
+# ── Auto AI generate + Next.js import ────────────────────────────────────────
+
+
+async def generate_and_import_event(
+    event_id: uuid.UUID, db: AsyncSession,
+) -> dict | None:
+    """Run AI generation and forward the result to the Next.js import endpoint.
+
+    Returns the Next.js response JSON on success, or None on failure.
+    This is designed to be called automatically for new events, so it
+    never raises — all errors are logged and swallowed.
+    """
+    from app.services.ai_generator import generate_event_json, _read_document_text
+    from app.core.config import settings as cfg
+
+    # Need both OpenAI key and Next.js URL configured
+    if not cfg.openai_api_key or not cfg.nextjs_url:
+        logger.debug("AI auto-generate skipped: missing openai_api_key or nextjs_url")
+        return None
+
+    try:
+        # Load full event with relations
+        result = await db.execute(
+            select(ScrapedEvent)
+            .options(
+                selectinload(ScrapedEvent.variants),
+                selectinload(ScrapedEvent.pricing_phases),
+                selectinload(ScrapedEvent.documents),
+            )
+            .where(ScrapedEvent.id == event_id)
+        )
+        event = result.scalar_one_or_none()
+        if not event:
+            logger.warning("Auto-generate: event %s not found", event_id)
+            return None
+
+        # Skip if already approved and not pending re-processing
+        if event.review_status == EventReviewStatus.APPROVED and not event.ai_pending:
+            logger.debug("Auto-generate skipped for %s — already approved", event.title)
+            return None
+
+        # Skip if rejected
+        if event.review_status == EventReviewStatus.REJECTED:
+            logger.debug("Auto-generate skipped for %s — rejected", event.title)
+            return None
+
+        # Skip if no image (AI generation requires it)
+        if not event.image_url:
+            logger.info("Auto-generate skipped for %s — no image", event.title)
+            return None
+
+        # Collect PDF documents
+        docs = [
+            d for d in event.documents
+            if d.original_url and (
+                (d.mime_type and "pdf" in d.mime_type)
+                or (d.file_name and d.file_name.lower().endswith(".pdf"))
+                or (d.original_url and d.original_url.lower().endswith(".pdf"))
+                or d.document_type == "regulation"
+            )
+        ]
+
+        # Build event data dict
+        event_data = {
+            "title": event.title,
+            "source_url": event.source_url,
+            "description": event.description,
+            "sport_types": event.sport_types,
+            "start_date": str(event.start_date) if event.start_date else None,
+            "end_date": str(event.end_date) if event.end_date else None,
+            "registration_deadline": str(event.registration_deadline) if event.registration_deadline else None,
+            "city": event.city,
+            "country": event.country,
+            "latitude": event.latitude,
+            "longitude": event.longitude,
+            "organizer_name": event.organizer_name,
+            "external_url": event.external_url,
+            "image_url": event.image_url,
+            "variants": [
+                {
+                    "name": v.name,
+                    "distance_km": v.distance_km,
+                    "elevation_gain_m": v.elevation_gain_m,
+                    "elevation_loss_m": v.elevation_loss_m,
+                    "price": v.price,
+                    "currency": v.currency,
+                    "start_time": v.start_time,
+                }
+                for v in event.variants
+            ],
+            "raw_pricing_text": event.raw_pricing_text,
+        }
+
+        logger.info(
+            "Auto-generate AI for new event: %s (id=%s)", event.title, event_id,
+        )
+
+        # Extract text from documents
+        doc_texts: list[dict[str, str]] = []
+        for doc in docs:
+            text = await _read_document_text(doc.original_url)
+            if text:
+                doc_texts.append({"name": doc.file_name or doc.document_type, "content": text})
+
+        if not doc_texts and event.external_url:
+            page_text = await _read_document_text(event.external_url)
+            if page_text:
+                doc_texts.append({"name": "event_page", "content": page_text})
+
+        # Call OpenAI
+        generated = await generate_event_json(event_data, doc_texts)
+
+        # Handle rejection
+        if generated.get("rejected"):
+            reason = generated.get("reason", "Not a sports event")
+            event.review_status = EventReviewStatus.REJECTED
+            event.review_notes = f"AI auto-rejected: {reason}"
+            event.is_hidden = True
+            event.ai_pending = False
+            event.ai_output = json.dumps(generated, ensure_ascii=False, default=str)
+            await db.flush()
+            logger.info("Auto-generate: AI rejected %s — %s", event.title, reason)
+            return None
+
+        # Save AI debug data
+        ai_input_data = {
+            "event_data": event_data,
+            "documents": [{"name": d["name"], "content_length": len(d["content"])} for d in doc_texts],
+        }
+        event.ai_input = json.dumps(ai_input_data, ensure_ascii=False, default=str)
+        event.ai_output = json.dumps(generated, ensure_ascii=False, default=str)
+
+        # Inject image + external URL
+        generated["imageUrl"] = event.image_url
+        if not generated.get("externalUrl"):
+            generated["externalUrl"] = event.external_url or event.source_url
+        generated["scrapedEventId"] = str(event_id)
+
+        # Forward to Next.js
+        nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"
+        headers: dict[str, str] = {"Content-Type": "application/json"}
+        if cfg.nextjs_import_secret:
+            headers["X-Import-Secret"] = cfg.nextjs_import_secret
+
+        async with httpx.AsyncClient(timeout=180) as client:
+            resp = await client.post(nextjs_url, json=generated, headers=headers)
+
+        if resp.status_code not in (200, 201):
+            logger.error(
+                "Auto-generate: Next.js import failed for %s (%d): %s",
+                event.title, resp.status_code, resp.text[:500],
+            )
+            return None
+
+        # Mark as approved
+        event.review_status = EventReviewStatus.APPROVED
+        event.athlifyr_event_id = resp.json().get("id")
+        event.reviewed_at = datetime.now(timezone.utc)
+        event.ai_pending = False
+        await db.flush()
+
+        logger.info(
+            "Auto-generate: successfully imported %s → athlifyr_id=%s",
+            event.title, event.athlifyr_event_id,
+        )
+        return resp.json()
+
+    except Exception:
+        logger.exception("Auto-generate failed for event %s", event_id)
+        return None

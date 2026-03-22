@@ -27,8 +27,8 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY . .
 
-# Make entrypoint executable
-RUN chmod +x /app/entrypoint.sh
+# Fix Windows line endings and make entrypoint executable
+RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Create data directory for local document storage
 RUN mkdir -p /app/data/documents

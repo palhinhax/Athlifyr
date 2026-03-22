@@ -2,6 +2,7 @@
 
 from app.sources.runporto.scraper import (
     RunPortoScraper,
+    _normalize_url,
     _parse_pt_date,
     _parse_time,
     _guess_distance,
@@ -38,6 +39,19 @@ def test_parse_pt_date_embedded() -> None:
 def test_parse_pt_date_invalid() -> None:
     assert _parse_pt_date("") is None
     assert _parse_pt_date("no date here") is None
+
+
+# ── URL normalisation ────────────────────────────────────────────
+
+
+def test_normalize_url_adds_pt() -> None:
+    url = "https://www.runporto.com/eventos/maratona-do-porto/maratona-do-porto-2026/"
+    assert _normalize_url(url) == "https://www.runporto.com/pt/eventos/maratona-do-porto/maratona-do-porto-2026/"
+
+
+def test_normalize_url_already_has_pt() -> None:
+    url = "https://www.runporto.com/pt/eventos/corrida-da-mulher/corrida-da-mulher-2026/"
+    assert _normalize_url(url) == url
 
 
 # ── Time parsing ─────────────────────────────────────────────────

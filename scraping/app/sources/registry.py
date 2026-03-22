@@ -15,6 +15,7 @@ from app.sources.trilhoperdido.scraper import TrilhoPerdidoScraper
 from app.sources.waitastart.scraper import WaitAStartScraper
 from app.sources.turresevents.scraper import TurresEventsScraper
 from app.sources.werun.scraper import WeRunScraper
+from app.sources.runporto.scraper import RunPortoScraper
 
 # Register new scrapers here ↓
 _SCRAPERS: dict[str, type[BaseScraper]] = {
@@ -30,6 +31,7 @@ _SCRAPERS: dict[str, type[BaseScraper]] = {
     "waitastart": WaitAStartScraper,
     "turresevents": TurresEventsScraper,
     "werun": WeRunScraper,
+    "runporto": RunPortoScraper,
 }
 
 

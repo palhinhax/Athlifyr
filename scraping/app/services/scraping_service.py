@@ -323,7 +323,11 @@ async def _upsert_scraped_event(
 
     if existing:
         # Record field-level diffs before updating
-        await _record_changes(db, existing, data, run_id)
+        has_changes = await _record_changes(db, existing, data, run_id)
+
+        # Mark for AI re-processing if meaningful fields changed
+        if has_changes and existing.review_status != EventReviewStatus.REJECTED:
+            existing.ai_pending = True
 
         # Save current bucket URL before _apply_event_fields overwrites it
         prev_bucket_url = existing.image_url
@@ -370,6 +374,7 @@ async def _upsert_scraped_event(
         source_event_id=data.source_event_id,
         slug=slugify(data.title)[:500] if data.title else None,
         review_status=EventReviewStatus.PENDING,
+        ai_pending=True,
         raw_data=data.raw_data,
         last_seen_at=datetime.now(timezone.utc),
     )
@@ -503,8 +508,11 @@ async def _record_changes(
     existing: ScrapedEvent,
     data: ScrapedEventData,
     run_id: uuid.UUID | None,
-) -> None:
-    """Compare tracked fields and insert change-log rows for any diffs."""
+) -> bool:
+    """Compare tracked fields and insert change-log rows for any diffs.
+
+    Returns True if at least one tracked field changed.
+    """
     sport_types_str = ",".join(data.sport_types) if data.sport_types else None
 
     new_values = {
@@ -521,6 +529,7 @@ async def _record_changes(
         "image_url": data.image_url,
     }
 
+    changed = False
     for field in _TRACKED_FIELDS:
         old_raw = getattr(existing, field, None)
         # Normalize datetime comparison: strip tzinfo for consistent format
@@ -530,6 +539,7 @@ async def _record_changes(
             old_val = str(old_raw) if old_raw is not None else None
         new_val = new_values.get(field)
         if old_val != new_val:
+            changed = True
             db.add(
                 EventChangeLog(
                     event_id=existing.id,
@@ -539,6 +549,7 @@ async def _record_changes(
                     new_value=new_val,
                 )
             )
+    return changed
 
 
 def _apply_event_fields(event: ScrapedEvent, data: ScrapedEventData) -> None:

@@ -1,0 +1,116 @@
+name: Scrape Events
+
+on:
+  schedule:
+    # Run daily at 12:00 PM UTC
+    - cron: "0 12 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  scrape-events:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate Secrets
+        run: |
+          echo "🔐 Validating required secrets..."
+
+          if [ -z "${{ secrets.SCRAPING_API_URL }}" ]; then
+            echo "❌ ERROR: SCRAPING_API_URL secret is not configured"
+            exit 1
+          fi
+          echo "✅ SCRAPING_API_URL is configured"
+
+          if [ -z "${{ secrets.SCRAPING_API_KEY }}" ]; then
+            echo "❌ ERROR: SCRAPING_API_KEY secret is not configured"
+            exit 1
+          fi
+          echo "✅ SCRAPING_API_KEY is configured"
+
+          echo ""
+          echo "📍 Target URL: ${{ secrets.SCRAPING_API_URL }}/runs/all"
+
+      - name: Trigger Scraping Run
+        run: |
+          echo "🔍 Starting event scraping..."
+          echo "📅 Current time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo ""
+
+          response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}---TIME_TOTAL---%{time_total}s" \
+            -X POST "${{ secrets.SCRAPING_API_URL }}/runs/all" \
+            -H "X-API-Key: ${{ secrets.SCRAPING_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            --max-time 300)
+
+          body=$(echo "$response" | sed 's/---HTTP_CODE---.*//g')
+          http_code=$(echo "$response" | grep -oP '(?<=---HTTP_CODE---)\d+')
+          time_total=$(echo "$response" | grep -oP '(?<=---TIME_TOTAL---).*')
+
+          echo "📊 Request Details:"
+          echo "   HTTP Status: $http_code"
+          echo "   Time: $time_total"
+          echo ""
+          echo "📦 Response Body:"
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo ""
+
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Scraping failed with HTTP status $http_code"
+            exit 1
+          fi
+
+          # Display summary for each run
+          if echo "$body" | jq -e '.[0]' > /dev/null 2>&1; then
+            count=$(echo "$body" | jq 'length')
+            echo "📈 Scraping Summary ($count sources):"
+            echo "$body" | jq -r '.[] | "   \(.source_name): found=\(.events_found) created=\(.events_created) updated=\(.events_updated) failed=\(.events_failed) status=\(.status)"'
+          fi
+
+          echo ""
+          echo "✅ Event scraping completed successfully!"
+
+      - name: Process AI Queue
+        run: |
+          echo "🤖 Processing AI queue for new/updated events..."
+          echo ""
+
+          response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}---TIME_TOTAL---%{time_total}s" \
+            -X POST "${{ secrets.SCRAPING_API_URL }}/ai/process-queue?limit=20" \
+            -H "X-API-Key: ${{ secrets.SCRAPING_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            --max-time 600)
+
+          body=$(echo "$response" | sed 's/---HTTP_CODE---.*//g')
+          http_code=$(echo "$response" | grep -oP '(?<=---HTTP_CODE---)\d+')
+          time_total=$(echo "$response" | grep -oP '(?<=---TIME_TOTAL---).*')
+
+          echo "📊 Request Details:"
+          echo "   HTTP Status: $http_code"
+          echo "   Time: $time_total"
+          echo ""
+          echo "📦 Response Body:"
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo ""
+
+          if [ "$http_code" != "200" ]; then
+            echo "⚠️ AI queue processing failed with HTTP status $http_code"
+            exit 1
+          fi
+
+          # Display summary
+          if echo "$body" | jq -e '.processed' > /dev/null 2>&1; then
+            processed=$(echo "$body" | jq -r '.processed')
+            imported=$(echo "$body" | jq -r '.imported')
+            rejected=$(echo "$body" | jq -r '.rejected')
+            skipped=$(echo "$body" | jq -r '.skipped')
+            errors=$(echo "$body" | jq -r '.errors')
+            echo "📈 AI Queue Summary:"
+            echo "   Processed: $processed"
+            echo "   Imported: $imported"
+            echo "   Rejected: $rejected"
+            echo "   Skipped: $skipped"
+            echo "   Errors: $errors"
+          fi
+
+          echo ""
+          echo "✅ AI queue processing completed!"

@@ -23,6 +23,20 @@ You are an expert sports event data processor for the Athlifyr platform.
 Your task is to take raw scraped event data and produce a complete, structured JSON object
 that can be imported into the Athlifyr database.
 
+EVENT RELEVANCE CHECK (do this FIRST):
+Before processing, determine if this is a SPORTS event relevant to Athlifyr.
+Athlifyr covers: running, trail running, marathons, cycling, BTT/MTB, triathlons, OCR, CrossFit, Hyrox, swimming, surfing, walking/hiking races.
+REJECT events that are NOT sports, such as:
+- Motorcycle/motocross rides or rallies
+- Car rallies or motorsport
+- Music festivals, food fairs, cultural events
+- Religious processions or pilgrimages (unless structured as a walking race with registration)
+- Equestrian events, hunting events
+- Any event where the primary activity is NOT human-powered sport
+If the event contains MIXED activities (e.g. BTT + motorcycles), only accept it if it has at least one legitimate human-powered sport variant.
+If the event is NOT relevant, return ONLY this JSON: {"rejected": true, "reason": "Brief explanation in English"}
+If the event IS relevant, proceed with the full JSON output below.
+
 CRITICAL RULES:
 1. ALL user-facing text MUST be translated into ALL 6 languages: pt (European Portuguese), en, es, fr, de, it.
 2. Portuguese MUST be European Portuguese (pt-PT): use "tu", "ecrã", "telemóvel", etc.
@@ -253,7 +267,12 @@ async def generate_event_json(
         raise ValueError("AI response was truncated — event too complex. Try with less data.")
 
     try:
-        return json.loads(content)
+        result = json.loads(content)
     except json.JSONDecodeError as e:
         logger.error("Failed to parse AI response as JSON: %s. First 500 chars: %s", e, content[:500])
         raise ValueError(f"AI returned invalid JSON: {e}") from e
+
+    if result.get("rejected"):
+        logger.info("AI rejected event as not sports-relevant: %s", result.get("reason"))
+
+    return result

@@ -649,7 +649,13 @@
         "generateAllCancel": "Annulla",
         "generateAllConfirm": "Genera {count} Eventi",
         "generatingProgress": "Generazione evento {current} di {total}...",
-        "generatingDone": "Tutti i {total} eventi generati!"
+        "generatingDone": "Tutti i {total} eventi generati!",
+        "addImage": "Aggiungi immagine",
+        "replaceImage": "Sostituisci immagine",
+        "uploadSuccess": "Immagine caricata con successo",
+        "uploadError": "Errore nel caricamento dell'immagine",
+        "uploadInvalidFile": "Seleziona un file immagine",
+        "uploadFileTooLarge": "L'immagine deve essere inferiore a 5 MB"
       },
       "scrapeUrl": {
         "title": "Raccogli URL Singolo",

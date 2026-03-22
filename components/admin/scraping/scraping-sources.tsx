@@ -73,9 +73,9 @@ export function ScrapingSources({
 
   return (
     <Card>
-      <div className="flex items-center justify-between border-b p-4">
+      <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-lg font-semibold">{t("sources.title")}</h3>
-        <Button size="sm" onClick={onRunAll} disabled={!!runningSource}>
+        <Button size="sm" onClick={onRunAll} disabled={!!runningSource} className="w-full sm:w-auto">
           {runningSource ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -84,6 +84,7 @@ export function ScrapingSources({
           {t("sources.runAll")}
         </Button>
       </div>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -148,6 +149,7 @@ export function ScrapingSources({
           ))}
         </TableBody>
       </Table>
+      </div>
     </Card>
   );
 }

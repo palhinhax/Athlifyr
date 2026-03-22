@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,8 +49,10 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Upload,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "@/components/ui/use-toast";
 
 interface ScrapedEventListItem {
   id: string;
@@ -175,6 +177,11 @@ export function ScrapingEvents({
   const [actionLoading, setActionLoading] = useState<Record<string, string>>(
     {}
   );
+  const [uploadingImageFor, setUploadingImageFor] = useState<string | null>(
+    null
+  );
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const pendingUploadEventId = useRef<string | null>(null);
   const [showGenerateAll, setShowGenerateAll] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{
     current: number;
@@ -277,6 +284,13 @@ export function ScrapingEvents({
         console.error(`${action} failed:`, err.detail);
         return;
       }
+      if (action === "generate") {
+        await fetch(`${apiUrl}/events/${eventId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ review_status: "approved" }),
+        });
+      }
       fetchEvents();
       onEventsChanged();
     } catch (error) {
@@ -330,6 +344,12 @@ export function ScrapingEvents({
             `Generate failed for ${eligible[i].title}:`,
             err.detail
           );
+        } else {
+          await fetch(`${apiUrl}/events/${eligible[i].id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ review_status: "approved" }),
+          });
         }
       } catch (error) {
         console.error(`Error generating ${eligible[i].title}:`, error);
@@ -346,12 +366,86 @@ export function ScrapingEvents({
     setTimeout(() => setBulkProgress(null), 3000);
   };
 
+  const handleImageClick = (eventId: string) => {
+    pendingUploadEventId.current = eventId;
+    imageInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const eventId = pendingUploadEventId.current;
+    if (!file || !eventId) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        variant: "destructive",
+        title: t("events.uploadInvalidFile"),
+      });
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: t("events.uploadFileTooLarge"),
+      });
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingImageFor(eventId);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "events");
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      const uploadData = await uploadRes.json();
+      const imageUrl: string = uploadData.file.url;
+
+      const patchRes = await fetch(`${apiUrl}/events/${eventId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_url: imageUrl }),
+      });
+
+      if (!patchRes.ok) throw new Error("Patch failed");
+
+      toast({ title: t("events.uploadSuccess") });
+      fetchEvents();
+      onEventsChanged();
+    } catch {
+      toast({
+        variant: "destructive",
+        title: t("events.uploadError"),
+      });
+    } finally {
+      setUploadingImageFor(null);
+      pendingUploadEventId.current = null;
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  };
+
   return (
     <>
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
       <Card>
         {/* ── Header ── */}
         <div className="border-b p-4">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold">{t("events.title")}</h3>
               {data && (
@@ -405,7 +499,7 @@ export function ScrapingEvents({
 
           {/* ── Filters ── */}
           <div className="flex flex-wrap gap-3">
-            <div className="relative min-w-[200px] flex-1">
+            <div className="relative w-full sm:min-w-[200px] sm:flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t("events.searchPlaceholder")}
@@ -418,7 +512,7 @@ export function ScrapingEvents({
               value={filterSource}
               onValueChange={(v) => handleFilterChange(setFilterSource, v)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder={t("events.allSources")} />
               </SelectTrigger>
               <SelectContent>
@@ -434,7 +528,7 @@ export function ScrapingEvents({
               value={filterStatus}
               onValueChange={(v) => handleFilterChange(setFilterStatus, v)}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[calc(50%-6px)] sm:w-[160px]">
                 <SelectValue placeholder={t("events.allStatuses")} />
               </SelectTrigger>
               <SelectContent>
@@ -454,7 +548,7 @@ export function ScrapingEvents({
               value={pageSize.toString()}
               onValueChange={handlePageSizeChange}
             >
-              <SelectTrigger className="w-[100px]">
+              <SelectTrigger className="w-[calc(50%-6px)] sm:w-[100px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -474,6 +568,7 @@ export function ScrapingEvents({
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           )}
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -561,14 +656,28 @@ export function ScrapingEvents({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
-                        <ImageIcon
-                          className={`h-4 w-4 ${event.has_image ? "text-green-500" : "text-muted-foreground/30"}`}
-                          aria-label={
+                        <button
+                          type="button"
+                          className="group relative cursor-pointer rounded p-0.5 transition-colors hover:bg-muted"
+                          title={
                             event.has_image
-                              ? t("events.hasImage")
-                              : t("events.noImage")
+                              ? t("events.replaceImage")
+                              : t("events.addImage")
                           }
-                        />
+                          disabled={uploadingImageFor === event.id}
+                          onClick={() => handleImageClick(event.id)}
+                        >
+                          {uploadingImageFor === event.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          ) : (
+                            <>
+                              <ImageIcon
+                                className={`h-4 w-4 transition-opacity group-hover:opacity-0 ${event.has_image ? "text-green-500" : "text-muted-foreground/30"}`}
+                              />
+                              <Upload className="absolute inset-0 m-auto h-4 w-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
+                            </>
+                          )}
+                        </button>
                         <div className="flex items-center gap-0.5">
                           <FileText
                             className={`h-4 w-4 ${event.documents_count > 0 ? "text-blue-500" : "text-muted-foreground/30"}`}
@@ -682,10 +791,11 @@ export function ScrapingEvents({
               )}
             </TableBody>
           </Table>
+          </div>
         </div>
 
         {/* ── Pagination ── */}
-        <div className="flex items-center justify-between border-t px-4 py-3">
+        <div className="flex flex-col items-center gap-2 border-t px-4 py-3 sm:flex-row sm:justify-between">
           <span className="text-sm text-muted-foreground">
             {data && data.total > 0
               ? t("events.pagination", {

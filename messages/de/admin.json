@@ -653,7 +653,13 @@
         "generateAllCancel": "Abbrechen",
         "generateAllConfirm": "{count} Events generieren",
         "generatingProgress": "Generiere Event {current} von {total}...",
-        "generatingDone": "Alle {total} Events generiert!"
+        "generatingDone": "Alle {total} Events generiert!",
+        "addImage": "Bild hinzufügen",
+        "replaceImage": "Bild ersetzen",
+        "uploadSuccess": "Bild erfolgreich hochgeladen",
+        "uploadError": "Fehler beim Hochladen des Bildes",
+        "uploadInvalidFile": "Bitte wähle eine Bilddatei aus",
+        "uploadFileTooLarge": "Das Bild muss kleiner als 5 MB sein"
       },
       "scrapeUrl": {
         "title": "Einzelne URL Scrapen",

@@ -40,7 +40,6 @@ interface Event {
   id: string;
   title: string;
   slug: string;
-  description: string;
   sportTypes: SportType[];
   startDate: string;
   city: string;
@@ -50,6 +49,7 @@ interface Event {
   longitude: number | null;
   googleMapsUrl: string | null;
   externalUrl: string | null;
+  hasDescription: boolean;
 }
 
 interface TriathlonSegment {
@@ -98,7 +98,7 @@ function updateSegmentInVariant(
 function getMissingFields(event: Event): string[] {
   const missing: string[] = [];
 
-  if (!event.imageUrl || event.imageUrl.trim().length === 0) {
+  if (!event.imageUrl || event.imageUrl === "null" || event.imageUrl.trim().length === 0) {
     missing.push("Foto");
   }
   if (!event.latitude || !event.longitude) {
@@ -110,7 +110,7 @@ function getMissingFields(event: Event): string[] {
   if (!event.externalUrl) {
     missing.push("Link externo");
   }
-  if (!event.description || event.description.trim().length === 0) {
+  if (!event.hasDescription) {
     missing.push("Descrição");
   }
 
@@ -1003,9 +1003,10 @@ export default function AdminEventsPage() {
                         <Card className="overflow-hidden transition-shadow hover:shadow-lg">
                           <div className="relative h-40 w-full">
                             <Image
-                              src={event.imageUrl || "/placeholder-event.jpg"}
+                              src={event.imageUrl && event.imageUrl !== "null" ? event.imageUrl : "/placeholder-event.jpg"}
                               alt={event.title}
                               fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               className="object-cover"
                             />
                             <div className="absolute right-2 top-2 flex flex-wrap gap-1">

@@ -653,7 +653,13 @@
         "generateAllCancel": "Cancelar",
         "generateAllConfirm": "Gerar {count} Eventos",
         "generatingProgress": "A gerar evento {current} de {total}...",
-        "generatingDone": "Todos os {total} eventos gerados!"
+        "generatingDone": "Todos os {total} eventos gerados!",
+        "addImage": "Adicionar imagem",
+        "replaceImage": "Substituir imagem",
+        "uploadSuccess": "Imagem carregada com sucesso",
+        "uploadError": "Falha ao carregar imagem",
+        "uploadInvalidFile": "Seleciona um ficheiro de imagem",
+        "uploadFileTooLarge": "A imagem deve ter menos de 5 MB"
       },
       "scrapeUrl": {
         "title": "Recolher URL Individual",

@@ -168,7 +168,7 @@ export function ScrapingRuns({ sources, apiUrl }: ScrapingRunsProps) {
             value={filterSource}
             onValueChange={(v) => handleFilterChange(setFilterSource, v)}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder={t("runs.allSources")} />
             </SelectTrigger>
             <SelectContent>
@@ -184,7 +184,7 @@ export function ScrapingRuns({ sources, apiUrl }: ScrapingRunsProps) {
             value={filterStatus}
             onValueChange={(v) => handleFilterChange(setFilterStatus, v)}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder={t("runs.allStatuses")} />
             </SelectTrigger>
             <SelectContent>
@@ -200,7 +200,7 @@ export function ScrapingRuns({ sources, apiUrl }: ScrapingRunsProps) {
             value={pageSize.toString()}
             onValueChange={handlePageSizeChange}
           >
-            <SelectTrigger className="w-[100px]">
+            <SelectTrigger className="w-full sm:w-[100px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -219,6 +219,7 @@ export function ScrapingRuns({ sources, apiUrl }: ScrapingRunsProps) {
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         )}
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -228,8 +229,8 @@ export function ScrapingRuns({ sources, apiUrl }: ScrapingRunsProps) {
               <TableHead>{t("runs.created")}</TableHead>
               <TableHead>{t("runs.updated")}</TableHead>
               <TableHead>{t("runs.failed")}</TableHead>
-              <TableHead>{t("runs.startedAt")}</TableHead>
-              <TableHead>{t("runs.finishedAt")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("runs.startedAt")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("runs.finishedAt")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -274,10 +275,11 @@ export function ScrapingRuns({ sources, apiUrl }: ScrapingRunsProps) {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* ── Pagination ── */}
-      <div className="flex items-center justify-between border-t px-4 py-3">
+      <div className="flex flex-col items-center gap-2 border-t px-4 py-3 sm:flex-row sm:justify-between">
         <span className="text-sm text-muted-foreground">
           {data && data.total > 0
             ? t("runs.pagination", {

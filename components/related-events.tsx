@@ -45,7 +45,7 @@ export function RelatedEvents({
               className="group relative w-[280px] flex-shrink-0 overflow-hidden rounded-lg border bg-card transition-all hover:scale-[1.02] hover:shadow-lg"
             >
               {/* Event Image - smaller */}
-              {event.imageUrl ? (
+              {event.imageUrl && event.imageUrl !== "null" ? (
                 <div className="relative h-32 w-full overflow-hidden bg-muted">
                   <Image
                     src={event.imageUrl}

@@ -38,6 +38,23 @@ async function getUpcomingEvents(country: string) {
   });
 }
 
+async function getEventImageUrls(): Promise<string[]> {
+  const events = await prisma.event.findMany({
+    where: {
+      imageUrl: { not: null },
+    },
+    select: { imageUrl: true },
+    orderBy: { startDate: "desc" },
+    take: 40,
+  });
+  return events
+    .map((e) => e.imageUrl)
+    .filter(
+      (url): url is string =>
+        typeof url === "string" && url !== "null" && url.startsWith("http")
+    );
+}
+
 export default async function Home({
   params,
 }: Readonly<{
@@ -64,6 +81,7 @@ export default async function Home({
   );
 
   const upcomingEvents = await getUpcomingEvents(userCountry);
+  const eventImageUrls = await getEventImageUrls();
 
   return (
     <div className="min-h-screen">
@@ -132,6 +150,7 @@ export default async function Home({
         ctaDescription={t("ctaDescription")}
         exploreAllEvents={t("exploreAllEvents")}
         eventsLabel={tNav("events")}
+        eventImageUrls={eventImageUrls}
       />
     </div>
   );

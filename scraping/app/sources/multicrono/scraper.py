@@ -17,6 +17,7 @@ from datetime import datetime
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup, Tag
+from slugify import slugify
 
 from app.sources.base.scraper import (
     BaseScraper,
@@ -65,14 +66,27 @@ def _parse_listing_date(text: str) -> datetime | None:
 
 
 def _parse_detail_date(text: str) -> datetime | None:
-    """Parse ``11/04/2026``."""
-    m = re.search(r"(\d{2})/(\d{2})/(\d{4})", text)
-    if m:
+    """Parse the most relevant ``DD/MM/YYYY`` date from *text*.
+
+    Detail pages may contain dates from previous editions.  When multiple
+    dates are found, prefer the earliest future date; otherwise fall back
+    to the latest date overall.
+    """
+    now = datetime.now()
+    candidates: list[datetime] = []
+    for m in re.finditer(r"(\d{2})/(\d{2})/(\d{4})", text):
         try:
-            return datetime(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+            candidates.append(
+                datetime(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+            )
         except ValueError:
             pass
-    return None
+    if not candidates:
+        return None
+    future = [d for d in candidates if d >= now]
+    if future:
+        return min(future)  # earliest upcoming date
+    return max(candidates)
 
 
 def _parse_time(text: str) -> str | None:
@@ -114,15 +128,21 @@ class MultiCronoScraper(BaseScraper):
             if card.get("date") and card["date"] < now:
                 continue
             url = card.get("url")
-            if not url or url in seen:
+            # Deduplicate by URL or title
+            dedup_key = url or card.get("title", "")
+            if not dedup_key or dedup_key in seen:
                 continue
-            seen.add(url)
+            seen.add(dedup_key)
             try:
-                ev = await self.scrape_event(url, card)
+                if url:
+                    ev = await self.scrape_event(url, card)
+                else:
+                    # No detail page — build event from listing card data only
+                    ev = self._event_from_card(card)
                 if ev:
                     events.append(ev)
             except Exception:
-                logger.exception("Failed to scrape MultiCrono event: %s", url)
+                logger.exception("Failed to scrape MultiCrono event: %s", url or card.get("title"))
 
         logger.info("Total events scraped from MultiCrono: %d", len(events))
         return events
@@ -144,10 +164,10 @@ class MultiCronoScraper(BaseScraper):
         city = card.get("city") if card else None
         start_date = card.get("date") if card else None
 
-        # Try to get richer info from detail page
-        detail_date = self._extract_date(soup)
-        if detail_date:
-            start_date = detail_date
+        # Only use detail-page date as fallback (detail pages may contain
+        # dates from previous editions that would overwrite the card date).
+        if not start_date:
+            start_date = self._extract_date(soup)
 
         start_time = self._extract_time(soup)
         detail_city = self._extract_location(soup)
@@ -191,96 +211,96 @@ class MultiCronoScraper(BaseScraper):
             raw_data=json.dumps(raw, ensure_ascii=False, default=str),
         )
 
+    def _event_from_card(self, card: dict) -> ScrapedEventData | None:
+        """Build a minimal event from listing card data (no detail page)."""
+        title = card.get("title")
+        if not title:
+            return None
+        sport_types = _guess_sport_types(title, card.get("sport_text"))
+        slug = slugify(title)[:200] if title else ""
+        raw = {"title": title, "sport_text": card.get("sport_text"), "city": card.get("city")}
+        return ScrapedEventData(
+            title=title,
+            source_url=f"{_LISTING_URL}#{slug}",
+            source_event_id=slug,
+            sport_types=sport_types,
+            start_date=card.get("date"),
+            city=card.get("city"),
+            country="Portugal",
+            raw_data=json.dumps(raw, ensure_ascii=False, default=str),
+        )
+
     # ── Listing helpers ──────────────────────────────────────────
 
     def _extract_listing_cards(self, soup: BeautifulSoup) -> list[dict]:
-        """Extract event data from the 'Próximos Eventos' section."""
+        """Extract event data from the Elementor-based listing.
+
+        Each event card is a ``div.elementor-widget-wrap.elementor-element-populated``
+        containing date spans (matching ``DD Mon YYYY``), title, sport type, city,
+        and optionally a link to the detail page (Informações/Resultados).
+        Cards marked "Informações em breve" have no detail page and are skipped.
+        """
         cards: list[dict] = []
-        # Each event card typically has an <a> with href to the detail page
-        # and contains date, title, sport type, city text
-        seen_urls: set[str] = set()
+        seen_titles: set[str] = set()
+        _date_re = re.compile(
+            r"(\d{1,2})(?:\s*[-–]\s*\d{1,2})?\s+(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\s+(\d{4})",
+            re.I,
+        )
 
-        # Look for links to /v1/{slug}/ pages that aren't utility pages
-        skip_slugs = {
-            "termos-e-condicoes", "politica-de-privacidade", "contacto",
-            "servicos", "orcamento", "circuito",
-        }
-
-        for a_tag in soup.select("a[href]"):
-            href = a_tag.get("href", "")
-            if isinstance(href, list):
-                href = href[0]
-            if not href or not href.startswith(("https://multicrono.com/v1/", "/v1/")):
-                continue
-            full_url = href if href.startswith("http") else urljoin(_BASE, href)
-
-            # Skip non-event links
-            slug = full_url.rstrip("/").rsplit("/", 1)[-1]
-            if slug in skip_slugs or slug == "v1" or "-results" in slug or "-resultados" in slug or "-inscritos" in slug:
+        for wrapper in soup.select("div.elementor-widget-wrap.elementor-element-populated"):
+            text_lines = [
+                l.strip()
+                for l in wrapper.get_text("\n").split("\n")
+                if l.strip()
+            ]
+            if len(text_lines) < 4:
                 continue
 
-            if full_url in seen_urls:
-                continue
-
-            # Get the parent container text for context
-            parent = a_tag.parent
-            if not parent:
-                continue
-
-            # Try to find context in a wider container
-            container = parent
-            for _ in range(5):
-                if container.parent and container.parent.name not in ("body", "html", "[document]"):
-                    container = container.parent
-                else:
-                    break
-
-            container_text = container.get_text(" ", strip=True)
-
-            # Require some date pattern in the context
-            date_match = re.search(
-                r"(\d{1,2})(?:\s*[-–]\s*\d{1,2})?\s+(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\s+(\d{4})",
-                container_text,
-                re.I,
-            )
+            # First line must be a date
+            date_match = _date_re.match(text_lines[0])
             if not date_match:
                 continue
 
-            seen_urls.add(full_url)
-            date_str = date_match.group(0)
-            dt = _parse_listing_date(date_str)
+            dt = _parse_listing_date(text_lines[0])
 
-            # Extract title: usually the link text or nearby heading
-            link_text = a_tag.get_text(strip=True)
-            title = link_text if link_text and link_text.lower() not in ("informações", "resultados", "inscrições") else None
-            if not title:
-                # Look for headings in the container
-                for h in container.find_all(["h2", "h3", "h4", "h5"]):
-                    t = h.get_text(strip=True)
-                    if t and t.lower() not in ("próximos eventos", "circuitos"):
-                        title = t
-                        break
+            # Skip "Informações em breve" — no detail page available yet
+            if any(l.lower() == "informações em breve" for l in text_lines):
+                logger.debug("Skipping '%s' — informações em breve", text_lines[1] if len(text_lines) > 1 else "?")
+                continue
 
-            # Sport type and city: look for text lines in the container
-            lines = [l.strip() for l in container.get_text("\n").split("\n") if l.strip()]
-            sport_text = None
-            city_text = None
-            for line in lines:
-                if line == title or line == date_str:
-                    continue
-                if line.lower() in ("informações", "resultados", "inscrições", "informações em breve"):
-                    continue
-                if not sport_text and len(line) < 50:
-                    sport_text = line
-                elif not city_text and len(line) < 50:
-                    city_text = line
+            # Lines order: date, title, sport_type, city, status_link
+            title = text_lines[1] if len(text_lines) > 1 else None
+            sport_text = text_lines[2] if len(text_lines) > 2 else None
+            city = text_lines[3] if len(text_lines) > 3 else None
+
+            if not title or title.lower() in ("próximos", "eventos", "circuitos", "data reservada"):
+                continue
+
+            # Deduplicate
+            if title in seen_titles:
+                continue
+            seen_titles.add(title)
+
+            # Extract detail URL from any link in the card
+            detail_url: str | None = None
+            for a_tag in wrapper.select("a[href]"):
+                href = a_tag.get("href", "")
+                if isinstance(href, list):
+                    href = href[0]
+                if href and href != "#" and "/v1/" in href:
+                    detail_url = href if href.startswith("http") else urljoin(_BASE, href)
+                    break
+
+            # Skip results-only pages (past events)
+            if detail_url and ("-resultados" in detail_url or "-results" in detail_url):
+                continue
 
             cards.append({
-                "url": full_url,
+                "url": detail_url,
                 "title": title,
                 "date": dt,
                 "sport_text": sport_text,
-                "city": city_text,
+                "city": city,
             })
 
         return cards
@@ -324,11 +344,30 @@ class MultiCronoScraper(BaseScraper):
         return None
 
     def _extract_image(self, soup: BeautifulSoup) -> str | None:
+        # Try og:image first
         og = soup.find("meta", property="og:image")
         if og:
             content = og.get("content", "")
             if content:
                 return content.strip()
+        # Fallback: pick the first large event-specific image from wp-content/uploads
+        # Skip logos, flags, thumbs, and footer images
+        _skip = re.compile(r"logo|flag|bot_|thumbs/|reclamacoes", re.I)
+        for img in soup.select("div.elementor-widget-image img[src]"):
+            src = img.get("src", "")
+            if isinstance(src, list):
+                src = src[0]
+            if "wp-content/uploads" not in src or _skip.search(src):
+                continue
+            # Accept banner or cartaz images, or any image ≥ 700px wide
+            w = img.get("width", "")
+            try:
+                if int(w) >= 700:
+                    return src
+            except (ValueError, TypeError):
+                pass
+            if re.search(r"banner|cartaz", src, re.I):
+                return src
         return None
 
     def _extract_organizer(self, soup: BeautifulSoup) -> str | None:

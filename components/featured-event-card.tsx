@@ -94,7 +94,7 @@ export function FeaturedEventCard({
             : `bg-gradient-to-br ${gradientFrom} ${gradientVia} ${gradientTo}`
         }`}
       >
-        {event.imageUrl ? (
+        {event.imageUrl && event.imageUrl !== "null" ? (
           <Image
             src={event.imageUrl}
             alt={event.title}

@@ -44,6 +44,7 @@ export function HeroBackground({
     dark: "bg-black/70",
   };
 
+  const safeImage = image && image !== "null" ? image : undefined;
   const cursorClass = clickable ? "cursor-pointer" : "";
   const imageTransitionClass = isLCP
     ? ""
@@ -60,14 +61,14 @@ export function HeroBackground({
           : undefined
       }
     >
-      {image ? (
+      {safeImage ? (
         <>
           <div
             className={`absolute inset-0 z-0 ${cursorClass}`}
             onClick={clickable && onImageClick ? onImageClick : undefined}
           >
             <Image
-              src={image}
+              src={safeImage}
               alt=""
               role="presentation"
               fill

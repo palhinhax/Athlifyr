@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get("pageSize") || "12");
     const sports = searchParams.getAll("sports");
     const country = searchParams.get("country");
+    const featured = searchParams.get("featured"); // "true" = only featured, "false" = exclude featured
 
     // Build where clause
     const where: Prisma.EventWhereInput = {
@@ -19,6 +20,13 @@ export async function GET(request: NextRequest) {
         gte: new Date(), // Only future events
       },
     };
+
+    // Filter by featured status
+    if (featured === "true") {
+      where.isFeatured = true;
+    } else if (featured === "false") {
+      where.isFeatured = { not: true };
+    }
 
     if (country) {
       where.country = { equals: country, mode: "insensitive" };
@@ -203,9 +211,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: search
-        ? undefined
-        : [{ isFeatured: "desc" }, { startDate: "asc" }],
+      orderBy: search ? undefined : { startDate: "asc" },
       skip,
       take: pageSize,
     });

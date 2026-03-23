@@ -700,7 +700,10 @@
         "tabDetails": "Details",
         "tabAiInput": "KI-Eingabe",
         "tabAiOutput": "KI-Ausgabe",
-        "noAiData": "Keine KI-Daten verf\u00fcgbar. Generieren Sie das Event zuerst."
+        "noAiData": "Keine KI-Daten verf\u00fcgbar. Generieren Sie das Event zuerst.",
+        "adminNotes": "Zusätzliche Informationen für die KI",
+        "adminNotesHelp": "Fügen Sie zusätzliche Details hinzu, die auf der Quellwebsite nicht vorhanden sind. Diese Informationen werden beim Generieren des Events an die KI gesendet, lösen aber beim erneuten Scraping keine Änderungserkennung aus.",
+        "adminNotesPlaceholder": "z.B.: die Veranstaltung hat 3 Verpflegungsstationen, die Strecke führt durch die Serra da Arrábida, der Veranstalter hat Anmeldungen bis April bestätigt..."
       }
     }
   }

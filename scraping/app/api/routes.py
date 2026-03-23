@@ -499,6 +499,10 @@ async def generate_event(
         "raw_pricing_text": event.raw_pricing_text,
     }
 
+    # Include admin notes as extra context for AI (if provided)
+    if event.admin_notes:
+        event_data["admin_notes"] = event.admin_notes
+
     # Log what we're sending to AI
     logger.info(
         "Sending to AI: title=%s, variants=%d, city=%s, description_len=%d, raw_pricing=%s",

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
@@ -178,14 +179,30 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
             "Auto-generating AI for %d new/changed events from %s",
             len(ai_event_ids), source_name,
         )
-        for eid in ai_event_ids:
-            try:
-                await generate_and_import_event(eid, db)
-                await db.commit()
-            except Exception:
-                logger.exception("Auto-generate failed for event %s", eid)
+        await _run_ai_batch(ai_event_ids)
 
     return run
+
+
+_AI_CONCURRENCY = 10
+
+
+async def _run_ai_batch(event_ids: list[uuid.UUID]) -> None:
+    """Process AI generation for a batch of events with bounded concurrency."""
+    from app.db.session import async_session
+
+    sem = asyncio.Semaphore(_AI_CONCURRENCY)
+
+    async def _process(eid: uuid.UUID) -> None:
+        async with sem:
+            async with async_session() as db:
+                try:
+                    await generate_and_import_event(eid, db)
+                    await db.commit()
+                except Exception:
+                    logger.exception("Auto-generate failed for event %s", eid)
+
+    await asyncio.gather(*[_process(eid) for eid in event_ids])
 
 
 async def scrape_single_event(
@@ -256,6 +273,29 @@ async def download_event_documents(event_id: uuid.UUID, db: AsyncSession) -> int
 
     await db.commit()
     return count
+
+
+async def _delete_bucket_object(bucket_url: str) -> None:
+    """Delete an object from the storage bucket given its full URL."""
+    storage = get_storage()
+    try:
+        from app.core.config import settings as _cfg
+        if _cfg.storage_backend == "s3":
+            prefix = f"{_cfg.storage_s3_endpoint}/{_cfg.storage_s3_bucket}/"
+            if bucket_url.startswith(prefix):
+                key = bucket_url[len(prefix):]
+                await storage.delete(key)
+                return
+        else:
+            # Local storage
+            prefix = str(_cfg.storage_local_path) + "/"
+            if bucket_url.startswith(prefix):
+                key = bucket_url[len(prefix):]
+                await storage.delete(key)
+                return
+        logger.warning("Could not extract key from bucket URL: %s", bucket_url[:200])
+    except Exception:
+        logger.exception("Failed to delete old image: %s", bucket_url[:200])
 
 
 async def _upload_image(
@@ -400,8 +440,13 @@ async def _upsert_scraped_event(
 
         _apply_event_fields(existing, data)
 
-        # Handle image: upload if source changed, else restore bucket URL
-        if data.image_url and data.image_url != prev_source_image:
+        # Handle image: for APPROVED events, always preserve the existing
+        # bucket image (it may have been manually replaced by an operator).
+        # For non-approved events, upload if the source URL changed.
+        if existing.review_status == EventReviewStatus.APPROVED and prev_bucket_url:
+            logger.debug("  ↳ Event is APPROVED → preserving existing image")
+            existing.image_url = prev_bucket_url
+        elif data.image_url and data.image_url != prev_source_image:
             logger.info("  ↳ Image source changed → uploading new image")
             bucket_url = await _upload_image(
                 source_name,
@@ -409,6 +454,9 @@ async def _upsert_scraped_event(
                 data.image_url,
             )
             if bucket_url:
+                # Delete old image from bucket if it differs from the new one
+                if prev_bucket_url and prev_bucket_url != bucket_url:
+                    await _delete_bucket_object(prev_bucket_url)
                 existing.image_url = bucket_url
         elif prev_bucket_url:
             logger.debug("  ↳ Image unchanged → keeping bucket URL")
@@ -729,6 +777,10 @@ async def generate_and_import_event(
             ],
             "raw_pricing_text": event.raw_pricing_text,
         }
+
+        # Include admin notes as extra context for AI (if provided)
+        if event.admin_notes:
+            event_data["admin_notes"] = event.admin_notes
 
         logger.info(
             "Auto-generate AI for new event: %s (id=%s)", event.title, event_id,

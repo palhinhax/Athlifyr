@@ -91,7 +91,7 @@ class SportChipScraper(BaseScraper):
             href = a.get("href", "")
             if isinstance(href, list):
                 href = href[0]
-            if not href or not re.search(r"/evento/\d+", href):
+            if not href or not re.search(r"evento/\d+", href):
                 continue
             full_url = href if href.startswith("http") else urljoin(_BASE, href)
             if full_url in seen:
@@ -168,35 +168,80 @@ class SportChipScraper(BaseScraper):
         return None
 
     def _extract_date(self, soup: BeautifulSoup) -> datetime | None:
-        # "DETALHES DE EVENTO" section has "12 Abril 2026"
-        text = soup.get_text(" ")
-        m = re.search(r"(\d{1,2})\s+(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)\s+(\d{4})", text, re.I)
+        # Icon-based: <p><i class="fa fa-calendar">...</i> 12&nbsp;abril&nbsp;2026</p>
+        text = self._icon_text(soup, "fa-calendar")
+        if text:
+            dt = _parse_date(text)
+            if dt:
+                return dt
+        # Fallback: search full page text
+        full = self._normalised_text(soup)
+        m = re.search(
+            r"(\d{1,2})\s+(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|"
+            r"Setembro|Outubro|Novembro|Dezembro)\s+(\d{4})", full, re.I,
+        )
         if m:
             return _parse_date(m.group(0))
-        # Fallback: DD ABR 2026 pattern
-        m = re.search(r"(\d{1,2})\s+(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\s*,?\s*(\d{4})", text, re.I)
+        m = re.search(
+            r"(\d{1,2})\s+(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)"
+            r"\s*,?\s*(\d{4})", full, re.I,
+        )
         if m:
             return _parse_date(m.group(0))
         return None
 
     def _extract_time(self, soup: BeautifulSoup) -> str | None:
-        text = soup.get_text(" ")
-        m = re.search(r"(\d{1,2}:\d{2})\s*H", text)
+        text = self._icon_text(soup, "fa-hourglass")
+        if text:
+            m = re.search(r"(\d{1,2}:\d{2})", text)
+            if m:
+                return m.group(1)
+        full = self._normalised_text(soup)
+        m = re.search(r"(\d{1,2}:\d{2})\s*H", full)
         if m:
             return m.group(1)
         return None
 
     def _extract_location(self, soup: BeautifulSoup) -> str | None:
-        # Location is usually near the map icon
+        text = self._icon_text(soup, "fa-user")
+        if text:
+            return text
+        # Fallback: look near map icon image
         for img in soup.select("img[src*='map']"):
             parent = img.parent
             if parent:
                 sibling = parent.find_next_sibling() or parent.find_next()
                 if sibling:
-                    text = sibling.get_text(strip=True)
-                    if text and len(text) < 100:
-                        return text
+                    t = sibling.get_text(strip=True)
+                    if t and len(t) < 100:
+                        return t
         return None
+
+    # ── Utility ──────────────────────────────────────────────────
+
+    @staticmethod
+    def _icon_text(soup: BeautifulSoup, icon_class: str) -> str | None:
+        """Return cleaned text from the first ``<p>`` containing an
+        ``<i class="... {icon_class} ...">`` icon.
+        """
+        icon = soup.find("i", class_=re.compile(re.escape(icon_class)))
+        if not icon:
+            return None
+        p = icon.find_parent("p")
+        if not p:
+            return None
+        text = p.get_text(strip=True)
+        # Normalise non-breaking spaces and collapse whitespace
+        text = text.replace("\xa0", " ").replace("&nbsp", " ")
+        text = re.sub(r"\s+", " ", text).strip()
+        return text or None
+
+    @staticmethod
+    def _normalised_text(soup: BeautifulSoup) -> str:
+        """Full page text with normalised whitespace."""
+        text = soup.get_text(" ")
+        text = text.replace("\xa0", " ").replace("&nbsp", " ")
+        return re.sub(r"\s+", " ", text)
 
     def _extract_image(self, soup: BeautifulSoup) -> str | None:
         img = soup.select_one("img.event-single, img[src*='eventos']")
@@ -211,19 +256,23 @@ class SportChipScraper(BaseScraper):
 
     def _extract_documents(self, soup: BeautifulSoup) -> list[ScrapedDocumentData]:
         docs: list[ScrapedDocumentData] = []
+        seen: set[str] = set()
         for a in soup.select("a[href]"):
             href = a.get("href", "")
             if isinstance(href, list):
                 href = href[0]
             if href and href.endswith(".pdf"):
+                full_url = urljoin(_BASE, href)
+                if full_url in seen:
+                    continue
+                seen.add(full_url)
                 text = a.get_text(strip=True).lower()
-                if "regulamento" in text or not docs:
-                    docs.append(ScrapedDocumentData(
-                        original_url=urljoin(_BASE, href),
-                        document_type="regulation",
-                        file_name=href.rsplit("/", 1)[-1],
-                        mime_type="application/pdf",
-                    ))
+                docs.append(ScrapedDocumentData(
+                    original_url=full_url,
+                    document_type="regulation" if "regulamento" in text else "other",
+                    file_name=href.rsplit("/", 1)[-1],
+                    mime_type="application/pdf",
+                ))
         return docs
 
     def _extract_maps_url(self, soup: BeautifulSoup) -> str | None:

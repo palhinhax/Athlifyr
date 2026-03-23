@@ -61,6 +61,8 @@ All sport types are defined in `messages/*/common.json` under the `sports` key:
 | `CYCLING`   | Ciclismo       | Cycling        | Ciclismo       | Cyclisme       | Radfahren      | Ciclismo       |
 | `SURF`      | Surf           | Surf           | Surf           | Surf           | Surfen         | Surf           |
 | `TRIATHLON` | Triatlo        | Triathlon      | Triatlón       | Triathlon      | Triathlon      | Triathlon      |
+| `DUATHLON`  | Duatlo         | Duathlon       | Duatlón        | Duathlon       | Duathlon       | Duathlon       |
+| `AQUATHLON` | Aquatlo        | Aquathlon      | Acuatlón       | Aquathlon      | Aquathlon      | Aquathlon      |
 | `SWIMMING`  | Natação        | Swimming       | Natación       | Natation       | Schwimmen      | Nuoto          |
 | `OTHER`     | Outros         | Other          | Otro           | Autres         | Andere         | Altri          |
 

@@ -363,8 +363,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(fullEvent, { status: isUpdate ? 200 : 201 });
   } catch (error) {
     console.error("Error importing event:", error);
+    const message =
+      error instanceof Error ? error.message : "Failed to import event";
     return NextResponse.json(
-      { error: "Failed to import event" },
+      { error: "Failed to import event", detail: message },
       { status: 500 }
     );
   }

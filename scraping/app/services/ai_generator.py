@@ -25,7 +25,7 @@ that can be imported into the Athlifyr database.
 
 EVENT RELEVANCE CHECK (do this FIRST):
 Before processing, determine if this is a SPORTS event relevant to Athlifyr.
-Athlifyr covers: running, trail running, marathons, cycling, BTT/MTB, triathlons, OCR, CrossFit, Hyrox, swimming, surfing, walking/hiking races.
+Athlifyr covers: running, trail running, marathons, cycling, BTT/MTB, triathlons, duathlons, aquathlons, OCR, CrossFit, Hyrox, swimming, surfing, walking/hiking races.
 REJECT events that are NOT sports, such as:
 - Motorcycle/motocross rides or rallies
 - Car rallies or motorsport
@@ -41,7 +41,7 @@ CRITICAL RULES:
 1. ALL user-facing text MUST be translated into ALL 6 languages: pt (European Portuguese), en, es, fr, de, it.
 2. Portuguese MUST be European Portuguese (pt-PT): use "tu", "ecrã", "telemóvel", etc.
 3. The slug must be URL-safe (lowercase, hyphens, no accents).
-4. sportTypes must be from: RUNNING, TRAIL, HYROX, CROSSFIT, OCR, BTT, CYCLING, SURF, TRIATHLON, SWIMMING, WALKING, OTHER.
+4. sportTypes must be from: RUNNING, TRAIL, HYROX, CROSSFIT, OCR, BTT, CYCLING, SURF, TRIATHLON, DUATHLON, AQUATHLON, SWIMMING, WALKING, OTHER.
    sportTypes is an ARRAY — include ALL applicable types. Analyze ALL variants to determine types:
    - If any variant contains "caminhada", "walk", "marcha", "hiking" → include WALKING
    - If any variant contains "trail" → include TRAIL (do NOT also add RUNNING for trail events)
@@ -49,6 +49,9 @@ CRITICAL RULES:
    - IMPORTANT: "trail running" or "trail run" is TRAIL only, NOT RUNNING. RUNNING is for road/urban races only.
    - If any variant contains "btt", "mountain bike", "mtb" → include BTT
    - If any variant contains "triathlon", "triatlo" → include TRIATHLON
+   - If any variant contains "duathlon", "duatlo" → include DUATHLON (run-bike-run multisport)
+   - If any variant contains "aquathlon", "aquatlo" → include AQUATHLON (swim-run multisport)
+   - IMPORTANT: Duathlon and Aquathlon are SEPARATE sport types from Triathlon. Do NOT reject them.
    - Example: "Meia Maratona" with a "Caminhada 5km" variant → ["RUNNING", "WALKING"]
    - Example: "Trail Serra da Estrela" with "Trail 30km" and "Trail 15km" → ["TRAIL"] (not RUNNING)
    - Example: "Ultra Trail" with "Ultra 80km" and "Caminhada 10km" → ["TRAIL", "WALKING"]
@@ -366,7 +369,7 @@ async def generate_event_json(
             {"role": "user", "content": user_content},
         ],
         temperature=0.3,
-        max_tokens=12000,
+        max_tokens=16384,
         response_format={"type": "json_object"},
     )
 

@@ -676,7 +676,7 @@ Todas estas funcionalidades são **100% gratuitas** — não pagas nada para usa
         content: `## 🏃 Features for athletes on Athlifyr
 
 ### 🗓️ Sports events
-- Discover races, trails, OCR, HYROX, MTB, triathlons, swimming, and more
+- Discover races, trails, OCR, HYROX, MTB, triathlons, duathlons, aquathlons, swimming, and more
 - Filter by sport, location, and date
 - View prices, distances, elevation, and race details
 - Register directly through registration links
@@ -938,7 +938,9 @@ All can have a page on Athlifyr, booking system, and free visibility!`,
 - 🚴 **BTT/Cycling** — BTT, estrada e gravel
 - 🏊 **Swimming** — Travessias, natação em águas abertas
 - 🏅 **Triathlon** — Sprint, olímpico, 70.3, Ironman
-- 🏄 **Surf** — Competições de surf
+- �🚴 **Duathlon** — Corrida + Ciclismo (run-bike-run)
+- 🏊🏃 **Aquathlon** — Natação + Corrida (swim-run)
+- �🏄 **Surf** — Competições de surf
 - 🚶 **Walking** — Caminhadas organizadas
 - 🎯 **Other** — Outros eventos desportivos
 
@@ -956,7 +958,9 @@ Cada evento tem informação detalhada: provas/variantes, preços por fase, regu
 - 🚴 BTT/Cycling — MTB, road, and gravel
 - 🏊 Swimming — Open water swimming
 - 🏅 Triathlon — Sprint, Olympic, 70.3, Ironman
-- 🏄 Surf — Competitions
+- �🚴 Duathlon — Run + Bike (run-bike-run)
+- 🏊🏃 Aquathlon — Swim + Run (swim-run)
+- �🏄 Surf — Competitions
 - 🚶 Walking — Organized walks
 - 🎯 Other — Other sports events
 
@@ -964,19 +968,19 @@ Each event has detailed info: race variants, phased pricing, rules, FAQs, route 
       },
       [Language.es]: {
         title: "¿Qué deportes y eventos son compatibles?",
-        content: `Running, Trail, HYROX, CrossFit, OCR, BTT/Ciclismo, Natación, Triatlón, Surf, Senderismo y otros. Cada evento con variantes, precios, reglamento, FAQs y links de inscripción.`,
+        content: `Running, Trail, HYROX, CrossFit, OCR, BTT/Ciclismo, Natación, Triatlón, Duatlón, Acuatlón, Surf, Senderismo y otros. Cada evento con variantes, precios, reglamento, FAQs y links de inscripción.`,
       },
       [Language.fr]: {
         title: "Quels sports et événements sont pris en charge ?",
-        content: `Course, Trail, HYROX, CrossFit, OCR, VTT/Cyclisme, Natation, Triathlon, Surf, Marche et autres. Chaque événement avec variantes, tarifs, règlement, FAQ et liens d'inscription.`,
+        content: `Course, Trail, HYROX, CrossFit, OCR, VTT/Cyclisme, Natation, Triathlon, Duathlon, Aquathlon, Surf, Marche et autres. Chaque événement avec variantes, tarifs, règlement, FAQ et liens d'inscription.`,
       },
       [Language.de]: {
         title: "Welche Sportarten und Events werden unterstützt?",
-        content: `Running, Trail, HYROX, CrossFit, OCR, MTB/Radsport, Schwimmen, Triathlon, Surfen, Wandern und andere. Jedes Event mit Varianten, Preisen, Regeln, FAQs und Anmeldelinks.`,
+        content: `Running, Trail, HYROX, CrossFit, OCR, MTB/Radsport, Schwimmen, Triathlon, Duathlon, Aquathlon, Surfen, Wandern und andere. Jedes Event mit Varianten, Preisen, Regeln, FAQs und Anmeldelinks.`,
       },
       [Language.it]: {
         title: "Quali sport ed eventi sono supportati?",
-        content: `Running, Trail, HYROX, CrossFit, OCR, MTB/Ciclismo, Nuoto, Triathlon, Surf, Camminata e altri. Ogni evento con varianti, prezzi, regolamento, FAQ e link di iscrizione.`,
+        content: `Running, Trail, HYROX, CrossFit, OCR, MTB/Ciclismo, Nuoto, Triathlon, Duathlon, Aquathlon, Surf, Camminata e altri. Ogni evento con varianti, prezzi, regolamento, FAQ e link di iscrizione.`,
       },
     },
   },

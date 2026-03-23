@@ -72,7 +72,11 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
               style={{ cursor: hasImage ? "pointer" : "default" }}
             >
               <Image
-                src={event.imageUrl && event.imageUrl !== "null" ? event.imageUrl : "/placeholder-event.jpg"}
+                src={
+                  event.imageUrl && event.imageUrl !== "null"
+                    ? event.imageUrl
+                    : "/placeholder-event.jpg"
+                }
                 alt={event.title}
                 fill
                 className="object-cover object-center transition-transform duration-300 hover:scale-105"

@@ -61,7 +61,11 @@ export function EventCard({
       >
         <div className="relative h-48 w-full">
           <Image
-            src={event.imageUrl && event.imageUrl !== "null" ? event.imageUrl : "/placeholder-event.jpg"}
+            src={
+              event.imageUrl && event.imageUrl !== "null"
+                ? event.imageUrl
+                : "/placeholder-event.jpg"
+            }
             alt={event.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

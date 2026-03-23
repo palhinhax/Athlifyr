@@ -13,12 +13,13 @@ import json
 import logging
 import re
 from datetime import datetime
-from urllib.parse import urljoin
+from urllib.parse import parse_qs, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
 from app.sources.base.scraper import (
     BaseScraper,
+    ScrapedDocumentData,
     ScrapedEventData,
 )
 
@@ -104,6 +105,20 @@ class TotalCronoScraper(BaseScraper):
             sport_types = _guess_sport_types(title)
             slug = url.rstrip("/").rsplit("/", 1)[-1] if url else title.lower().replace(" ", "-")
 
+            # Enrich from detail page
+            description = None
+            image_url = None
+            documents: list[ScrapedDocumentData] = []
+            if url:
+                try:
+                    detail_html = await self.fetch_page(url)
+                    detail_soup = BeautifulSoup(detail_html, "lxml")
+                    description = self._extract_description(detail_soup)
+                    image_url = self._extract_image(detail_soup)
+                    documents = self._extract_documents(detail_soup)
+                except Exception:
+                    logger.exception("TotalCrono: failed to fetch detail page %s", url)
+
             raw = {"url": url, "title": title, "city": city}
 
             events.append(ScrapedEventData(
@@ -114,6 +129,9 @@ class TotalCronoScraper(BaseScraper):
                 start_date=dt,
                 city=city,
                 country="Portugal",
+                description=description,
+                image_url=image_url,
+                documents=documents,
                 raw_data=json.dumps(raw, ensure_ascii=False, default=str),
             ))
 
@@ -121,116 +139,166 @@ class TotalCronoScraper(BaseScraper):
         return events
 
     async def scrape_event(self, url: str) -> ScrapedEventData | None:
-        """TotalCrono detail pages are minimal Google Sites pages.
-        We extract what we can but most data comes from the listing."""
-        # For this source, we primarily scrape from the listing page.
-        # If called directly, try to get basic info.
-        html = await self.fetch_page(url)
-        soup = BeautifulSoup(html, "lxml")
+        """Not used — enrichment happens inline in scrape()."""
+        return None
 
-        title = None
-        for tag in ("h1", "h2"):
-            el = soup.find(tag)
-            if el:
-                text = el.get_text(strip=True)
-                if text and text.upper() != "EVENTOS":
-                    title = text
-                    break
-        if not title:
-            return None
+    # ── Detail page helpers ──────────────────────────────────────
 
-        sport_types = _guess_sport_types(title)
-        slug = url.rstrip("/").rsplit("/", 1)[-1]
+    def _extract_description(self, soup: BeautifulSoup) -> str | None:
+        """Extract event description from the main content area.
 
-        return ScrapedEventData(
-            title=title,
-            source_url=url,
-            source_event_id=slug,
-            sport_types=sport_types,
-            country="Portugal",
-            raw_data=json.dumps({"url": url}, ensure_ascii=False),
-        )
-
-    # ── Helpers ──────────────────────────────────────────────────
-
-    def _extract_listing_cards(self, soup: BeautifulSoup) -> list[dict]:
-        """Extract events from the flat listing.
-
-        The page has a repeating pattern:
-          Title text
-          DD-MM-YYYY
-          City
-          [Evento](link)
+        Google Sites stores page content in ``div.tyJCtd`` containers.
+        We pick the longest one that looks like real content.
         """
-        cards: list[dict] = []
+        best = ""
+        for el in soup.select("div.tyJCtd"):
+            text = el.get_text("\n", strip=True)
+            if len(text) > len(best):
+                best = text
+        return best[:3000] if best else None
 
-        # Get all links to event detail pages
+    def _extract_image(self, soup: BeautifulSoup) -> str | None:
+        """Extract the event-specific image from the detail page.
+
+        Google Sites pages have:
+        - og:image — site-wide default (same for every page)
+        - Body images — [0]/[1] are og:image duplicates, last is
+          a shared footer, and in between is the event-specific image.
+
+        Strategy: collect unique googleusercontent image URLs, skip the
+        og:image URL and any duplicates, return the first remaining one.
+        """
+        og = soup.find("meta", property="og:image")
+        og_src = (og.get("content", "") or "").strip() if og else ""
+
+        seen: set[str] = set()
+        for img in soup.select("img[src*=googleusercontent]"):
+            src = (img.get("src", "") or "").strip()
+            if not src or src in seen or src == og_src:
+                continue
+            seen.add(src)
+            return src
+        # Fallback: use og:image if nothing else found
+        return og_src or None
+
+    def _extract_documents(self, soup: BeautifulSoup) -> list[ScrapedDocumentData]:
+        """Extract PDF / regulation documents from the detail page.
+
+        Links on Google Sites are typically wrapped in a redirect:
+        ``https://www.google.com/url?q=<real_url>&sa=D&...``
+        We unwrap those to get the real PDF URL.
+        """
+        docs: list[ScrapedDocumentData] = []
+        seen: set[str] = set()
         for a in soup.select("a[href]"):
             href = a.get("href", "")
             if isinstance(href, list):
                 href = href[0]
-            text = a.get_text(strip=True)
-            if text != "Evento":
+            text = a.get_text(strip=True).lower()
+
+            # Only interested in PDF links or links labelled "regulamento"
+            if ".pdf" not in href.lower() and "regulamento" not in text:
+                continue
+
+            # Unwrap Google redirect
+            real_url = href
+            if "google.com/url" in href:
+                parsed = parse_qs(urlparse(href).query)
+                candidates = parsed.get("q", [])
+                if candidates:
+                    real_url = candidates[0]
+
+            if real_url in seen:
+                continue
+            seen.add(real_url)
+
+            file_name = real_url.rsplit("/", 1)[-1] if "/" in real_url else None
+            docs.append(ScrapedDocumentData(
+                original_url=real_url,
+                document_type="regulation",
+                file_name=file_name,
+            ))
+        return docs
+
+    # ── Listing helpers ──────────────────────────────────────────
+
+    def _extract_listing_cards(self, soup: BeautifulSoup) -> list[dict]:
+        """Extract events from the Google Sites listing.
+
+        Each event is a card wrapper (``div.LS81yb``) whose direct children
+        contain, in order: title, date (DD-MM-YYYY), city, and an "Evento"
+        button that links to the detail page.
+
+        We find each "Evento" link, walk up to the card wrapper, and pull
+        the text blocks from its children.
+        """
+        cards: list[dict] = []
+
+        for a in soup.select("a[href]"):
+            href = a.get("href", "")
+            if isinstance(href, list):
+                href = href[0]
+            if a.get_text(strip=True) != "Evento":
                 continue
 
             full_url = href if href.startswith("http") else urljoin(_BASE, href)
-            # Skip external links (some point to google.com, cm-torresnovas etc.)
-            if "totalcrono.pt" not in full_url:
+            if "totalcrono.pt" not in full_url and not href.startswith("/eventos/"):
+                continue
+            if href.startswith("/eventos/"):
+                full_url = urljoin(_BASE, href)
+            # Skip past-events section
+            if "/decorridos" in full_url:
                 continue
 
-            # Walk back through previous siblings to find title, date, city
-            container = a.parent
-            if not container:
-                continue
-
-            # Get text content before this link
-            prev_texts: list[str] = []
-            for sibling in container.previous_siblings:
-                if hasattr(sibling, "get_text"):
-                    t = sibling.get_text(strip=True)
-                else:
-                    t = str(sibling).strip()
-                if t:
-                    prev_texts.insert(0, t)
-                if len(prev_texts) >= 4:
+            # Walk up to the card wrapper (div.LS81yb or equivalent with ≥3
+            # direct children that carry title / date / city / button).
+            card = a
+            for _ in range(15):
+                card = card.parent
+                if card is None or card.name in ("body", "html", "[document]"):
+                    card = None
                     break
+                children_texts = []
+                for child in card.children:
+                    if hasattr(child, "get_text"):
+                        t = child.get_text(strip=True)
+                        if t:
+                            children_texts.append(t)
+                if len(children_texts) >= 3 and any(
+                    _parse_date(t) for t in children_texts
+                ):
+                    break
+            else:
+                card = None
 
-            # Also check parent's previous siblings
-            if len(prev_texts) < 2 and container.parent:
-                for sibling in container.parent.previous_siblings:
-                    if hasattr(sibling, "get_text"):
-                        t = sibling.get_text(strip=True)
-                    else:
-                        t = str(sibling).strip()
-                    if t:
-                        prev_texts.insert(0, t)
-                    if len(prev_texts) >= 4:
-                        break
-
-            # Parse: we expect title, date, city in reverse order before the link
             title: str | None = None
             date_dt: datetime | None = None
             city: str | None = None
 
-            for t in prev_texts:
-                if not t:
-                    continue
-                dt = _parse_date(t)
-                if dt:
-                    date_dt = dt
-                elif date_dt is None and not re.match(r"^\d", t):
-                    # Before date → title candidate
-                    title = t
-                elif date_dt is not None and city is None:
-                    # After date → city
-                    city = t
+            if card is not None:
+                # Collect non-empty text from direct children (order: title, date, city, "Evento")
+                parts: list[str] = []
+                for child in card.children:
+                    if hasattr(child, "get_text"):
+                        t = child.get_text(strip=True)
+                        if t:
+                            parts.append(t)
 
-            if not title:
-                # Try the text that's a sibling of the link itself
-                for t in reversed(prev_texts):
-                    if t and not _parse_date(t) and len(t) > 3:
+                for t in parts:
+                    if t == "Evento":
+                        continue
+                    dt = _parse_date(t)
+                    if dt:
+                        date_dt = dt
+                    elif date_dt is None and title is None:
                         title = t
-                        break
+                    elif date_dt is not None and city is None:
+                        city = t
+
+            # Fallback title from URL slug
+            if not title:
+                slug = href.rstrip("/").rsplit("/", 1)[-1]
+                title = slug.replace("-", " ").replace("_", " ").title() if slug else None
 
             cards.append({
                 "url": full_url,

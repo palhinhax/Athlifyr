@@ -54,39 +54,73 @@ CRITICAL RULES:
    - Example: "Ultra Trail" with "Ultra 80km" and "Caminhada 10km" → ["TRAIL", "WALKING"]
 5. currency must be: EUR, GBP, USD, or CHF (default EUR).
 6. All dates must be ISO 8601 strings (e.g. "2026-03-15T09:00:00Z").
-7. Descriptions should be ENTHUSIASTIC, PROMOTIONAL and well-formatted markdown — NO image URLs.
+7. Descriptions should be RICH, DETAILED and well-formatted markdown — NO image URLs.
    DO NOT include "imageUrl" in the output — it is injected automatically from the bucket.
    You are writing for a sports event platform that PROMOTES events to athletes. The tone must be:
    - ENERGETIC and INVITING — make people want to sign up! This is marketing, not a Wikipedia article.
    - Highlight what makes the event special: the location, the experience, the challenge, the scenery, the atmosphere.
    - Include a short hook/intro sentence that sells the event (1-2 lines).
-   - Mention key practical details: distances, terrain type, what to expect.
-   - If the event has a unique feel (military vibe, beach setting, mountain trails, urban race), highlight it with enthusiasm.
-   - NEVER be dry, clinical, or just list facts. Paint a picture of the experience.
    - But stay genuine — no over-the-top hype or fake excitement. Confident and warm, like a friend recommending a great race.
-   Use markdown formatting (max 600-900 characters per language):
-   - Use **bold** for event name and key highlights
-   - Use ## headings to separate sections (max 2-3 sections)
-   - Use bullet lists for variant details
-   - Use emojis to add energy (🏃 🔥 🏔️ 🗓️ 📍 🏅 💪 🚴 🌊 🎯) — a few per description, not overloaded
-   - Use --- to separate major sections
+
+   STRUCTURE — the description MUST have ALL of these sections (when info is available):
+   a) **Opening hook** — 1-2 lines selling the event with emoji in the heading (e.g. 🚒 VII Trail Bombeiros de Mêda 2026)
+   b) **Overview paragraph** — what the event is, who organizes it, what makes it special (edition number, solidarity, circuit integration, etc.)
+   c) **Course/terrain paragraph** — where the race goes, terrain type (trails, roads, mountains, beach), start/finish location, self-sufficiency rules if any
+   d) **🏔️ Provas (Variants)** section — list ALL variants with distance, start time, cutoff, age restrictions. Format: "Trail Longo – ±24 km · Partida 09:00 · Cutoff 4h"
+   e) **⏰ Horário (Schedule)** section — if schedule info is available, include day-by-day timeline (secretariado, briefing, partida, almoço, prémios)
+   f) **🎽 A inscrição inclui** section — what's included: dorsal, seguro, abastecimentos, troféus, medalhas, brinde, etc.
+   g) **🏆 Prémios** section — prizes for top finishers, escalões, etc.
+   h) **🏅 Circuito** — if the event is part of a circuit/series, mention it
+   i) **Closing line** — short motivational call-to-action with emojis
+
+   FORMATTING RULES:
+   - Use markdown: **bold**, ## headings, bullet lists, emojis (🏃 🔥 🏔️ 🗓️ 📍 🏅 💪 🚴 🌊 🎯 🚒 ⏰ 🎽 🏆)
+   - DO NOT limit the length — include ALL relevant details from the scraped data and documents.
+   - Target 1000-3000 characters per language depending on available info.
+   - If the regulation PDF provides schedule times, cutoffs, prizes, kit contents — USE ALL OF IT.
+   - Extract and include: start times per variant, cutoff times, schedule (secretariado, briefing, partida), prize details, what the registration includes, self-sufficiency rules.
    - Each language description should be a proper markdown text
-   - Keep it concise but ALIVE — every sentence should add value or excitement.
-   Example:
+   - Every sentence should add value — no filler, no generic statements.
+
+   Example (Portuguese):
    ```
-   **🏃 Meia Maratona Baía do Seixal 2026**
+   🚒 VII Trail Bombeiros de Mêda 2026
+   A 7ª edição do Trail Bombeiros de Mêda realiza-se a 12 de abril de 2026 em Mêda, distrito da Guarda! Organizado pela Associação Humanitária dos Bombeiros Voluntários de Mêda, este é um evento 100% solidário que integra o Circuito de Trail da Beira Alta 2026 como 3ª etapa.
 
-   Corre junto ao rio, com vista para Lisboa! Uma meia maratona rápida e plana, perfeita para bater o teu recorde pessoal — ou simplesmente aproveitar um grande dia de corrida no Seixal. 🔥
+   Partida e chegada no Quartel dos Bombeiros Voluntários de Mêda. Percursos por trilhos, caminhos rurais, vias de terra batida e ribeiras circundantes às aldeias adjacentes do concelho de Mêda.
 
-   ---
+   Prova em regime de semi-autossuficiência — não existem copos nos postos de abastecimento. Cada atleta deve trazer o seu recipiente para água.
 
-   ## 🏅 Provas
+   🏔️ Provas
+   Trail Longo – ±24 km · Partida 09:00 · Cutoff 4h
+   Trail Curto – ±17 km · Partida 09:15 · Cutoff 4h
+   Mini Trail – ±12 km · Partida 09:20 · A partir dos 11 anos (Circuito Jovem)
+   Caminhada – ±12 km · Partida 09:20 · Participação lúdica
 
-   - **Meia Maratona** — 21,097 km
-   - **Prova 10 Km** — 10 km
-   - **Caminhada/Corrida** — 5 km (ideal para toda a família)
+   ⏰ Horário
+   Sábado, 11 de Abril:
+   19:30 – 21:00 — Funcionamento do secretariado (Quartel dos Bombeiros)
+   Domingo, 12 de Abril:
+   07:30 — Abertura do secretariado
+   08:50 — Encerramento do secretariado / Briefing
+   09:00 — Partida Trail Longo
+   09:15 — Partida Trail Curto
+   09:20 — Partida Mini Trail e Caminhada
+   12:30 — Início do almoço
+   13:00 — Encerramento dos percursos
+   13:30 — Entrega de prémios
 
-   📍 Seixal, Portugal | 🗓️ 22 de março de 2026
+   🎽 A inscrição inclui
+   Seguro desportivo, dorsal, abastecimentos sólidos e líquidos, troféus e medalhas aos classificados, brinde finisher, brinde alusivo ao evento.
+
+   🏆 Prémios
+   Troféu aos 3 primeiros classificados geral M/F (Trail Longo, Curto e Mini Trail)
+   Diploma aos 4ºs e 5ºs classificados geral M/F
+   Medalha aos 3 primeiros por escalão M/F (Mini Trail — Circuito Jovem)
+
+   🏅 Circuito de Trail da Beira Alta 2026 — 3ª Etapa
+
+   🚒 Os Bombeiros de Mêda esperam por ti! 🏔️
    ```
 8. FAQs: generate exactly 5 FAQs covering: schedule, registration, location, equipment, contact. Keep answers SHORT (1-2 sentences max).
 9. metaTitle format: "Event Name - Edition | City, Region | Date" (< 60 chars).

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
@@ -178,14 +179,30 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
             "Auto-generating AI for %d new/changed events from %s",
             len(ai_event_ids), source_name,
         )
-        for eid in ai_event_ids:
-            try:
-                await generate_and_import_event(eid, db)
-                await db.commit()
-            except Exception:
-                logger.exception("Auto-generate failed for event %s", eid)
+        await _run_ai_batch(ai_event_ids)
 
     return run
+
+
+_AI_CONCURRENCY = 10
+
+
+async def _run_ai_batch(event_ids: list[uuid.UUID]) -> None:
+    """Process AI generation for a batch of events with bounded concurrency."""
+    from app.db.session import async_session
+
+    sem = asyncio.Semaphore(_AI_CONCURRENCY)
+
+    async def _process(eid: uuid.UUID) -> None:
+        async with sem:
+            async with async_session() as db:
+                try:
+                    await generate_and_import_event(eid, db)
+                    await db.commit()
+                except Exception:
+                    logger.exception("Auto-generate failed for event %s", eid)
+
+    await asyncio.gather(*[_process(eid) for eid in event_ids])
 
 
 async def scrape_single_event(

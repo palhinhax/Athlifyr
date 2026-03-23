@@ -61,10 +61,11 @@ class TicTacTimingScraper(BaseScraper):
 
         # May need to check multiple months
         # Start with current month, then next months
+        # Joomla calendar uses ?month=N&year=YYYY (not ?month=YYYY-MM)
         for month_offset in range(6):
             year = now.year + (now.month + month_offset - 1) // 12
             month = (now.month + month_offset - 1) % 12 + 1
-            url = f"{_EVENTS_URL}?month={year}-{month:02d}"
+            url = f"{_EVENTS_URL}?month={month}&year={year}"
             try:
                 html = await self.fetch_page(url)
             except Exception:

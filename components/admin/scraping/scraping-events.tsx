@@ -569,228 +569,232 @@ export function ScrapingEvents({
             </div>
           )}
           <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <button
-                    className="flex items-center font-medium"
-                    onClick={() => handleSort("title")}
-                  >
-                    {t("events.name")}
-                    <SortIcon field="title" sortBy={sortBy} sortDir={sortDir} />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button
-                    className="flex items-center font-medium"
-                    onClick={() => handleSort("source_name")}
-                  >
-                    {t("events.source")}
-                    <SortIcon
-                      field="source_name"
-                      sortBy={sortBy}
-                      sortDir={sortDir}
-                    />
-                  </button>
-                </TableHead>
-                <TableHead>{t("events.media")}</TableHead>
-                <TableHead>{t("events.location")}</TableHead>
-                <TableHead>
-                  <button
-                    className="flex items-center font-medium"
-                    onClick={() => handleSort("start_date")}
-                  >
-                    {t("events.date")}
-                    <SortIcon
-                      field="start_date"
-                      sortBy={sortBy}
-                      sortDir={sortDir}
-                    />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button
-                    className="flex items-center font-medium"
-                    onClick={() => handleSort("review_status")}
-                  >
-                    {t("events.status")}
-                    <SortIcon
-                      field="review_status"
-                      sortBy={sortBy}
-                      sortDir={sortDir}
-                    />
-                  </button>
-                </TableHead>
-                <TableHead>{t("events.visibility")}</TableHead>
-                <TableHead>{t("events.actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.length === 0 && !loading ? (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    className="py-12 text-center text-muted-foreground"
-                  >
-                    {t("events.empty")}
-                  </TableCell>
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("title")}
+                    >
+                      {t("events.name")}
+                      <SortIcon
+                        field="title"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("source_name")}
+                    >
+                      {t("events.source")}
+                      <SortIcon
+                        field="source_name"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>{t("events.media")}</TableHead>
+                  <TableHead>{t("events.location")}</TableHead>
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("start_date")}
+                    >
+                      {t("events.date")}
+                      <SortIcon
+                        field="start_date"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("review_status")}
+                    >
+                      {t("events.status")}
+                      <SortIcon
+                        field="review_status"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>{t("events.visibility")}</TableHead>
+                  <TableHead>{t("events.actions")}</TableHead>
                 </TableRow>
-              ) : (
-                events.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell>
-                      <div className="max-w-[250px]">
-                        <div className="truncate font-medium">
-                          {event.title}
-                        </div>
-                        {event.organizer_name && (
-                          <div className="text-xs text-muted-foreground">
-                            {event.organizer_name}
+              </TableHeader>
+              <TableBody>
+                {events.length === 0 && !loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-12 text-center text-muted-foreground"
+                    >
+                      {t("events.empty")}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  events.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell>
+                        <div className="max-w-[250px]">
+                          <div className="truncate font-medium">
+                            {event.title}
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{event.source_name}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          className="group relative cursor-pointer rounded p-0.5 transition-colors hover:bg-muted"
-                          title={
-                            event.has_image
-                              ? t("events.replaceImage")
-                              : t("events.addImage")
-                          }
-                          disabled={uploadingImageFor === event.id}
-                          onClick={() => handleImageClick(event.id)}
-                        >
-                          {uploadingImageFor === event.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                          ) : (
-                            <>
-                              <ImageIcon
-                                className={`h-4 w-4 transition-opacity group-hover:opacity-0 ${event.has_image ? "text-green-500" : "text-muted-foreground/30"}`}
-                              />
-                              <Upload className="absolute inset-0 m-auto h-4 w-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
-                            </>
-                          )}
-                        </button>
-                        <div className="flex items-center gap-0.5">
-                          <FileText
-                            className={`h-4 w-4 ${event.documents_count > 0 ? "text-blue-500" : "text-muted-foreground/30"}`}
-                            aria-label={
-                              event.documents_count > 0
-                                ? t("events.documentsCount", {
-                                    count: event.documents_count,
-                                  })
-                                : t("events.noDocs")
-                            }
-                          />
-                          {event.documents_count > 0 && (
-                            <span className="text-xs text-blue-500">
-                              {event.documents_count}
-                            </span>
+                          {event.organizer_name && (
+                            <div className="text-xs text-muted-foreground">
+                              {event.organizer_name}
+                            </div>
                           )}
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">
-                        {event.city || "—"}, {event.country}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatDate(event.start_date)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getReviewVariant(event.review_status)}>
-                        {getReviewLabel(event.review_status, t)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {event.is_hidden ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-green-500" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onEventSelect(event.id)}
-                        >
-                          {t("events.view")}
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          title={t("events.generate")}
-                          disabled={
-                            !event.has_image || !!actionLoading[event.id]
-                          }
-                          onClick={() => handleAction(event.id, "generate")}
-                        >
-                          {actionLoading[event.id] === "generate" ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          title={t("events.rescrape")}
-                          disabled={!!actionLoading[event.id]}
-                          onClick={() => handleAction(event.id, "rescrape")}
-                        >
-                          {actionLoading[event.id] === "rescrape" ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <RefreshCw className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          title={t("events.delete")}
-                          disabled={!!actionLoading[event.id]}
-                          onClick={() => handleAction(event.id, "delete")}
-                        >
-                          {actionLoading[event.id] === "delete" ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <a
-                          href={event.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{event.source_name}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            className="group relative cursor-pointer rounded p-0.5 transition-colors hover:bg-muted"
+                            title={
+                              event.has_image
+                                ? t("events.replaceImage")
+                                : t("events.addImage")
+                            }
+                            disabled={uploadingImageFor === event.id}
+                            onClick={() => handleImageClick(event.id)}
+                          >
+                            {uploadingImageFor === event.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            ) : (
+                              <>
+                                <ImageIcon
+                                  className={`h-4 w-4 transition-opacity group-hover:opacity-0 ${event.has_image ? "text-green-500" : "text-muted-foreground/30"}`}
+                                />
+                                <Upload className="absolute inset-0 m-auto h-4 w-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
+                              </>
+                            )}
+                          </button>
+                          <div className="flex items-center gap-0.5">
+                            <FileText
+                              className={`h-4 w-4 ${event.documents_count > 0 ? "text-blue-500" : "text-muted-foreground/30"}`}
+                              aria-label={
+                                event.documents_count > 0
+                                  ? t("events.documentsCount", {
+                                      count: event.documents_count,
+                                    })
+                                  : t("events.noDocs")
+                              }
+                            />
+                            {event.documents_count > 0 && (
+                              <span className="text-xs text-blue-500">
+                                {event.documents_count}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {event.city || "—"}, {event.country}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {formatDate(event.start_date)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getReviewVariant(event.review_status)}>
+                          {getReviewLabel(event.review_status, t)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {event.is_hidden ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-green-500" />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onEventSelect(event.id)}
+                          >
+                            {t("events.view")}
+                          </Button>
                           <Button
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8"
-                            title={t("events.openSource")}
+                            title={t("events.generate")}
+                            disabled={
+                              !event.has_image || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "generate")}
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            {actionLoading[event.id] === "generate" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-4 w-4" />
+                            )}
                           </Button>
-                        </a>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.rescrape")}
+                            disabled={!!actionLoading[event.id]}
+                            onClick={() => handleAction(event.id, "rescrape")}
+                          >
+                            {actionLoading[event.id] === "rescrape" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            title={t("events.delete")}
+                            disabled={!!actionLoading[event.id]}
+                            onClick={() => handleAction(event.id, "delete")}
+                          >
+                            {actionLoading[event.id] === "delete" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <a
+                            href={event.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              title={t("events.openSource")}
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                          </a>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </div>
 

@@ -220,61 +220,67 @@ export function ScrapingRuns({ sources, apiUrl }: ScrapingRunsProps) {
           </div>
         )}
         <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("runs.source")}</TableHead>
-              <TableHead>{t("runs.status")}</TableHead>
-              <TableHead>{t("runs.found")}</TableHead>
-              <TableHead>{t("runs.created")}</TableHead>
-              <TableHead>{t("runs.updated")}</TableHead>
-              <TableHead>{t("runs.failed")}</TableHead>
-              <TableHead className="whitespace-nowrap">{t("runs.startedAt")}</TableHead>
-              <TableHead className="whitespace-nowrap">{t("runs.finishedAt")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {runs.length === 0 && !loading ? (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="py-12 text-center text-muted-foreground"
-                >
-                  {t("runs.empty")}
-                </TableCell>
+                <TableHead>{t("runs.source")}</TableHead>
+                <TableHead>{t("runs.status")}</TableHead>
+                <TableHead>{t("runs.found")}</TableHead>
+                <TableHead>{t("runs.created")}</TableHead>
+                <TableHead>{t("runs.updated")}</TableHead>
+                <TableHead>{t("runs.failed")}</TableHead>
+                <TableHead className="whitespace-nowrap">
+                  {t("runs.startedAt")}
+                </TableHead>
+                <TableHead className="whitespace-nowrap">
+                  {t("runs.finishedAt")}
+                </TableHead>
               </TableRow>
-            ) : (
-              runs.map((run) => (
-                <TableRow key={run.id}>
-                  <TableCell className="font-medium">
-                    {run.source_name}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(run.status)}>
-                      {getStatusLabel(run.status, t)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{run.events_found}</TableCell>
-                  <TableCell>{run.events_created}</TableCell>
-                  <TableCell>{run.events_updated}</TableCell>
-                  <TableCell>
-                    {run.events_failed > 0 ? (
-                      <span className="text-red-500">{run.events_failed}</span>
-                    ) : (
-                      run.events_failed
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(run.started_at)}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(run.finished_at)}
+            </TableHeader>
+            <TableBody>
+              {runs.length === 0 && !loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="py-12 text-center text-muted-foreground"
+                  >
+                    {t("runs.empty")}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                runs.map((run) => (
+                  <TableRow key={run.id}>
+                    <TableCell className="font-medium">
+                      {run.source_name}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(run.status)}>
+                        {getStatusLabel(run.status, t)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{run.events_found}</TableCell>
+                    <TableCell>{run.events_created}</TableCell>
+                    <TableCell>{run.events_updated}</TableCell>
+                    <TableCell>
+                      {run.events_failed > 0 ? (
+                        <span className="text-red-500">
+                          {run.events_failed}
+                        </span>
+                      ) : (
+                        run.events_failed
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatDate(run.started_at)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatDate(run.finished_at)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

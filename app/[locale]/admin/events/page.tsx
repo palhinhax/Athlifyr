@@ -98,7 +98,11 @@ function updateSegmentInVariant(
 function getMissingFields(event: Event): string[] {
   const missing: string[] = [];
 
-  if (!event.imageUrl || event.imageUrl === "null" || event.imageUrl.trim().length === 0) {
+  if (
+    !event.imageUrl ||
+    event.imageUrl === "null" ||
+    event.imageUrl.trim().length === 0
+  ) {
     missing.push("Foto");
   }
   if (!event.latitude || !event.longitude) {
@@ -1003,7 +1007,11 @@ export default function AdminEventsPage() {
                         <Card className="overflow-hidden transition-shadow hover:shadow-lg">
                           <div className="relative h-40 w-full">
                             <Image
-                              src={event.imageUrl && event.imageUrl !== "null" ? event.imageUrl : "/placeholder-event.jpg"}
+                              src={
+                                event.imageUrl && event.imageUrl !== "null"
+                                  ? event.imageUrl
+                                  : "/placeholder-event.jpg"
+                              }
                               alt={event.title}
                               fill
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

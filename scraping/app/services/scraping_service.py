@@ -258,6 +258,29 @@ async def download_event_documents(event_id: uuid.UUID, db: AsyncSession) -> int
     return count
 
 
+async def _delete_bucket_object(bucket_url: str) -> None:
+    """Delete an object from the storage bucket given its full URL."""
+    storage = get_storage()
+    try:
+        from app.core.config import settings as _cfg
+        if _cfg.storage_backend == "s3":
+            prefix = f"{_cfg.storage_s3_endpoint}/{_cfg.storage_s3_bucket}/"
+            if bucket_url.startswith(prefix):
+                key = bucket_url[len(prefix):]
+                await storage.delete(key)
+                return
+        else:
+            # Local storage
+            prefix = str(_cfg.storage_local_path) + "/"
+            if bucket_url.startswith(prefix):
+                key = bucket_url[len(prefix):]
+                await storage.delete(key)
+                return
+        logger.warning("Could not extract key from bucket URL: %s", bucket_url[:200])
+    except Exception:
+        logger.exception("Failed to delete old image: %s", bucket_url[:200])
+
+
 async def _upload_image(
     source_name: str, event_slug: str, image_url: str,
 ) -> str | None:
@@ -414,6 +437,9 @@ async def _upsert_scraped_event(
                 data.image_url,
             )
             if bucket_url:
+                # Delete old image from bucket if it differs from the new one
+                if prev_bucket_url and prev_bucket_url != bucket_url:
+                    await _delete_bucket_object(prev_bucket_url)
                 existing.image_url = bucket_url
         elif prev_bucket_url:
             logger.debug("  ↳ Image unchanged → keeping bucket URL")

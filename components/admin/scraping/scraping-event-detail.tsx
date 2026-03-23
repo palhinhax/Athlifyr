@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -226,7 +227,7 @@ export function ScrapingEventDetail({
   };
 
   // AI generation requires at least an image
-  const canGenerate = Boolean(event?.image_url);
+  const canGenerate = Boolean(event?.image_url && event.image_url !== "null");
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "—";
@@ -290,7 +291,7 @@ export function ScrapingEventDetail({
     return (
       <div className="space-y-6">
         {/* Event image */}
-        {ev.image_url && (
+        {ev.image_url && ev.image_url !== "null" && (
           <div className="relative h-[200px] overflow-hidden rounded-lg border">
             <Image
               src={ev.image_url}
@@ -588,6 +589,9 @@ export function ScrapingEventDetail({
           <DialogTitle>
             {loading ? t("eventDetail.loading") : event?.title || ""}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {t("eventDetail.review")}
+          </DialogDescription>
         </DialogHeader>
         {renderBody()}
       </DialogContent>

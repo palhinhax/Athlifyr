@@ -45,7 +45,7 @@ async function getEventImageUrls(): Promise<string[]> {
     },
     select: { imageUrl: true },
     orderBy: { startDate: "desc" },
-    take: 40,
+    take: 50,
   });
   return events
     .map((e) => e.imageUrl)
@@ -72,7 +72,7 @@ export default async function Home({
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: "home" });
-  const tNav = await getTranslations({ locale, namespace: "navigation" });
+  const tNav = await getTranslations({ locale, namespace: "nav" });
 
   // Get user's country from headers
   const headersList = await headers();

@@ -86,6 +86,7 @@ interface ImportEventPayload {
   variants?: ImportVariant[];
   faqs?: ImportFAQ[];
   scrapedEventId?: string;
+  sourceName?: string;
 }
 
 const VALID_SPORTS = new Set(Object.values(SportType));
@@ -210,6 +211,7 @@ export async function POST(req: NextRequest) {
           googleMapsUrl: body.googleMapsUrl ?? null,
           imageUrl: body.imageUrl ?? null,
           externalUrl: body.externalUrl ?? null,
+          scrapingSource: body.sourceName ?? null,
         },
       });
     } else {
@@ -232,6 +234,7 @@ export async function POST(req: NextRequest) {
           googleMapsUrl: body.googleMapsUrl ?? null,
           imageUrl: body.imageUrl ?? null,
           externalUrl: body.externalUrl ?? null,
+          scrapingSource: body.sourceName ?? null,
         },
       });
     }

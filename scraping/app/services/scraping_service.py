@@ -831,6 +831,7 @@ async def generate_and_import_event(
         if not generated.get("externalUrl"):
             generated["externalUrl"] = event.external_url or event.source_url
         generated["scrapedEventId"] = str(event_id)
+        generated["sourceName"] = event.source_name
 
         # Inject document bucket URLs so the frontend can link to them
         if docs:

@@ -616,7 +616,16 @@
         "allStatuses": "Todos los Estados",
         "statusCompleted": "Completado",
         "statusRunning": "En ejecuci\u00f3n",
-        "statusFailed": "Fallido"
+        "statusFailed": "Fallido",
+        "today": "Hoy",
+        "yesterday": "Ayer",
+        "daysShown": "{count} días mostrados",
+        "clearHistory": "Limpiar Historial",
+        "clearConfirmTitle": "¿Limpiar historial de ejecuciones?",
+        "clearConfirmDescription": "Esta acción eliminará permanentemente las ejecuciones completadas y fallidas más antiguas. Las ejecuciones en curso no se verán afectadas.",
+        "olderThan": "Más de {days, plural, one {# día} other {# días}}",
+        "cancel": "Cancelar",
+        "confirmClear": "Eliminar"
       },
       "events": {
         "title": "Eventos Recopilados",
@@ -704,6 +713,35 @@
         "adminNotes": "Información Adicional para la IA",
         "adminNotesHelp": "Añade detalles extra que no existen en el sitio de origen. Esta información se enviará a la IA al generar el evento, pero no activará la detección de cambios al volver a buscar.",
         "adminNotesPlaceholder": "ej.: el evento tiene 3 puntos de avituallamiento, la ruta pasa por la Serra da Arrábida, el organizador confirmó inscripciones hasta abril..."
+      }
+    },
+    "duplicates": {
+      "button": "Buscar Duplicados",
+      "title": "Posibles Eventos Duplicados",
+      "description": "Análisis de eventos con nombres similares, fechas cercanas o misma ubicación que pueden ser duplicados.",
+      "loading": "Analizando eventos...",
+      "analysed": "{count} eventos analizados",
+      "found": "{count} posible(s) duplicado(s) encontrado(s)",
+      "noDuplicates": "No se encontraron duplicados",
+      "viewEvent": "Ver",
+      "manage": "Gestionar",
+      "refresh": "Actualizar",
+      "deleteEvent": "Eliminar",
+      "deleteConfirmTitle": "Eliminar evento",
+      "deleteConfirmDescription": "¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer.",
+      "deleting": "Eliminando...",
+      "deleteSuccess": "Evento eliminado",
+      "deleteError": "Error al eliminar el evento",
+      "cancel": "Cancelar",
+      "reasons": {
+        "nearIdenticalName": "Nombre casi idéntico",
+        "similarName": "Nombre similar",
+        "closeDates": "Fechas cercanas",
+        "sameLocation": "Misma ubicación"
+      },
+      "origin": {
+        "scraping": "Scraping",
+        "manual": "Manual"
       }
     }
   }

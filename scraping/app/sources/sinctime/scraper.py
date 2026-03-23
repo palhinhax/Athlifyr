@@ -137,7 +137,7 @@ class SincTimeScraper(BaseScraper):
         page = 1
 
         while True:
-            url = f"{_EVENTS_URL}?page={page}"
+            url = f"{_EVENTS_URL}?pagina={page}"
             html = await self.fetch_page(url)
             soup = BeautifulSoup(html, "lxml")
 
@@ -250,21 +250,13 @@ class SincTimeScraper(BaseScraper):
 
     def _has_next_page(self, soup: BeautifulSoup, current_page: int) -> bool:
         """Check if there is a next page in the pagination."""
-        # Look for pagination links with page number > current
         for a in soup.select("a[href]"):
             href = a.get("href", "")
             if isinstance(href, list):
                 href = href[0]
-            m = re.search(r"[?&]page=(\d+)", href)
+            m = re.search(r"[?&]pagina=(\d+)", href)
             if m and int(m.group(1)) > current_page:
                 return True
-        # Also check text-based pagination (1 2 3 4 ...)
-        text = a.get_text(strip=True) if a else ""
-        try:
-            if int(text) > current_page:
-                return True
-        except (ValueError, TypeError):
-            pass
         return False
 
     # ── Detail page helpers ──────────────────────────────────────

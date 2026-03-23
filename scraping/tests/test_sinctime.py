@@ -171,8 +171,8 @@ _SAMPLE_LIST_HTML = """\
 <p>22 mar 2026</p>
 <a href="/evento/455">DETALHES</a>
 
-<a href="/proximos-eventos?page=2">2</a>
-<a href="/proximos-eventos?page=3">3</a>
+<a href="/proximos-eventos?pagina=2">2</a>
+<a href="/proximos-eventos?pagina=3">3</a>
 </body></html>
 """
 
@@ -236,7 +236,7 @@ def test_has_next_page() -> None:
 
 
 def test_has_no_next_page() -> None:
-    html = '<html><body><a href="/proximos-eventos?page=1">1</a></body></html>'
+    html = '<html><body><a href="/proximos-eventos?pagina=1">1</a></body></html>'
     soup = BeautifulSoup(html, "lxml")
     scraper = SincTimeScraper()
     assert scraper._has_next_page(soup, 3) is False

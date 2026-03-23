@@ -1,22 +1,20 @@
 import {
   View,
   Text,
-  FlatList,
+  SectionList,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { EventCard } from "@/src/components/EventCard";
 import { EventsMap } from "@/src/components/EventsMap";
-import { SuggestEventModal } from "@/src/components/SuggestEventModal";
-import { useAuthStore } from "@/src/lib/auth-store";
-import { Search, LayoutGrid, Map, Plus } from "lucide-react-native";
+import { Search, LayoutGrid, Map, Star, Calendar } from "lucide-react-native";
 import type { Event } from "@/src/types";
 
 interface EventsResponse {
@@ -31,11 +29,10 @@ interface EventsResponse {
 }
 
 export default function EventsScreen() {
-  const { t } = useTranslation();
-  const { isAuthenticated } = useAuthStore();
+  const { t, i18n } = useTranslation();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [suggestModalVisible, setSuggestModalVisible] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
+  const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
@@ -59,6 +56,7 @@ export default function EventsScreen() {
         const params = new URLSearchParams();
         params.append("page", pageNum.toString());
         params.append("pageSize", "20");
+        params.append("featured", "false");
 
         if (debouncedSearch) {
           params.append("search", debouncedSearch);
@@ -91,6 +89,24 @@ export default function EventsScreen() {
   useEffect(() => {
     fetchEvents(1, false);
   }, [debouncedSearch, fetchEvents]);
+
+  // Fetch featured events
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append("featured", "true");
+        params.append("pageSize", "50");
+        const response = await api.get<EventsResponse>(
+          `/events?${params.toString()}`
+        );
+        setFeaturedEvents(response.data.events);
+      } catch {
+        // Featured section is non-critical
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -127,6 +143,27 @@ export default function EventsScreen() {
       </View>
     );
   };
+
+  // Group events by month/year for section headers
+  const sections = useMemo(() => {
+    const groups: { key: string; title: string; data: Event[] }[] = [];
+    for (const event of events) {
+      const date = new Date(event.startDate);
+      const key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, "0")}`;
+      const title = new Intl.DateTimeFormat(i18n.language, {
+        month: "long",
+        year: "numeric",
+      }).format(date);
+
+      const existing = groups.find((g) => g.key === key);
+      if (existing) {
+        existing.data.push(event);
+      } else {
+        groups.push({ key, title, data: [event] });
+      }
+    }
+    return groups;
+  }, [events, i18n.language]);
 
   return (
     <View style={styles.container}>
@@ -209,16 +246,41 @@ export default function EventsScreen() {
           />
         </View>
       ) : (
-        <FlatList
-          data={events}
+        <SectionList
+          sections={sections}
           renderItem={({ item }) => <EventCard event={item} />}
+          renderSectionHeader={({ section }) => (
+            <View style={styles.sectionHeader}>
+              <Calendar size={18} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              <View style={styles.sectionLine} />
+              <Text style={styles.sectionCount}>{section.data.length}</Text>
+            </View>
+          )}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
+          ListHeaderComponent={
+            featuredEvents.length > 0 && !debouncedSearch ? (
+              <View style={styles.featuredSection}>
+                <View style={styles.sectionHeader}>
+                  <Star size={18} color="#facc15" fill="#facc15" />
+                  <Text style={styles.sectionTitle}>
+                    {t("events.featured")}
+                  </Text>
+                  <View style={styles.sectionLine} />
+                </View>
+                {featuredEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </View>
+            ) : null
+          }
           ListFooterComponent={renderFooter}
           ListEmptyComponent={renderEmpty}
           accessibilityLabel={t("events.a11y.eventsList")}
+          stickySectionHeadersEnabled={false}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -228,24 +290,6 @@ export default function EventsScreen() {
           }
         />
       )}
-
-      {/* FAB - Suggest Event */}
-      {isAuthenticated && (
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => setSuggestModalVisible(true)}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel={t("events.a11y.suggestEvent")}
-        >
-          <Plus size={24} color={theme.colors.white} strokeWidth={2.5} />
-        </TouchableOpacity>
-      )}
-
-      <SuggestEventModal
-        visible={suggestModalVisible}
-        onClose={() => setSuggestModalVisible(false)}
-      />
     </View>
   );
 }
@@ -328,16 +372,30 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: theme.spacing.xl,
   },
-  fab: {
-    position: "absolute",
-    bottom: theme.spacing.lg,
-    right: theme.spacing.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: theme.colors.primary,
-    justifyContent: "center",
+  sectionHeader: {
+    flexDirection: "row",
     alignItems: "center",
-    ...theme.shadows.lg,
+    gap: 8,
+    paddingVertical: theme.spacing.sm,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.xs,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: theme.colors.text,
+    textTransform: "capitalize",
+  },
+  sectionLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+  sectionCount: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+  },
+  featuredSection: {
+    marginBottom: theme.spacing.sm,
   },
 });

@@ -16,9 +16,12 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-# Runtime dependencies only
+# Runtime dependencies only (includes tesseract + poppler for PDF OCR)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libpq5 curl && \
+    apt-get install -y --no-install-recommends \
+        libpq5 curl \
+        tesseract-ocr tesseract-ocr-por \
+        poppler-utils && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy installed packages from builder

@@ -54,27 +54,37 @@ CRITICAL RULES:
    - Example: "Ultra Trail" with "Ultra 80km" and "Caminhada 10km" → ["TRAIL", "WALKING"]
 5. currency must be: EUR, GBP, USD, or CHF (default EUR).
 6. All dates must be ISO 8601 strings (e.g. "2026-03-15T09:00:00Z").
-7. Descriptions should be rich, well-formatted markdown text — NO image URLs.
+7. Descriptions should be ENTHUSIASTIC, PROMOTIONAL and well-formatted markdown — NO image URLs.
    DO NOT include "imageUrl" in the output — it is injected automatically from the bucket.
-   Use markdown formatting to make descriptions visually appealing but CONCISE (max 600-800 characters per language):
+   You are writing for a sports event platform that PROMOTES events to athletes. The tone must be:
+   - ENERGETIC and INVITING — make people want to sign up! This is marketing, not a Wikipedia article.
+   - Highlight what makes the event special: the location, the experience, the challenge, the scenery, the atmosphere.
+   - Include a short hook/intro sentence that sells the event (1-2 lines).
+   - Mention key practical details: distances, terrain type, what to expect.
+   - If the event has a unique feel (military vibe, beach setting, mountain trails, urban race), highlight it with enthusiasm.
+   - NEVER be dry, clinical, or just list facts. Paint a picture of the experience.
+   - But stay genuine — no over-the-top hype or fake excitement. Confident and warm, like a friend recommending a great race.
+   Use markdown formatting (max 600-900 characters per language):
    - Use **bold** for event name and key highlights
    - Use ## headings to separate sections (max 2-3 sections)
    - Use bullet lists for variant details
-   - Use emojis sparingly (🏃 🏔️ 🗓️ 📍 🏅)
+   - Use emojis to add energy (🏃 🔥 🏔️ 🗓️ 📍 🏅 💪 🚴 🌊 🎯) — a few per description, not overloaded
    - Use --- to separate major sections
    - Each language description should be a proper markdown text
-   - Keep it SHORT — do NOT write long paragraphs. Quality over quantity.
+   - Keep it concise but ALIVE — every sentence should add value or excitement.
    Example:
    ```
    **🏃 Meia Maratona Baía do Seixal 2026**
 
+   Corre junto ao rio, com vista para Lisboa! Uma meia maratona rápida e plana, perfeita para bater o teu recorde pessoal — ou simplesmente aproveitar um grande dia de corrida no Seixal. 🔥
+
    ---
 
-   ## Provas
+   ## 🏅 Provas
 
    - **Meia Maratona** — 21,097 km
    - **Prova 10 Km** — 10 km
-   - **Caminhada/Corrida** — 5 km
+   - **Caminhada/Corrida** — 5 km (ideal para toda a família)
 
    📍 Seixal, Portugal | 🗓️ 22 de março de 2026
    ```
@@ -173,10 +183,15 @@ def _get_openai_client() -> AsyncOpenAI:
 
 
 async def _read_document_text(url: str) -> str:
-    """Download a document (PDF or HTML) and extract its text content."""
+    """Download a document (PDF or HTML) and extract its text content.
+
+    For PDFs, first tries direct text extraction (PyPDF2).  If the PDF is
+    image-based (scanned) and yields little text, falls back to OCR via
+    Tesseract (pdf2image → pytesseract).
+    """
     try:
         async with httpx.AsyncClient(
-            follow_redirects=True, timeout=30
+            follow_redirects=True, timeout=60
         ) as client:
             resp = await client.get(url)
             resp.raise_for_status()
@@ -188,28 +203,12 @@ async def _read_document_text(url: str) -> str:
             from bs4 import BeautifulSoup
 
             soup = BeautifulSoup(resp.text, "html.parser")
-            # Remove script/style tags
             for tag in soup(["script", "style", "nav", "footer", "header"]):
                 tag.decompose()
             text = soup.get_text(separator="\n", strip=True)
         else:
             # Assume PDF
-            import tempfile
-            from PyPDF2 import PdfReader
-
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-                tmp.write(resp.content)
-                tmp_path = tmp.name
-
-            reader = PdfReader(tmp_path)
-            text_parts = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-
-            Path(tmp_path).unlink(missing_ok=True)
-            text = "\n".join(text_parts)
+            text = _extract_pdf_text(resp.content)
 
         # Limit to ~50000 chars to avoid token overflow
         if len(text) > 50000:
@@ -218,6 +217,83 @@ async def _read_document_text(url: str) -> str:
     except Exception as e:
         logger.warning("Failed to read document from %s: %s", url, e)
         return ""
+
+
+# ── PDF text extraction helpers ──────────────────────────────────────────────
+
+# Minimum chars from PyPDF2 to consider extraction successful.
+# Below this threshold we assume the PDF is image-based and try OCR.
+_MIN_TEXT_CHARS = 50
+
+
+def _extract_pdf_text(content: bytes) -> str:
+    """Extract text from PDF bytes, falling back to OCR for image-based PDFs."""
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        # 1) Fast path: direct text extraction with PyPDF2
+        text = _extract_pdf_text_pypdf2(tmp_path)
+        if len(text.strip()) >= _MIN_TEXT_CHARS:
+            return text
+
+        # 2) Slow path: OCR via Tesseract
+        logger.info("PDF has little extractable text (%d chars) — trying OCR", len(text.strip()))
+        ocr_text = _extract_pdf_text_ocr(tmp_path)
+        return ocr_text if ocr_text.strip() else text
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+
+
+def _extract_pdf_text_pypdf2(pdf_path: str) -> str:
+    """Extract text from a PDF using PyPDF2 (works for text-based PDFs)."""
+    from PyPDF2 import PdfReader
+
+    reader = PdfReader(pdf_path)
+    parts: list[str] = []
+    for page in reader.pages:
+        page_text = page.extract_text()
+        if page_text:
+            parts.append(page_text)
+    return "\n".join(parts)
+
+
+def _extract_pdf_text_ocr(pdf_path: str, max_pages: int = 15) -> str:
+    """Extract text from an image-based PDF using Tesseract OCR.
+
+    Converts each page to an image and runs OCR. Limited to *max_pages*
+    to keep processing time and memory reasonable.
+    """
+    try:
+        from pdf2image import convert_from_path
+        import pytesseract
+    except ImportError:
+        logger.warning("OCR dependencies (pdf2image / pytesseract) not installed — skipping OCR")
+        return ""
+
+    try:
+        images = convert_from_path(
+            pdf_path,
+            dpi=200,
+            first_page=1,
+            last_page=max_pages,
+        )
+    except Exception as e:
+        logger.warning("pdf2image failed to convert PDF: %s", e)
+        return ""
+
+    parts: list[str] = []
+    for i, img in enumerate(images):
+        try:
+            page_text = pytesseract.image_to_string(img, lang="por+eng")
+            if page_text and page_text.strip():
+                parts.append(page_text.strip())
+        except Exception as e:
+            logger.warning("Tesseract OCR failed on page %d: %s", i + 1, e)
+    return "\n\n".join(parts)
 
 
 async def generate_event_json(

@@ -39,7 +39,10 @@ _DOWNLOAD_TIMEOUT = 30
 _TRACKED_FIELDS = (
     "title", "description", "sport_types", "start_date", "end_date",
     "registration_deadline", "city", "country", "organizer_name",
-    "external_url", "image_url",
+    "external_url",
+    # NOTE: image_url is excluded — the DB stores the bucket URL while
+    # scraped data has the source URL, so they always differ and would
+    # trigger false-positive change detection + unnecessary AI reruns.
 )
 
 
@@ -116,13 +119,17 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
                 ev_row = row.one_or_none()
                 if is_new:
                     created += 1
+                    logger.info("[NEW] %s — queuing for AI", ev_data.title)
                     if ev_row:
                         ai_event_ids.append(ev_row[0])
                 else:
                     updated += 1
                     # Also queue for AI if something changed (ai_pending=True)
                     if ev_row and ev_row[1]:
+                        logger.info("[CHANGED] %s — queuing for AI re-processing", ev_data.title)
                         ai_event_ids.append(ev_row[0])
+                    else:
+                        logger.info("[UNCHANGED] %s — skipping AI", ev_data.title)
             except Exception:
                 logger.exception("Failed to upsert event: %s", ev_data.source_url)
                 failed += 1
@@ -132,6 +139,11 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
         run.events_updated = updated
         run.events_failed = failed
         run.status = ScrapingRunStatus.COMPLETED
+
+        logger.info(
+            "[%s] Run complete — found: %d | new: %d | existing: %d | failed: %d | AI queue: %d",
+            source_name, len(events_data), created, updated, failed, len(ai_event_ids),
+        )
 
         # Update source config
         now = datetime.now(timezone.utc)
@@ -261,6 +273,21 @@ async def _upload_image(
         return None
     storage = get_storage()
     try:
+        ext = _extension_from_url(image_url) or ".jpg"
+        key = f"images/{source_name}/{event_slug}{ext}"
+
+        # Skip download+upload if already in the bucket
+        if await storage.exists(key):
+            logger.info("  ↳ Image already in bucket, skipping upload: %s", key)
+            # Re-call save would overwrite; just return the expected URL.
+            # For S3 the URL is endpoint/bucket/key; for local it's the path.
+            # We can simply call save with existing data, but cheaper to
+            # reconstruct the URL that save() would have returned.
+            from app.core.config import settings as _cfg
+            if _cfg.storage_backend == "s3":
+                return f"{_cfg.storage_s3_endpoint}/{_cfg.storage_s3_bucket}/{key}"
+            return str(_cfg.storage_local_path + "/" + key)
+
         async with httpx.AsyncClient(follow_redirects=True, timeout=_DOWNLOAD_TIMEOUT) as client:
             resp = await client.get(image_url)
             resp.raise_for_status()
@@ -357,6 +384,11 @@ async def _upsert_scraped_event(
         # Mark for AI re-processing if meaningful fields changed
         if has_changes and existing.review_status != EventReviewStatus.REJECTED:
             existing.ai_pending = True
+            logger.info("  ↳ Fields changed → ai_pending=True (status=%s)", existing.review_status)
+        elif has_changes:
+            logger.info("  ↳ Fields changed but status=%s → skipping AI", existing.review_status)
+        else:
+            logger.debug("  ↳ No field changes detected")
 
         # Save current bucket URL before _apply_event_fields overwrites it
         prev_bucket_url = existing.image_url
@@ -370,6 +402,7 @@ async def _upsert_scraped_event(
 
         # Handle image: upload if source changed, else restore bucket URL
         if data.image_url and data.image_url != prev_source_image:
+            logger.info("  ↳ Image source changed → uploading new image")
             bucket_url = await _upload_image(
                 source_name,
                 slugify(data.title)[:200] if data.title else str(uuid.uuid4()),
@@ -378,6 +411,7 @@ async def _upsert_scraped_event(
             if bucket_url:
                 existing.image_url = bucket_url
         elif prev_bucket_url:
+            logger.debug("  ↳ Image unchanged → keeping bucket URL")
             existing.image_url = prev_bucket_url
 
         existing.scraping_run_id = run_id
@@ -555,10 +589,10 @@ async def _record_changes(
         "country": data.country,
         "organizer_name": data.organizer_name,
         "external_url": data.external_url,
-        "image_url": data.image_url,
     }
 
     changed = False
+    changed_fields: list[str] = []
     for field in _TRACKED_FIELDS:
         old_raw = getattr(existing, field, None)
         # Normalize datetime comparison: strip tzinfo for consistent format
@@ -569,6 +603,7 @@ async def _record_changes(
         new_val = new_values.get(field)
         if old_val != new_val:
             changed = True
+            changed_fields.append(field)
             db.add(
                 EventChangeLog(
                     event_id=existing.id,
@@ -578,6 +613,8 @@ async def _record_changes(
                     new_value=new_val,
                 )
             )
+    if changed_fields:
+        logger.info("  ↳ Changed fields: %s", ", ".join(changed_fields))
     return changed
 
 
@@ -703,6 +740,11 @@ async def generate_and_import_event(
             text = await _read_document_text(doc.original_url)
             if text:
                 doc_texts.append({"name": doc.file_name or doc.document_type, "content": text})
+            else:
+                logger.warning(
+                    "Could not extract text from document %s (image-based PDF?)",
+                    doc.file_name or doc.original_url,
+                )
 
         if not doc_texts and event.external_url:
             page_text = await _read_document_text(event.external_url)
@@ -737,6 +779,18 @@ async def generate_and_import_event(
         if not generated.get("externalUrl"):
             generated["externalUrl"] = event.external_url or event.source_url
         generated["scrapedEventId"] = str(event_id)
+
+        # Inject document bucket URLs so the frontend can link to them
+        if docs:
+            generated["documents"] = [
+                {
+                    "type": d.document_type or "regulation",
+                    "name": d.file_name or d.document_type or "document",
+                    "url": d.file_path or d.original_url,
+                }
+                for d in docs
+                if d.file_path or d.original_url
+            ]
 
         # Forward to Next.js
         nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"

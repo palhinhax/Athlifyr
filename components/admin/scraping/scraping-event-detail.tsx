@@ -75,6 +75,7 @@ interface ScrapedEventDetail {
   image_url: string | null;
   review_status: string;
   review_notes: string | null;
+  admin_notes: string | null;
   is_hidden: boolean;
   created_at: string;
   updated_at: string;
@@ -110,6 +111,7 @@ export function ScrapingEventDetail({
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [reviewStatus, setReviewStatus] = useState("");
   const [reviewNotes, setReviewNotes] = useState("");
+  const [adminNotes, setAdminNotes] = useState("");
   const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
@@ -123,6 +125,7 @@ export function ScrapingEventDetail({
         setEvent(data);
         setReviewStatus(data.review_status);
         setReviewNotes(data.review_notes || "");
+        setAdminNotes(data.admin_notes || "");
         setIsHidden(data.is_hidden);
       } catch (error) {
         console.error("Error fetching event:", error);
@@ -143,6 +146,7 @@ export function ScrapingEventDetail({
         body: JSON.stringify({
           review_status: reviewStatus,
           review_notes: reviewNotes || null,
+          admin_notes: adminNotes || null,
           is_hidden: isHidden,
         }),
       });
@@ -185,6 +189,7 @@ export function ScrapingEventDetail({
       setEvent(data);
       setReviewStatus(data.review_status);
       setReviewNotes(data.review_notes || "");
+      setAdminNotes(data.admin_notes || "");
       setIsHidden(data.is_hidden);
       onUpdated();
     } catch (error) {
@@ -433,6 +438,22 @@ export function ScrapingEventDetail({
 
         {/* Review actions */}
         <div className="space-y-4 border-t pt-4">
+          {/* Admin notes — extra info sent to AI, not affected by re-scraping */}
+          <div>
+            <Label className="text-muted-foreground">
+              {t("eventDetail.adminNotes")}
+            </Label>
+            <p className="mb-2 text-xs text-muted-foreground">
+              {t("eventDetail.adminNotesHelp")}
+            </p>
+            <Textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder={t("eventDetail.adminNotesPlaceholder")}
+              rows={3}
+            />
+          </div>
+
           {/* Generate Event with AI */}
           <div className="rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4">
             <div className="flex items-center justify-between">

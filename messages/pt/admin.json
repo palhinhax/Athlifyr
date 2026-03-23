@@ -700,7 +700,10 @@
         "tabDetails": "Detalhes",
         "tabAiInput": "Enviado ao AI",
         "tabAiOutput": "Resposta do AI",
-        "noAiData": "Sem dados de AI. Gera o evento primeiro."
+        "noAiData": "Sem dados de AI. Gera o evento primeiro.",
+        "adminNotes": "Informação Adicional para a IA",
+        "adminNotesHelp": "Adiciona detalhes extra que não existem no site de origem. Esta informação será enviada à IA ao gerar o evento, mas não irá acionar a deteção de alterações ao re-pesquisar.",
+        "adminNotesPlaceholder": "ex.: o evento tem 3 postos de abastecimento, o percurso passa pela Serra da Arrábida, o organizador confirmou inscrições até abril..."
       }
     }
   }

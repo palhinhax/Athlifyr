@@ -101,6 +101,9 @@ CRITICAL RULES:
     If "raw_pricing_text" is not provided, extract pricing from the document contents.
 12. If information is missing or unclear, make reasonable inferences from context.
 13. Variant translations: translate the variant name and description to all 6 languages.
+14. If an "admin_notes" field is present in the input, it contains manually added context from the
+    platform admin (e.g. extra event details, corrections, instructions). Treat it as high-priority
+    supplementary information — use it to fill gaps, override ambiguous data, and enrich the output.
 
 MANDATORY FIELDS — you MUST always generate these:
 14. **variants**: ALWAYS create at least one variant. If the scraped data has variants, use them ALL.

@@ -700,7 +700,10 @@
         "tabDetails": "Details",
         "tabAiInput": "AI Input",
         "tabAiOutput": "AI Output",
-        "noAiData": "No AI data available. Generate the event first."
+        "noAiData": "No AI data available. Generate the event first.",
+        "adminNotes": "Additional Information for AI",
+        "adminNotesHelp": "Add extra details that aren't on the source website. This information will be sent to the AI when generating the event but won't trigger change detection on re-scraping.",
+        "adminNotesPlaceholder": "e.g. the event has 3 water stations, the route goes through Serra da Arrábida, the organizer confirmed registration until April..."
       }
     }
   }

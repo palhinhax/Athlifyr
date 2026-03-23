@@ -163,6 +163,7 @@ class ScrapedEventOut(BaseModel):
     review_status: str
     review_notes: str | None = None
     reviewed_at: datetime | None = None
+    admin_notes: str | None = None
     is_hidden: bool = False
     athlifyr_event_id: str | None = None
     raw_data: str | None = None
@@ -227,6 +228,7 @@ class ScrapedEventUpdate(BaseModel):
     image_url: str | None = None
     review_status: str | None = None
     review_notes: str | None = None
+    admin_notes: str | None = None
     is_hidden: bool | None = None
 
 

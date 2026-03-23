@@ -400,8 +400,13 @@ async def _upsert_scraped_event(
 
         _apply_event_fields(existing, data)
 
-        # Handle image: upload if source changed, else restore bucket URL
-        if data.image_url and data.image_url != prev_source_image:
+        # Handle image: for APPROVED events, always preserve the existing
+        # bucket image (it may have been manually replaced by an operator).
+        # For non-approved events, upload if the source URL changed.
+        if existing.review_status == EventReviewStatus.APPROVED and prev_bucket_url:
+            logger.debug("  ↳ Event is APPROVED → preserving existing image")
+            existing.image_url = prev_bucket_url
+        elif data.image_url and data.image_url != prev_source_image:
             logger.info("  ↳ Image source changed → uploading new image")
             bucket_url = await _upload_image(
                 source_name,
@@ -729,6 +734,10 @@ async def generate_and_import_event(
             ],
             "raw_pricing_text": event.raw_pricing_text,
         }
+
+        # Include admin notes as extra context for AI (if provided)
+        if event.admin_notes:
+            event_data["admin_notes"] = event.admin_notes
 
         logger.info(
             "Auto-generate AI for new event: %s (id=%s)", event.title, event_id,

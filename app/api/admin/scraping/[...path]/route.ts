@@ -41,11 +41,18 @@ async function proxyRequest(
         ? await req.text()
         : undefined;
 
+    // Scraping runs can take several minutes — use a generous timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+
     const response = await fetch(targetUrl, {
       method: req.method,
       headers,
       body,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeout);
 
     const data = await response.text();
 
@@ -69,3 +76,6 @@ export const GET = proxyRequest;
 export const POST = proxyRequest;
 export const PATCH = proxyRequest;
 export const DELETE = proxyRequest;
+
+// Scraping runs can take several minutes
+export const maxDuration = 300;

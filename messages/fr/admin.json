@@ -617,7 +617,16 @@
         "allStatuses": "Tous les États",
         "statusCompleted": "Terminé",
         "statusRunning": "En cours",
-        "statusFailed": "Échoué"
+        "statusFailed": "Échoué",
+        "today": "Aujourd'hui",
+        "yesterday": "Hier",
+        "daysShown": "{count} jours affichés",
+        "clearHistory": "Effacer l'historique",
+        "clearConfirmTitle": "Effacer l'historique des exécutions ?",
+        "clearConfirmDescription": "Cette action supprimera définitivement les exécutions terminées et échouées plus anciennes que la période sélectionnée. Les exécutions en cours ne seront pas affectées.",
+        "olderThan": "Plus de {days, plural, one {# jour} other {# jours}}",
+        "cancel": "Annuler",
+        "confirmClear": "Supprimer"
       },
       "events": {
         "title": "Événements Collectés",
@@ -705,6 +714,35 @@
         "adminNotes": "Informations Suppl\u00e9mentaires pour l'IA",
         "adminNotesHelp": "Ajoutez des d\u00e9tails suppl\u00e9mentaires qui n'existent pas sur le site source. Ces informations seront envoy\u00e9es \u00e0 l'IA lors de la g\u00e9n\u00e9ration de l'\u00e9v\u00e9nement, mais ne d\u00e9clencheront pas la d\u00e9tection de changements lors du re-scraping.",
         "adminNotesPlaceholder": "ex. : l'\u00e9v\u00e9nement a 3 postes de ravitaillement, le parcours passe par la Serra da Arr\u00e1bida, l'organisateur a confirm\u00e9 les inscriptions jusqu'en avril..."
+      }
+    },
+    "duplicates": {
+      "button": "Chercher les doublons",
+      "title": "Événements possiblement en double",
+      "description": "Analyse des événements avec des noms similaires, des dates proches ou le même lieu qui pourraient être des doublons.",
+      "loading": "Analyse des événements...",
+      "analysed": "{count} événements analysés",
+      "found": "{count} doublon(s) possible(s) trouvé(s)",
+      "noDuplicates": "Aucun doublon trouvé",
+      "viewEvent": "Voir",
+      "manage": "Gérer",
+      "refresh": "Actualiser",
+      "deleteEvent": "Supprimer",
+      "deleteConfirmTitle": "Supprimer l'événement",
+      "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible.",
+      "deleting": "Suppression...",
+      "deleteSuccess": "Événement supprimé",
+      "deleteError": "Erreur lors de la suppression",
+      "cancel": "Annuler",
+      "reasons": {
+        "nearIdenticalName": "Nom quasi identique",
+        "similarName": "Nom similaire",
+        "closeDates": "Dates proches",
+        "sameLocation": "Même lieu"
+      },
+      "origin": {
+        "scraping": "Scraping",
+        "manual": "Manuel"
       }
     }
   }

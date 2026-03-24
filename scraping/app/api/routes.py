@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 logger = logging.getLogger(__name__)
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, delete as sa_delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -190,6 +190,39 @@ async def get_run(
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
     return run
+
+
+@router.delete("/runs")
+async def clear_runs(
+    older_than_days: int = Query(default=7, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Delete completed/failed runs older than N days.
+
+    Running runs are never deleted. The scraped_events.scraping_run_id
+    FK uses ON DELETE SET NULL, so events are preserved.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(days=older_than_days)
+
+    stmt = (
+        select(func.count(ScrapingRun.id))
+        .where(
+            ScrapingRun.status.in_(["completed", "failed"]),
+            ScrapingRun.created_at < cutoff,
+        )
+    )
+    count = await db.scalar(stmt) or 0
+
+    if count > 0:
+        delete_stmt = sa_delete(ScrapingRun).where(
+            ScrapingRun.status.in_(["completed", "failed"]),
+            ScrapingRun.created_at < cutoff,
+        )
+        await db.execute(delete_stmt)
+        await db.commit()
+
+    logger.info("Cleared %d runs older than %d days", count, older_than_days)
+    return {"deleted": count, "older_than_days": older_than_days}
 
 
 # ── Scraped Events ────────────────────────────────────────────────────────────
@@ -583,6 +616,7 @@ async def generate_event(
 
     # Add reference to scraped event
     generated["scrapedEventId"] = str(event_id)
+    generated["sourceName"] = event.source_name
 
     # Forward to Next.js import endpoint
     nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"
@@ -876,6 +910,7 @@ async def process_ai_queue(
                 if not generated.get("externalUrl"):
                     generated["externalUrl"] = event.external_url or event.source_url
                 generated["scrapedEventId"] = str(event.id)
+                generated["sourceName"] = event.source_name
 
                 # Forward to Next.js
                 nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"

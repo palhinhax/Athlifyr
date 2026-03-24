@@ -43,6 +43,7 @@ describe("structured-data", () => {
       checkInClosesAt: null,
       registrationFieldSettings: {},
       liveStatus: "SCHEDULED" as const,
+      scrapingSource: null,
     };
 
     const baseVariant = {

@@ -29,6 +29,8 @@ export const sportTypeLabels: Record<SportType, string> = {
   CYCLING: "Ciclismo",
   SURF: "Surf",
   TRIATHLON: "Triatlo",
+  DUATHLON: "Duatlo",
+  AQUATHLON: "Aquatlo",
   SWIMMING: "Natação",
   OTHER: "Outros",
 };

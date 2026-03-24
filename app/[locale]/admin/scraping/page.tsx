@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrapingStats } from "@/components/admin/scraping/scraping-stats";
 import { ScrapingSources } from "@/components/admin/scraping/scraping-sources";
 import { ScrapingRuns } from "@/components/admin/scraping/scraping-runs";
@@ -182,29 +183,42 @@ export default function AdminScrapingPage() {
         </div>
       )}
 
-      <ScrapeUrlForm
-        sources={sourceOptions}
-        apiUrl={API_URL}
-        onScraped={fetchAll}
-      />
+      <Tabs defaultValue="sources">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="sources">{t("sources.title")}</TabsTrigger>
+          <TabsTrigger value="runs">{t("runs.title")}</TabsTrigger>
+          <TabsTrigger value="events">{t("events.title")}</TabsTrigger>
+        </TabsList>
 
-      <ScrapingSources
-        sources={sources}
-        apiUrl={API_URL}
-        onSourceToggle={handleSourceToggle}
-        onRunSource={handleRunSource}
-        onRunAll={handleRunAll}
-        runningSource={runningSource}
-      />
+        <TabsContent value="sources" className="mt-4 space-y-4">
+          <ScrapeUrlForm
+            sources={sourceOptions}
+            apiUrl={API_URL}
+            onScraped={fetchAll}
+          />
+          <ScrapingSources
+            sources={sources}
+            apiUrl={API_URL}
+            onSourceToggle={handleSourceToggle}
+            onRunSource={handleRunSource}
+            onRunAll={handleRunAll}
+            runningSource={runningSource}
+          />
+        </TabsContent>
 
-      <ScrapingRuns sources={sourceOptions} apiUrl={API_URL} />
+        <TabsContent value="runs" className="mt-4">
+          <ScrapingRuns sources={sourceOptions} apiUrl={API_URL} />
+        </TabsContent>
 
-      <ScrapingEvents
-        sources={sourceOptions}
-        apiUrl={API_URL}
-        onEventSelect={setSelectedEventId}
-        onEventsChanged={fetchAll}
-      />
+        <TabsContent value="events" className="mt-4">
+          <ScrapingEvents
+            sources={sourceOptions}
+            apiUrl={API_URL}
+            onEventSelect={setSelectedEventId}
+            onEventsChanged={fetchAll}
+          />
+        </TabsContent>
+      </Tabs>
 
       <ScrapingEventDetail
         eventId={selectedEventId}

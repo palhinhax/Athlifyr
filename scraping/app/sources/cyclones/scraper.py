@@ -39,8 +39,9 @@ _SPORT_KW: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bcaminhada\b|\bwalk\b", re.I), "WALKING"),
     (re.compile(r"\badventure\b|\baventura\b", re.I), "TRAIL"),
     (re.compile(r"\btrilhos?\b", re.I), "TRAIL"),
-    (re.compile(r"\bduatlo\b", re.I), "DUATHLON"),
-    (re.compile(r"\btriatlo\b", re.I), "TRIATHLON"),
+    (re.compile(r"\bduatlo\b|\bduathlon\b", re.I), "DUATHLON"),
+    (re.compile(r"\baquatlo\b|\baquathlon\b", re.I), "AQUATHLON"),
+    (re.compile(r"\btriatlo\b|\btriathlon\b", re.I), "TRIATHLON"),
 ]
 
 

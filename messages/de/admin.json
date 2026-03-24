@@ -616,7 +616,16 @@
         "allStatuses": "Alle Status",
         "statusCompleted": "Abgeschlossen",
         "statusRunning": "L\u00e4uft",
-        "statusFailed": "Fehlgeschlagen"
+        "statusFailed": "Fehlgeschlagen",
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "daysShown": "{count} Tage angezeigt",
+        "clearHistory": "Verlauf löschen",
+        "clearConfirmTitle": "Ausführungsverlauf löschen?",
+        "clearConfirmDescription": "Dies löscht dauerhaft abgeschlossene und fehlgeschlagene Ausführungen, die älter als der gewählte Zeitraum sind. Laufende Ausführungen sind nicht betroffen.",
+        "olderThan": "Älter als {days, plural, one {# Tag} other {# Tage}}",
+        "cancel": "Abbrechen",
+        "confirmClear": "Löschen"
       },
       "events": {
         "title": "Gesammelte Veranstaltungen",
@@ -704,6 +713,35 @@
         "adminNotes": "Zusätzliche Informationen für die KI",
         "adminNotesHelp": "Fügen Sie zusätzliche Details hinzu, die auf der Quellwebsite nicht vorhanden sind. Diese Informationen werden beim Generieren des Events an die KI gesendet, lösen aber beim erneuten Scraping keine Änderungserkennung aus.",
         "adminNotesPlaceholder": "z.B.: die Veranstaltung hat 3 Verpflegungsstationen, die Strecke führt durch die Serra da Arrábida, der Veranstalter hat Anmeldungen bis April bestätigt..."
+      }
+    },
+    "duplicates": {
+      "button": "Duplikate finden",
+      "title": "Mögliche doppelte Veranstaltungen",
+      "description": "Analyse von Veranstaltungen mit ähnlichen Namen, nahen Daten oder gleichem Ort, die Duplikate sein könnten.",
+      "loading": "Veranstaltungen werden analysiert...",
+      "analysed": "{count} Veranstaltungen analysiert",
+      "found": "{count} mögliche(s) Duplikat(e) gefunden",
+      "noDuplicates": "Keine Duplikate gefunden",
+      "viewEvent": "Ansehen",
+      "manage": "Verwalten",
+      "refresh": "Aktualisieren",
+      "deleteEvent": "Löschen",
+      "deleteConfirmTitle": "Veranstaltung löschen",
+      "deleteConfirmDescription": "Bist du sicher, dass du diese Veranstaltung löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Wird gelöscht...",
+      "deleteSuccess": "Veranstaltung gelöscht",
+      "deleteError": "Fehler beim Löschen",
+      "cancel": "Abbrechen",
+      "reasons": {
+        "nearIdenticalName": "Fast identischer Name",
+        "similarName": "Ähnlicher Name",
+        "closeDates": "Nahe Daten",
+        "sameLocation": "Gleicher Ort"
+      },
+      "origin": {
+        "scraping": "Scraping",
+        "manual": "Manuell"
       }
     }
   }

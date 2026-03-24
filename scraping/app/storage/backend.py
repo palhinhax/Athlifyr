@@ -29,6 +29,11 @@ class StorageBackend(abc.ABC):
     async def exists(self, key: str) -> bool:
         ...
 
+    @abc.abstractmethod
+    async def delete(self, key: str) -> None:
+        """Delete the object at *key*. Silently ignores missing keys."""
+        ...
+
 
 class LocalStorageBackend(StorageBackend):
     def __init__(self, base_path: str | None = None) -> None:
@@ -49,6 +54,14 @@ class LocalStorageBackend(StorageBackend):
 
     async def exists(self, key: str) -> bool:
         return (self._base / key).exists()
+
+    async def delete(self, key: str) -> None:
+        path = self._base / key
+        try:
+            path.unlink(missing_ok=True)
+            logger.info("Deleted local file: %s", path)
+        except Exception:
+            logger.warning("Failed to delete local file: %s", path)
 
 
 class S3StorageBackend(StorageBackend):
@@ -84,6 +97,14 @@ class S3StorageBackend(StorageBackend):
                 return True
             except s3.exceptions.ClientError:
                 return False
+
+    async def delete(self, key: str) -> None:
+        async with self._session.client(**self._client_kwargs) as s3:
+            try:
+                await s3.delete_object(Bucket=self._bucket, Key=key)
+                logger.info("Deleted from bucket: %s/%s", self._bucket, key)
+            except Exception:
+                logger.warning("Failed to delete from bucket: %s/%s", self._bucket, key)
 
 
 def get_storage() -> StorageBackend:

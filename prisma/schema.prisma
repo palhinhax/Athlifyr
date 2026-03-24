@@ -243,6 +243,9 @@ model Event {
   // ── LiveRace settings ──────────────────────────────────────────────────────
   liveStatus           EventLiveStatus             @default(SCHEDULED)
 
+  // ── Origin tracking (set when imported from scraping service) ──────────────
+  scrapingSource       String?
+
   @@index([sportTypes])
   @@index([startDate])
   @@index([city])
@@ -1487,6 +1490,8 @@ enum SportType {
   CYCLING
   SURF
   TRIATHLON
+  DUATHLON
+  AQUATHLON
   SWIMMING
   OTHER
   WALKING

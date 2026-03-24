@@ -616,7 +616,16 @@
         "allStatuses": "All Statuses",
         "statusCompleted": "Completed",
         "statusRunning": "Running",
-        "statusFailed": "Failed"
+        "statusFailed": "Failed",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "daysShown": "{count} days shown",
+        "clearHistory": "Clear History",
+        "clearConfirmTitle": "Clear run history?",
+        "clearConfirmDescription": "This will permanently delete completed and failed runs older than the selected period. Running executions will not be affected.",
+        "olderThan": "Older than {days, plural, one {# day} other {# days}}",
+        "cancel": "Cancel",
+        "confirmClear": "Delete"
       },
       "events": {
         "title": "Scraped Events",
@@ -653,7 +662,13 @@
         "generateAllCancel": "Cancel",
         "generateAllConfirm": "Generate {count} Events",
         "generatingProgress": "Generating event {current} of {total}...",
-        "generatingDone": "All {total} events generated!"
+        "generatingDone": "All {total} events generated!",
+        "addImage": "Add image",
+        "replaceImage": "Replace image",
+        "uploadSuccess": "Image uploaded successfully",
+        "uploadError": "Failed to upload image",
+        "uploadInvalidFile": "Please select an image file",
+        "uploadFileTooLarge": "Image must be less than 5 MB"
       },
       "scrapeUrl": {
         "title": "Scrape Single URL",
@@ -694,7 +709,39 @@
         "tabDetails": "Details",
         "tabAiInput": "AI Input",
         "tabAiOutput": "AI Output",
-        "noAiData": "No AI data available. Generate the event first."
+        "noAiData": "No AI data available. Generate the event first.",
+        "adminNotes": "Additional Information for AI",
+        "adminNotesHelp": "Add extra details that aren't on the source website. This information will be sent to the AI when generating the event but won't trigger change detection on re-scraping.",
+        "adminNotesPlaceholder": "e.g. the event has 3 water stations, the route goes through Serra da Arrábida, the organizer confirmed registration until April..."
+      }
+    },
+    "duplicates": {
+      "button": "Find Duplicates",
+      "title": "Possible Duplicate Events",
+      "description": "Analysis of events with similar names, close dates, or same location that may be duplicates.",
+      "loading": "Analysing events...",
+      "analysed": "{count} events analysed",
+      "found": "{count} possible duplicate(s) found",
+      "noDuplicates": "No duplicates found",
+      "viewEvent": "View",
+      "manage": "Manage",
+      "refresh": "Refresh",
+      "deleteEvent": "Delete",
+      "deleteConfirmTitle": "Delete event",
+      "deleteConfirmDescription": "Are you sure you want to delete this event? This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Event deleted",
+      "deleteError": "Error deleting event",
+      "cancel": "Cancel",
+      "reasons": {
+        "nearIdenticalName": "Near-identical name",
+        "similarName": "Similar name",
+        "closeDates": "Close dates",
+        "sameLocation": "Same location"
+      },
+      "origin": {
+        "scraping": "Scraping",
+        "manual": "Manual"
       }
     }
   }

@@ -1,0 +1,160 @@
+name: Scrape Events
+
+on:
+  schedule:
+    # Run daily at 12:00 PM UTC
+    - cron: "0 12 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  scrape-events:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate Secrets
+        run: |
+          echo "🔐 Validating required secrets..."
+
+          if [ -z "${{ secrets.SCRAPING_API_URL }}" ]; then
+            echo "❌ ERROR: SCRAPING_API_URL secret is not configured"
+            exit 1
+          fi
+          echo "✅ SCRAPING_API_URL is configured"
+
+          if [ -z "${{ secrets.SCRAPING_API_KEY }}" ]; then
+            echo "❌ ERROR: SCRAPING_API_KEY secret is not configured"
+            exit 1
+          fi
+          echo "✅ SCRAPING_API_KEY is configured"
+
+          echo ""
+          echo "📍 Target URL: ${{ secrets.SCRAPING_API_URL }}/runs/all"
+
+      - name: Fetch Active Sources
+        id: sources
+        run: |
+          echo "📋 Fetching active scraping sources..."
+
+          response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}" \
+            -X GET "${{ secrets.SCRAPING_API_URL }}/sources" \
+            -H "X-API-Key: ${{ secrets.SCRAPING_API_KEY }}" \
+            --max-time 30)
+
+          body=$(echo "$response" | sed 's/---HTTP_CODE---.*//g')
+          http_code=$(echo "$response" | grep -oP '(?<=---HTTP_CODE---)\d+')
+
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Failed to fetch sources (HTTP $http_code)"
+            exit 1
+          fi
+
+          sources=$(echo "$body" | jq -r '[.[] | select(.enabled == true) | .source_name] | join(",")')
+          count=$(echo "$sources" | tr ',' '\n' | wc -l)
+          echo "✅ Found $count active sources: $sources"
+          echo "sources=$sources" >> "$GITHUB_OUTPUT"
+
+      - name: Scrape Each Source
+        run: |
+          echo "🔍 Starting event scraping (one source at a time)..."
+          echo "📅 Current time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo ""
+
+          IFS=',' read -ra SOURCES <<< "${{ steps.sources.outputs.sources }}"
+          total=${#SOURCES[@]}
+          success=0
+          failed=0
+          summary=""
+
+          for i in "${!SOURCES[@]}"; do
+            source="${SOURCES[$i]}"
+            idx=$((i + 1))
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📦 [$idx/$total] Scraping: $source"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+            response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}---TIME_TOTAL---%{time_total}s" \
+              -X POST "${{ secrets.SCRAPING_API_URL }}/runs" \
+              -H "X-API-Key: ${{ secrets.SCRAPING_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d "{\"source_name\": \"$source\"}" \
+              --max-time 900)
+
+            body=$(echo "$response" | sed 's/---HTTP_CODE---.*//g')
+            http_code=$(echo "$response" | grep -oP '(?<=---HTTP_CODE---)\d+')
+            time_total=$(echo "$response" | grep -oP '(?<=---TIME_TOTAL---).*')
+
+            echo "   HTTP: $http_code | Time: $time_total"
+
+            if [ "$http_code" = "200" ]; then
+              found=$(echo "$body" | jq -r '.events_found // 0')
+              created=$(echo "$body" | jq -r '.events_created // 0')
+              updated=$(echo "$body" | jq -r '.events_updated // 0')
+              echo "   ✅ found=$found created=$created updated=$updated"
+              summary="$summary\n   ✅ $source: found=$found created=$created updated=$updated ($time_total)"
+              success=$((success + 1))
+            else
+              echo "   ❌ Failed (HTTP $http_code)"
+              echo "$body" | jq . 2>/dev/null || echo "   $body"
+              summary="$summary\n   ❌ $source: FAILED (HTTP $http_code)"
+              failed=$((failed + 1))
+            fi
+            echo ""
+          done
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📈 Scraping Summary: $success/$total succeeded, $failed failed"
+          echo -e "$summary"
+          echo ""
+
+          if [ "$success" -eq 0 ]; then
+            echo "❌ All sources failed!"
+            exit 1
+          fi
+
+          echo "✅ Event scraping completed!"
+
+      - name: Process AI Queue
+        run: |
+          echo "🤖 Processing AI queue for new/updated events..."
+          echo ""
+
+          response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}---TIME_TOTAL---%{time_total}s" \
+            -X POST "${{ secrets.SCRAPING_API_URL }}/ai/process-queue?limit=20" \
+            -H "X-API-Key: ${{ secrets.SCRAPING_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            --max-time 600)
+
+          body=$(echo "$response" | sed 's/---HTTP_CODE---.*//g')
+          http_code=$(echo "$response" | grep -oP '(?<=---HTTP_CODE---)\d+')
+          time_total=$(echo "$response" | grep -oP '(?<=---TIME_TOTAL---).*')
+
+          echo "📊 Request Details:"
+          echo "   HTTP Status: $http_code"
+          echo "   Time: $time_total"
+          echo ""
+          echo "📦 Response Body:"
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo ""
+
+          if [ "$http_code" != "200" ]; then
+            echo "⚠️ AI queue processing failed with HTTP status $http_code"
+            exit 1
+          fi
+
+          # Display summary
+          if echo "$body" | jq -e '.processed' > /dev/null 2>&1; then
+            processed=$(echo "$body" | jq -r '.processed')
+            imported=$(echo "$body" | jq -r '.imported')
+            rejected=$(echo "$body" | jq -r '.rejected')
+            skipped=$(echo "$body" | jq -r '.skipped')
+            errors=$(echo "$body" | jq -r '.errors')
+            echo "📈 AI Queue Summary:"
+            echo "   Processed: $processed"
+            echo "   Imported: $imported"
+            echo "   Rejected: $rejected"
+            echo "   Skipped: $skipped"
+            echo "   Errors: $errors"
+          fi
+
+          echo ""
+          echo "✅ AI queue processing completed!"

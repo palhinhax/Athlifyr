@@ -70,8 +70,8 @@ export function ScrapeUrlForm({
   return (
     <Card className="p-4">
       <h3 className="mb-4 text-lg font-semibold">{t("scrapeUrl.title")}</h3>
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[180px] flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="w-full sm:min-w-[180px] sm:flex-1">
           <Label>{t("scrapeUrl.source")}</Label>
           <Select value={sourceName} onValueChange={setSourceName}>
             <SelectTrigger>
@@ -86,7 +86,7 @@ export function ScrapeUrlForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="min-w-[300px] flex-[2]">
+        <div className="w-full sm:min-w-[300px] sm:flex-[2]">
           <Label>{t("scrapeUrl.url")}</Label>
           <Input
             value={url}
@@ -98,6 +98,7 @@ export function ScrapeUrlForm({
         <Button
           onClick={handleScrape}
           disabled={scraping || !url || !sourceName}
+          className="w-full sm:w-auto"
         >
           {scraping ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

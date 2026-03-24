@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
@@ -39,7 +40,10 @@ _DOWNLOAD_TIMEOUT = 30
 _TRACKED_FIELDS = (
     "title", "description", "sport_types", "start_date", "end_date",
     "registration_deadline", "city", "country", "organizer_name",
-    "external_url", "image_url",
+    "external_url",
+    # NOTE: image_url is excluded — the DB stores the bucket URL while
+    # scraped data has the source URL, so they always differ and would
+    # trigger false-positive change detection + unnecessary AI reruns.
 )
 
 
@@ -94,6 +98,8 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
     db.add(run)
     await db.flush()
 
+    ai_event_ids: list[uuid.UUID] = []
+
     try:
         events_data = await scraper.scrape()
         created = 0
@@ -104,10 +110,27 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
             try:
                 async with db.begin_nested():
                     is_new = await _upsert_scraped_event(db, run.id, source_name, ev_data)
+                # Fetch the event for auto-generation check
+                row = await db.execute(
+                    select(ScrapedEvent.id, ScrapedEvent.ai_pending).where(
+                        ScrapedEvent.source_name == source_name,
+                        ScrapedEvent.source_url == ev_data.source_url,
+                    )
+                )
+                ev_row = row.one_or_none()
                 if is_new:
                     created += 1
+                    logger.info("[NEW] %s — queuing for AI", ev_data.title)
+                    if ev_row:
+                        ai_event_ids.append(ev_row[0])
                 else:
                     updated += 1
+                    # Also queue for AI if something changed (ai_pending=True)
+                    if ev_row and ev_row[1]:
+                        logger.info("[CHANGED] %s — queuing for AI re-processing", ev_data.title)
+                        ai_event_ids.append(ev_row[0])
+                    else:
+                        logger.info("[UNCHANGED] %s — skipping AI", ev_data.title)
             except Exception:
                 logger.exception("Failed to upsert event: %s", ev_data.source_url)
                 failed += 1
@@ -117,6 +140,11 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
         run.events_updated = updated
         run.events_failed = failed
         run.status = ScrapingRunStatus.COMPLETED
+
+        logger.info(
+            "[%s] Run complete — found: %d | new: %d | existing: %d | failed: %d | AI queue: %d",
+            source_name, len(events_data), created, updated, failed, len(ai_event_ids),
+        )
 
         # Update source config
         now = datetime.now(timezone.utc)
@@ -144,7 +172,37 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
 
     await db.commit()
     await db.refresh(run)
+
+    # Auto-generate AI + import to Next.js for new / changed events
+    if run.status == ScrapingRunStatus.COMPLETED and ai_event_ids:
+        logger.info(
+            "Auto-generating AI for %d new/changed events from %s",
+            len(ai_event_ids), source_name,
+        )
+        await _run_ai_batch(ai_event_ids)
+
     return run
+
+
+_AI_CONCURRENCY = 10
+
+
+async def _run_ai_batch(event_ids: list[uuid.UUID]) -> None:
+    """Process AI generation for a batch of events with bounded concurrency."""
+    from app.db.session import async_session
+
+    sem = asyncio.Semaphore(_AI_CONCURRENCY)
+
+    async def _process(eid: uuid.UUID) -> None:
+        async with sem:
+            async with async_session() as db:
+                try:
+                    await generate_and_import_event(eid, db)
+                    await db.commit()
+                except Exception:
+                    logger.exception("Auto-generate failed for event %s", eid)
+
+    await asyncio.gather(*[_process(eid) for eid in event_ids])
 
 
 async def scrape_single_event(
@@ -217,6 +275,29 @@ async def download_event_documents(event_id: uuid.UUID, db: AsyncSession) -> int
     return count
 
 
+async def _delete_bucket_object(bucket_url: str) -> None:
+    """Delete an object from the storage bucket given its full URL."""
+    storage = get_storage()
+    try:
+        from app.core.config import settings as _cfg
+        if _cfg.storage_backend == "s3":
+            prefix = f"{_cfg.storage_s3_endpoint}/{_cfg.storage_s3_bucket}/"
+            if bucket_url.startswith(prefix):
+                key = bucket_url[len(prefix):]
+                await storage.delete(key)
+                return
+        else:
+            # Local storage
+            prefix = str(_cfg.storage_local_path) + "/"
+            if bucket_url.startswith(prefix):
+                key = bucket_url[len(prefix):]
+                await storage.delete(key)
+                return
+        logger.warning("Could not extract key from bucket URL: %s", bucket_url[:200])
+    except Exception:
+        logger.exception("Failed to delete old image: %s", bucket_url[:200])
+
+
 async def _upload_image(
     source_name: str, event_slug: str, image_url: str,
 ) -> str | None:
@@ -232,6 +313,21 @@ async def _upload_image(
         return None
     storage = get_storage()
     try:
+        ext = _extension_from_url(image_url) or ".jpg"
+        key = f"images/{source_name}/{event_slug}{ext}"
+
+        # Skip download+upload if already in the bucket
+        if await storage.exists(key):
+            logger.info("  ↳ Image already in bucket, skipping upload: %s", key)
+            # Re-call save would overwrite; just return the expected URL.
+            # For S3 the URL is endpoint/bucket/key; for local it's the path.
+            # We can simply call save with existing data, but cheaper to
+            # reconstruct the URL that save() would have returned.
+            from app.core.config import settings as _cfg
+            if _cfg.storage_backend == "s3":
+                return f"{_cfg.storage_s3_endpoint}/{_cfg.storage_s3_bucket}/{key}"
+            return str(_cfg.storage_local_path + "/" + key)
+
         async with httpx.AsyncClient(follow_redirects=True, timeout=_DOWNLOAD_TIMEOUT) as client:
             resp = await client.get(image_url)
             resp.raise_for_status()
@@ -323,7 +419,16 @@ async def _upsert_scraped_event(
 
     if existing:
         # Record field-level diffs before updating
-        await _record_changes(db, existing, data, run_id)
+        has_changes = await _record_changes(db, existing, data, run_id)
+
+        # Mark for AI re-processing if meaningful fields changed
+        if has_changes and existing.review_status != EventReviewStatus.REJECTED:
+            existing.ai_pending = True
+            logger.info("  ↳ Fields changed → ai_pending=True (status=%s)", existing.review_status)
+        elif has_changes:
+            logger.info("  ↳ Fields changed but status=%s → skipping AI", existing.review_status)
+        else:
+            logger.debug("  ↳ No field changes detected")
 
         # Save current bucket URL before _apply_event_fields overwrites it
         prev_bucket_url = existing.image_url
@@ -335,16 +440,26 @@ async def _upsert_scraped_event(
 
         _apply_event_fields(existing, data)
 
-        # Handle image: upload if source changed, else restore bucket URL
-        if data.image_url and data.image_url != prev_source_image:
+        # Handle image: for APPROVED events, always preserve the existing
+        # bucket image (it may have been manually replaced by an operator).
+        # For non-approved events, upload if the source URL changed.
+        if existing.review_status == EventReviewStatus.APPROVED and prev_bucket_url:
+            logger.debug("  ↳ Event is APPROVED → preserving existing image")
+            existing.image_url = prev_bucket_url
+        elif data.image_url and data.image_url != prev_source_image:
+            logger.info("  ↳ Image source changed → uploading new image")
             bucket_url = await _upload_image(
                 source_name,
                 slugify(data.title)[:200] if data.title else str(uuid.uuid4()),
                 data.image_url,
             )
             if bucket_url:
+                # Delete old image from bucket if it differs from the new one
+                if prev_bucket_url and prev_bucket_url != bucket_url:
+                    await _delete_bucket_object(prev_bucket_url)
                 existing.image_url = bucket_url
         elif prev_bucket_url:
+            logger.debug("  ↳ Image unchanged → keeping bucket URL")
             existing.image_url = prev_bucket_url
 
         existing.scraping_run_id = run_id
@@ -370,6 +485,7 @@ async def _upsert_scraped_event(
         source_event_id=data.source_event_id,
         slug=slugify(data.title)[:500] if data.title else None,
         review_status=EventReviewStatus.PENDING,
+        ai_pending=True,
         raw_data=data.raw_data,
         last_seen_at=datetime.now(timezone.utc),
     )
@@ -503,8 +619,11 @@ async def _record_changes(
     existing: ScrapedEvent,
     data: ScrapedEventData,
     run_id: uuid.UUID | None,
-) -> None:
-    """Compare tracked fields and insert change-log rows for any diffs."""
+) -> bool:
+    """Compare tracked fields and insert change-log rows for any diffs.
+
+    Returns True if at least one tracked field changed.
+    """
     sport_types_str = ",".join(data.sport_types) if data.sport_types else None
 
     new_values = {
@@ -518,9 +637,10 @@ async def _record_changes(
         "country": data.country,
         "organizer_name": data.organizer_name,
         "external_url": data.external_url,
-        "image_url": data.image_url,
     }
 
+    changed = False
+    changed_fields: list[str] = []
     for field in _TRACKED_FIELDS:
         old_raw = getattr(existing, field, None)
         # Normalize datetime comparison: strip tzinfo for consistent format
@@ -530,6 +650,8 @@ async def _record_changes(
             old_val = str(old_raw) if old_raw is not None else None
         new_val = new_values.get(field)
         if old_val != new_val:
+            changed = True
+            changed_fields.append(field)
             db.add(
                 EventChangeLog(
                     event_id=existing.id,
@@ -539,6 +661,9 @@ async def _record_changes(
                     new_value=new_val,
                 )
             )
+    if changed_fields:
+        logger.info("  ↳ Changed fields: %s", ", ".join(changed_fields))
+    return changed
 
 
 def _apply_event_fields(event: ScrapedEvent, data: ScrapedEventData) -> None:
@@ -558,3 +683,197 @@ def _apply_event_fields(event: ScrapedEvent, data: ScrapedEventData) -> None:
     event.image_url = data.image_url
     event.raw_pricing_text = data.raw_pricing_text
     event.raw_data = data.raw_data
+
+
+# ── Auto AI generate + Next.js import ────────────────────────────────────────
+
+
+async def generate_and_import_event(
+    event_id: uuid.UUID, db: AsyncSession,
+) -> dict | None:
+    """Run AI generation and forward the result to the Next.js import endpoint.
+
+    Returns the Next.js response JSON on success, or None on failure.
+    This is designed to be called automatically for new events, so it
+    never raises — all errors are logged and swallowed.
+    """
+    from app.services.ai_generator import generate_event_json, _read_document_text
+    from app.core.config import settings as cfg
+
+    # Need both OpenAI key and Next.js URL configured
+    if not cfg.openai_api_key or not cfg.nextjs_url:
+        logger.debug("AI auto-generate skipped: missing openai_api_key or nextjs_url")
+        return None
+
+    try:
+        # Load full event with relations
+        result = await db.execute(
+            select(ScrapedEvent)
+            .options(
+                selectinload(ScrapedEvent.variants),
+                selectinload(ScrapedEvent.pricing_phases),
+                selectinload(ScrapedEvent.documents),
+            )
+            .where(ScrapedEvent.id == event_id)
+        )
+        event = result.scalar_one_or_none()
+        if not event:
+            logger.warning("Auto-generate: event %s not found", event_id)
+            return None
+
+        # Skip if already approved and not pending re-processing
+        if event.review_status == EventReviewStatus.APPROVED and not event.ai_pending:
+            logger.debug("Auto-generate skipped for %s — already approved", event.title)
+            return None
+
+        # Skip if rejected
+        if event.review_status == EventReviewStatus.REJECTED:
+            logger.debug("Auto-generate skipped for %s — rejected", event.title)
+            return None
+
+        # Skip if no image (AI generation requires it)
+        if not event.image_url:
+            logger.info("Auto-generate skipped for %s — no image", event.title)
+            return None
+
+        # Collect PDF documents
+        docs = [
+            d for d in event.documents
+            if d.original_url and (
+                (d.mime_type and "pdf" in d.mime_type)
+                or (d.file_name and d.file_name.lower().endswith(".pdf"))
+                or (d.original_url and d.original_url.lower().endswith(".pdf"))
+                or d.document_type == "regulation"
+            )
+        ]
+
+        # Build event data dict
+        event_data = {
+            "title": event.title,
+            "source_url": event.source_url,
+            "description": event.description,
+            "sport_types": event.sport_types,
+            "start_date": str(event.start_date) if event.start_date else None,
+            "end_date": str(event.end_date) if event.end_date else None,
+            "registration_deadline": str(event.registration_deadline) if event.registration_deadline else None,
+            "city": event.city,
+            "country": event.country,
+            "latitude": event.latitude,
+            "longitude": event.longitude,
+            "organizer_name": event.organizer_name,
+            "external_url": event.external_url,
+            "image_url": event.image_url,
+            "variants": [
+                {
+                    "name": v.name,
+                    "distance_km": v.distance_km,
+                    "elevation_gain_m": v.elevation_gain_m,
+                    "elevation_loss_m": v.elevation_loss_m,
+                    "price": v.price,
+                    "currency": v.currency,
+                    "start_time": v.start_time,
+                }
+                for v in event.variants
+            ],
+            "raw_pricing_text": event.raw_pricing_text,
+        }
+
+        # Include admin notes as extra context for AI (if provided)
+        if event.admin_notes:
+            event_data["admin_notes"] = event.admin_notes
+
+        logger.info(
+            "Auto-generate AI for new event: %s (id=%s)", event.title, event_id,
+        )
+
+        # Extract text from documents
+        doc_texts: list[dict[str, str]] = []
+        for doc in docs:
+            text = await _read_document_text(doc.original_url)
+            if text:
+                doc_texts.append({"name": doc.file_name or doc.document_type, "content": text})
+            else:
+                logger.warning(
+                    "Could not extract text from document %s (image-based PDF?)",
+                    doc.file_name or doc.original_url,
+                )
+
+        if not doc_texts and event.external_url:
+            page_text = await _read_document_text(event.external_url)
+            if page_text:
+                doc_texts.append({"name": "event_page", "content": page_text})
+
+        # Call OpenAI
+        generated = await generate_event_json(event_data, doc_texts)
+
+        # Handle rejection
+        if generated.get("rejected"):
+            reason = generated.get("reason", "Not a sports event")
+            event.review_status = EventReviewStatus.REJECTED
+            event.review_notes = f"AI auto-rejected: {reason}"
+            event.is_hidden = True
+            event.ai_pending = False
+            event.ai_output = json.dumps(generated, ensure_ascii=False, default=str)
+            await db.flush()
+            logger.info("Auto-generate: AI rejected %s — %s", event.title, reason)
+            return None
+
+        # Save AI debug data
+        ai_input_data = {
+            "event_data": event_data,
+            "documents": [{"name": d["name"], "content_length": len(d["content"])} for d in doc_texts],
+        }
+        event.ai_input = json.dumps(ai_input_data, ensure_ascii=False, default=str)
+        event.ai_output = json.dumps(generated, ensure_ascii=False, default=str)
+
+        # Inject image + external URL
+        generated["imageUrl"] = event.image_url
+        if not generated.get("externalUrl"):
+            generated["externalUrl"] = event.external_url or event.source_url
+        generated["scrapedEventId"] = str(event_id)
+        generated["sourceName"] = event.source_name
+
+        # Inject document bucket URLs so the frontend can link to them
+        if docs:
+            generated["documents"] = [
+                {
+                    "type": d.document_type or "regulation",
+                    "name": d.file_name or d.document_type or "document",
+                    "url": d.file_path or d.original_url,
+                }
+                for d in docs
+                if d.file_path or d.original_url
+            ]
+
+        # Forward to Next.js
+        nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"
+        headers: dict[str, str] = {"Content-Type": "application/json"}
+        if cfg.nextjs_import_secret:
+            headers["X-Import-Secret"] = cfg.nextjs_import_secret
+
+        async with httpx.AsyncClient(timeout=180) as client:
+            resp = await client.post(nextjs_url, json=generated, headers=headers)
+
+        if resp.status_code not in (200, 201):
+            logger.error(
+                "Auto-generate: Next.js import failed for %s (%d): %s",
+                event.title, resp.status_code, resp.text[:500],
+            )
+            return None
+
+        # Mark as approved
+        event.review_status = EventReviewStatus.APPROVED
+        event.athlifyr_event_id = resp.json().get("id")
+        event.reviewed_at = datetime.now(timezone.utc)
+        event.ai_pending = False
+        await db.flush()
+
+        logger.info(
+            "Auto-generate: successfully imported %s → athlifyr_id=%s",
+            event.title, event.athlifyr_event_id,
+        )
+        return resp.json()
+
+    except Exception:
+        logger.exception("Auto-generate failed for event %s", event_id)
+        return None

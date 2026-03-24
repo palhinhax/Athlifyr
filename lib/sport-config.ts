@@ -10,6 +10,8 @@ export type SportType =
   | "BTT"
   | "SWIMMING"
   | "TRIATHLON"
+  | "DUATHLON"
+  | "AQUATHLON"
   | "HYROX"
   | "CROSSFIT"
   | "OBSTACLE"
@@ -29,6 +31,8 @@ export const sportIcons: Record<SportType, string> = {
   BTT: "🚵",
   SWIMMING: "🏊",
   TRIATHLON: "🏊‍♂️",
+  DUATHLON: "🏃‍♂️🚴",
+  AQUATHLON: "🏊🏃",
   HYROX: "💪",
   CROSSFIT: "🏋️",
   OBSTACLE: "🧗",
@@ -75,6 +79,16 @@ export const sportColors: Record<
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)", // Purple
     shadow: "rgba(139, 92, 246, 0.4)",
     solid: "#8B5CF6",
+  },
+  DUATHLON: {
+    gradient: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)", // Violet
+    shadow: "rgba(124, 58, 237, 0.4)",
+    solid: "#7C3AED",
+  },
+  AQUATHLON: {
+    gradient: "linear-gradient(135deg, #2DD4BF 0%, #0D9488 100%)", // Teal-cyan
+    shadow: "rgba(45, 212, 191, 0.4)",
+    solid: "#2DD4BF",
   },
   HYROX: {
     gradient: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)", // Red

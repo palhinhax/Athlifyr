@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrapingStats } from "@/components/admin/scraping/scraping-stats";
 import { ScrapingSources } from "@/components/admin/scraping/scraping-sources";
 import { ScrapingRuns } from "@/components/admin/scraping/scraping-runs";
@@ -44,6 +45,7 @@ export default function AdminScrapingPage() {
   const [runningSource, setRunningSource] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -86,15 +88,26 @@ export default function AdminScrapingPage() {
 
   const handleRunSource = async (sourceName: string) => {
     setRunningSource(sourceName);
+    setRunError(null);
     try {
       const res = await fetch(`${API_URL}/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ source_name: sourceName }),
       });
-      if (!res.ok) throw new Error("Failed to run source");
+      if (!res.ok) {
+        const errData = await res
+          .json()
+          .catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(
+          errData.detail || errData.error || "Failed to run source"
+        );
+      }
       await fetchAll();
     } catch (error) {
+      if (error instanceof Error) {
+        setRunError(error.message);
+      }
       console.error("Error running source:", error);
     } finally {
       setRunningSource(null);
@@ -103,11 +116,22 @@ export default function AdminScrapingPage() {
 
   const handleRunAll = async () => {
     setRunningSource("__all__");
+    setRunError(null);
     try {
       const res = await fetch(`${API_URL}/runs/all`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to run all sources");
+      if (!res.ok) {
+        const errData = await res
+          .json()
+          .catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(
+          errData.detail || errData.error || "Failed to run all sources"
+        );
+      }
       await fetchAll();
     } catch (error) {
+      if (error instanceof Error) {
+        setRunError(error.message);
+      }
       console.error("Error running all sources:", error);
     } finally {
       setRunningSource(null);
@@ -153,29 +177,48 @@ export default function AdminScrapingPage() {
 
       <ScrapingStats stats={stats} />
 
-      <ScrapeUrlForm
-        sources={sourceOptions}
-        apiUrl={API_URL}
-        onScraped={fetchAll}
-      />
+      {runError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+          <p className="text-sm text-red-600 dark:text-red-400">{runError}</p>
+        </div>
+      )}
 
-      <ScrapingSources
-        sources={sources}
-        apiUrl={API_URL}
-        onSourceToggle={handleSourceToggle}
-        onRunSource={handleRunSource}
-        onRunAll={handleRunAll}
-        runningSource={runningSource}
-      />
+      <Tabs defaultValue="sources">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="sources">{t("sources.title")}</TabsTrigger>
+          <TabsTrigger value="runs">{t("runs.title")}</TabsTrigger>
+          <TabsTrigger value="events">{t("events.title")}</TabsTrigger>
+        </TabsList>
 
-      <ScrapingRuns sources={sourceOptions} apiUrl={API_URL} />
+        <TabsContent value="sources" className="mt-4 space-y-4">
+          <ScrapeUrlForm
+            sources={sourceOptions}
+            apiUrl={API_URL}
+            onScraped={fetchAll}
+          />
+          <ScrapingSources
+            sources={sources}
+            apiUrl={API_URL}
+            onSourceToggle={handleSourceToggle}
+            onRunSource={handleRunSource}
+            onRunAll={handleRunAll}
+            runningSource={runningSource}
+          />
+        </TabsContent>
 
-      <ScrapingEvents
-        sources={sourceOptions}
-        apiUrl={API_URL}
-        onEventSelect={setSelectedEventId}
-        onEventsChanged={fetchAll}
-      />
+        <TabsContent value="runs" className="mt-4">
+          <ScrapingRuns sources={sourceOptions} apiUrl={API_URL} />
+        </TabsContent>
+
+        <TabsContent value="events" className="mt-4">
+          <ScrapingEvents
+            sources={sourceOptions}
+            apiUrl={API_URL}
+            onEventSelect={setSelectedEventId}
+            onEventsChanged={fetchAll}
+          />
+        </TabsContent>
+      </Tabs>
 
       <ScrapingEventDetail
         eventId={selectedEventId}

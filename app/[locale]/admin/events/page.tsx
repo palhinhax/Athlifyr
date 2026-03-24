@@ -33,14 +33,12 @@ import { SportType } from "@prisma/client";
 import { formatDateShort } from "@/lib/event-utils";
 import { useTranslations } from "next-intl";
 import { SportBadge } from "@/components/sport-badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AdminEventSuggestions } from "@/components/admin-event-suggestions";
+import { AdminEventDuplicates } from "@/components/admin/admin-event-duplicates";
 
 interface Event {
   id: string;
   title: string;
   slug: string;
-  description: string;
   sportTypes: SportType[];
   startDate: string;
   city: string;
@@ -50,6 +48,7 @@ interface Event {
   longitude: number | null;
   googleMapsUrl: string | null;
   externalUrl: string | null;
+  hasDescription: boolean;
 }
 
 interface TriathlonSegment {
@@ -98,7 +97,11 @@ function updateSegmentInVariant(
 function getMissingFields(event: Event): string[] {
   const missing: string[] = [];
 
-  if (!event.imageUrl || event.imageUrl.trim().length === 0) {
+  if (
+    !event.imageUrl ||
+    event.imageUrl === "null" ||
+    event.imageUrl.trim().length === 0
+  ) {
     missing.push("Foto");
   }
   if (!event.latitude || !event.longitude) {
@@ -110,7 +113,7 @@ function getMissingFields(event: Event): string[] {
   if (!event.externalUrl) {
     missing.push("Link externo");
   }
-  if (!event.description || event.description.trim().length === 0) {
+  if (!event.hasDescription) {
     missing.push("Descrição");
   }
 
@@ -494,35 +497,30 @@ export default function AdminEventsPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="mb-6 text-3xl font-bold">Gerir Eventos</h1>
 
-        <Tabs defaultValue="events" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="events">Eventos</TabsTrigger>
-            <TabsTrigger value="suggestions">Sugestões</TabsTrigger>
-          </TabsList>
+        <div>
+          {/* Header */}
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-muted-foreground">
+                {totalCount} {totalCount === 1 ? "evento" : "eventos"} no total
+                {(() => {
+                  const incompleteCount = events.filter(
+                    (e) => getMissingFields(e).length > 0
+                  ).length;
+                  if (incompleteCount > 0) {
+                    return (
+                      <span className="ml-2 text-amber-600 dark:text-amber-400">
+                        • {incompleteCount} com campos em falta
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
+              </p>
+            </div>
 
-          <TabsContent value="events">
-            {/* Header */}
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-muted-foreground">
-                  {totalCount} {totalCount === 1 ? "evento" : "eventos"} no
-                  total
-                  {(() => {
-                    const incompleteCount = events.filter(
-                      (e) => getMissingFields(e).length > 0
-                    ).length;
-                    if (incompleteCount > 0) {
-                      return (
-                        <span className="ml-2 text-amber-600 dark:text-amber-400">
-                          • {incompleteCount} com campos em falta
-                        </span>
-                      );
-                    }
-                    return null;
-                  })()}
-                </p>
-              </div>
-
+            <div className="flex gap-2">
+              <AdminEventDuplicates />
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
@@ -938,228 +936,226 @@ export default function AdminEventsPage() {
                 </DialogContent>
               </Dialog>
             </div>
+          </div>
 
-            {/* Search and Filters */}
-            <div className="mb-6 space-y-3">
-              <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar eventos..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              {/* Incomplete Events Filter */}
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="show-incomplete"
-                  checked={showIncompleteOnly}
-                  onChange={(e) => {
-                    setShowIncompleteOnly(e.target.checked);
-                    setCurrentPage(1); // Reset to first page when filter changes
-                  }}
-                  className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                />
-                <label
-                  htmlFor="show-incomplete"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Mostrar apenas eventos com campos em falta
-                </label>
-              </div>
+          {/* Search and Filters */}
+          <div className="mb-6 space-y-3">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Pesquisar eventos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
 
-            {/* Events List */}
-            {events.length === 0 ? (
-              <Card className="p-12 text-center">
-                <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">
-                  {searchQuery ? "Nenhum evento encontrado" : "Sem eventos"}
-                </h3>
-                <p className="mb-4 text-sm text-muted-foreground">
-                  {searchQuery
-                    ? "Tenta uma pesquisa diferente."
-                    : "Cria o primeiro evento para começar."}
-                </p>
-                {!searchQuery && (
-                  <Button
-                    onClick={() => setIsCreateOpen(true)}
-                    className="gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Criar Evento
-                  </Button>
-                )}
-              </Card>
-            ) : (
-              <>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {events.map((event) => (
-                    <div key={event.id} className="group relative">
-                      <Link href={`/events/${event.slug}`}>
-                        <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-                          <div className="relative h-40 w-full">
-                            <Image
-                              src={event.imageUrl || "/placeholder-event.jpg"}
-                              alt={event.title}
-                              fill
-                              className="object-cover"
-                            />
-                            <div className="absolute right-2 top-2 flex flex-wrap gap-1">
-                              {event.sportTypes.map((sport) => (
-                                <SportBadge
-                                  key={sport}
-                                  sportType={sport}
-                                  size="md"
-                                />
-                              ))}
+            {/* Incomplete Events Filter */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="show-incomplete"
+                checked={showIncompleteOnly}
+                onChange={(e) => {
+                  setShowIncompleteOnly(e.target.checked);
+                  setCurrentPage(1); // Reset to first page when filter changes
+                }}
+                className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+              />
+              <label
+                htmlFor="show-incomplete"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Mostrar apenas eventos com campos em falta
+              </label>
+            </div>
+          </div>
+
+          {/* Events List */}
+          {events.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-semibold">
+                {searchQuery ? "Nenhum evento encontrado" : "Sem eventos"}
+              </h3>
+              <p className="mb-4 text-sm text-muted-foreground">
+                {searchQuery
+                  ? "Tenta uma pesquisa diferente."
+                  : "Cria o primeiro evento para começar."}
+              </p>
+              {!searchQuery && (
+                <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Criar Evento
+                </Button>
+              )}
+            </Card>
+          ) : (
+            <>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {events.map((event) => (
+                  <div key={event.id} className="group relative">
+                    <Link href={`/events/${event.slug}`}>
+                      <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+                        <div className="relative h-40 w-full">
+                          <Image
+                            src={
+                              event.imageUrl && event.imageUrl !== "null"
+                                ? event.imageUrl
+                                : "/placeholder-event.jpg"
+                            }
+                            alt={event.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover"
+                          />
+                          <div className="absolute right-2 top-2 flex flex-wrap gap-1">
+                            {event.sportTypes.map((sport) => (
+                              <SportBadge
+                                key={sport}
+                                sportType={sport}
+                                size="md"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <CardContent className="p-4">
+                          <h3 className="mb-2 line-clamp-1 font-semibold">
+                            {event.title}
+                          </h3>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-3 w-3" />
+                              <span>
+                                {formatDateShort(new Date(event.startDate))}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-3 w-3" />
+                              <span>
+                                {event.city}, {event.country}
+                              </span>
                             </div>
                           </div>
-                          <CardContent className="p-4">
-                            <h3 className="mb-2 line-clamp-1 font-semibold">
-                              {event.title}
-                            </h3>
-                            <div className="space-y-1 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-3 w-3" />
-                                <span>
-                                  {formatDateShort(new Date(event.startDate))}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-3 w-3" />
-                                <span>
-                                  {event.city}, {event.country}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="mt-3">
-                              {(() => {
-                                const missingFields = getMissingFields(event);
-                                if (missingFields.length > 0) {
-                                  return (
-                                    <div className="space-y-1">
-                                      <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
-                                        <span className="text-amber-600 dark:text-amber-400">
-                                          ⚠️
-                                        </span>
-                                        <span>Campos em falta</span>
-                                      </div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {missingFields.map((field) => (
-                                          <span
-                                            key={field}
-                                            className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                                          >
-                                            {field}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  );
-                                }
+                          <div className="mt-3">
+                            {(() => {
+                              const missingFields = getMissingFields(event);
+                              if (missingFields.length > 0) {
                                 return (
-                                  <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
-                                    <span className="text-green-600 dark:text-green-400">
-                                      ✓
-                                    </span>
-                                    <span>Completo</span>
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
+                                      <span className="text-amber-600 dark:text-amber-400">
+                                        ⚠️
+                                      </span>
+                                      <span>Campos em falta</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {missingFields.map((field) => (
+                                        <span
+                                          key={field}
+                                          className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                        >
+                                          {field}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
                                 );
-                              })()}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                      {/* Admin settings button */}
-                      <Link
-                        href={`/admin/events/${event.id}`}
-                        className="absolute bottom-2 right-2 z-10"
-                        onClick={(e) => e.stopPropagation()}
+                              }
+                              return (
+                                <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
+                                  <span className="text-green-600 dark:text-green-400">
+                                    ✓
+                                  </span>
+                                  <span>Completo</span>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                    {/* Admin settings button */}
+                    <Link
+                      href={`/admin/events/${event.id}`}
+                      className="absolute bottom-2 right-2 z-10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                        title="Configurações admin"
                       >
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          className="h-7 w-7 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
-                          title="Configurações admin"
-                        >
-                          <Settings2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className="mt-8 flex items-center justify-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Anterior
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter((page) => {
-                          // Show first page, last page, current page, and pages around current
-                          return (
-                            page === 1 ||
-                            page === totalPages ||
-                            Math.abs(page - currentPage) <= 1
-                          );
-                        })
-                        .map((page, index, array) => {
-                          // Add ellipsis if there's a gap
-                          const prevPage = array[index - 1];
-                          const showEllipsis = prevPage && page - prevPage > 1;
-
-                          return (
-                            <div key={page} className="flex items-center gap-1">
-                              {showEllipsis && (
-                                <span className="px-2 text-muted-foreground">
-                                  ...
-                                </span>
-                              )}
-                              <Button
-                                variant={
-                                  currentPage === page ? "default" : "outline"
-                                }
-                                size="sm"
-                                onClick={() => setCurrentPage(page)}
-                                className="min-w-[2.5rem]"
-                              >
-                                {page}
-                              </Button>
-                            </div>
-                          );
-                        })}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      Próxima
-                    </Button>
+                        <Settings2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </Link>
                   </div>
-                )}
-              </>
-            )}
-          </TabsContent>
+                ))}
+              </div>
 
-          <TabsContent value="suggestions">
-            <AdminEventSuggestions />
-          </TabsContent>
-        </Tabs>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Anterior
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((page) => {
+                        // Show first page, last page, current page, and pages around current
+                        return (
+                          page === 1 ||
+                          page === totalPages ||
+                          Math.abs(page - currentPage) <= 1
+                        );
+                      })
+                      .map((page, index, array) => {
+                        // Add ellipsis if there's a gap
+                        const prevPage = array[index - 1];
+                        const showEllipsis = prevPage && page - prevPage > 1;
+
+                        return (
+                          <div key={page} className="flex items-center gap-1">
+                            {showEllipsis && (
+                              <span className="px-2 text-muted-foreground">
+                                ...
+                              </span>
+                            )}
+                            <Button
+                              variant={
+                                currentPage === page ? "default" : "outline"
+                              }
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className="min-w-[2.5rem]"
+                            >
+                              {page}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Próxima
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

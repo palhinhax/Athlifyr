@@ -69,7 +69,10 @@ export function EventHeader({
   locale = "en",
 }: EventHeaderProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const hasImage = Boolean(imageUrl && imageUrl !== "/placeholder-event.jpg");
+  const safeImageUrl = imageUrl && imageUrl !== "null" ? imageUrl : null;
+  const hasImage = Boolean(
+    safeImageUrl && safeImageUrl !== "/placeholder-event.jpg"
+  );
 
   const t = useTranslations("events");
   const tCommon = useTranslations("common");
@@ -82,7 +85,7 @@ export function EventHeader({
   return (
     <>
       <HeroBackground
-        image={imageUrl || "/placeholder-event.jpg"}
+        image={safeImageUrl || "/placeholder-event.jpg"}
         height="custom"
         customHeight="280px"
         clickable={hasImage}
@@ -172,7 +175,7 @@ export function EventHeader({
       {/* Lightbox */}
       {hasImage && isLightboxOpen && (
         <EventImageLightbox
-          imageUrl={imageUrl!}
+          imageUrl={safeImageUrl!}
           title={title}
           onClose={() => setIsLightboxOpen(false)}
         />

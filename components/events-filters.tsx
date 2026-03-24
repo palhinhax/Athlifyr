@@ -45,6 +45,8 @@ const SPORT_TYPES: SportType[] = [
   "CYCLING",
   "SURF",
   "TRIATHLON",
+  "DUATHLON",
+  "AQUATHLON",
   "SWIMMING",
   "OTHER",
 ];

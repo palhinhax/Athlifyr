@@ -129,6 +129,8 @@
     "CYCLING": "Ciclismo",
     "SURF": "Surf",
     "TRIATHLON": "Triatlón",
+    "DUATHLON": "Duatlón",
+    "AQUATHLON": "Acuatlón",
     "SWIMMING": "Natación",
     "OTHER": "Otro"
   },

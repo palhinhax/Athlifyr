@@ -236,7 +236,7 @@ export function ShareEventDialog({
                 >
                   {/* Event Image */}
                   <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md bg-muted">
-                    {event.imageUrl ? (
+                    {event.imageUrl && event.imageUrl !== "null" ? (
                       <Image
                         src={event.imageUrl}
                         alt={event.title}

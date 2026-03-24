@@ -47,5 +47,15 @@ class Settings(BaseSettings):
     nextjs_import_secret: str = ""  # shared secret for import endpoint
     model_config = {"env_prefix": "SCRAPING_", "env_file": ".env", "extra": "ignore"}
 
+    @property
+    def async_database_url(self) -> str:
+        """Ensure the database URL uses the asyncpg driver."""
+        url = self.database_url
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        return url
+
 
 settings = Settings()

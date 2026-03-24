@@ -15,6 +15,13 @@ from app.sources.trilhoperdido.scraper import TrilhoPerdidoScraper
 from app.sources.waitastart.scraper import WaitAStartScraper
 from app.sources.turresevents.scraper import TurresEventsScraper
 from app.sources.werun.scraper import WeRunScraper
+from app.sources.runporto.scraper import RunPortoScraper
+from app.sources.sinctime.scraper import SincTimeScraper
+from app.sources.multicrono.scraper import MultiCronoScraper
+from app.sources.sportchip.scraper import SportChipScraper
+from app.sources.timerspeed.scraper import TimerSpeedScraper
+from app.sources.totalcrono.scraper import TotalCronoScraper
+from app.sources.tictactiming.scraper import TicTacTimingScraper
 
 # Register new scrapers here ↓
 _SCRAPERS: dict[str, type[BaseScraper]] = {
@@ -30,6 +37,13 @@ _SCRAPERS: dict[str, type[BaseScraper]] = {
     "waitastart": WaitAStartScraper,
     "turresevents": TurresEventsScraper,
     "werun": WeRunScraper,
+    "runporto": RunPortoScraper,
+    "sinctime": SincTimeScraper,
+    "multicrono": MultiCronoScraper,
+    "sportchip": SportChipScraper,
+    "timerspeed": TimerSpeedScraper,
+    "totalcrono": TotalCronoScraper,
+    "tictactiming": TicTacTimingScraper,
 }
 
 

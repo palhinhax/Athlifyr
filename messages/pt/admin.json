@@ -616,7 +616,16 @@
         "allStatuses": "Todos os Estados",
         "statusCompleted": "Concluído",
         "statusRunning": "Em execução",
-        "statusFailed": "Falhado"
+        "statusFailed": "Falhado",
+        "today": "Hoje",
+        "yesterday": "Ontem",
+        "daysShown": "{count} dias apresentados",
+        "clearHistory": "Limpar Histórico",
+        "clearConfirmTitle": "Limpar histórico de execuções?",
+        "clearConfirmDescription": "Esta ação irá eliminar permanentemente as execuções concluídas e falhadas mais antigas. As execuções em curso não serão afetadas.",
+        "olderThan": "Mais de {days, plural, one {# dia} other {# dias}}",
+        "cancel": "Cancelar",
+        "confirmClear": "Eliminar"
       },
       "events": {
         "title": "Eventos Recolhidos",
@@ -653,7 +662,13 @@
         "generateAllCancel": "Cancelar",
         "generateAllConfirm": "Gerar {count} Eventos",
         "generatingProgress": "A gerar evento {current} de {total}...",
-        "generatingDone": "Todos os {total} eventos gerados!"
+        "generatingDone": "Todos os {total} eventos gerados!",
+        "addImage": "Adicionar imagem",
+        "replaceImage": "Substituir imagem",
+        "uploadSuccess": "Imagem carregada com sucesso",
+        "uploadError": "Falha ao carregar imagem",
+        "uploadInvalidFile": "Seleciona um ficheiro de imagem",
+        "uploadFileTooLarge": "A imagem deve ter menos de 5 MB"
       },
       "scrapeUrl": {
         "title": "Recolher URL Individual",
@@ -694,7 +709,39 @@
         "tabDetails": "Detalhes",
         "tabAiInput": "Enviado ao AI",
         "tabAiOutput": "Resposta do AI",
-        "noAiData": "Sem dados de AI. Gera o evento primeiro."
+        "noAiData": "Sem dados de AI. Gera o evento primeiro.",
+        "adminNotes": "Informação Adicional para a IA",
+        "adminNotesHelp": "Adiciona detalhes extra que não existem no site de origem. Esta informação será enviada à IA ao gerar o evento, mas não irá acionar a deteção de alterações ao re-pesquisar.",
+        "adminNotesPlaceholder": "ex.: o evento tem 3 postos de abastecimento, o percurso passa pela Serra da Arrábida, o organizador confirmou inscrições até abril..."
+      }
+    },
+    "duplicates": {
+      "button": "Encontrar Duplicados",
+      "title": "Possíveis Eventos Duplicados",
+      "description": "Análise de eventos com nomes semelhantes, datas próximas ou mesma localização que podem ser duplicados.",
+      "loading": "A analisar eventos...",
+      "analysed": "{count} eventos analisados",
+      "found": "{count} possível(eis) duplicado(s) encontrado(s)",
+      "noDuplicates": "Nenhum duplicado encontrado",
+      "viewEvent": "Ver",
+      "manage": "Gerir",
+      "refresh": "Atualizar",
+      "deleteEvent": "Eliminar",
+      "deleteConfirmTitle": "Eliminar evento",
+      "deleteConfirmDescription": "Tens a certeza que queres eliminar este evento? Esta ação não pode ser revertida.",
+      "deleting": "A eliminar...",
+      "deleteSuccess": "Evento eliminado",
+      "deleteError": "Erro ao eliminar evento",
+      "cancel": "Cancelar",
+      "reasons": {
+        "nearIdenticalName": "Nome quase idêntico",
+        "similarName": "Nome semelhante",
+        "closeDates": "Datas próximas",
+        "sameLocation": "Mesma localização"
+      },
+      "origin": {
+        "scraping": "Scraping",
+        "manual": "Manual"
       }
     }
   }

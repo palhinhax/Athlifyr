@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+from asyncio import sleep
 from datetime import datetime
 
 from bs4 import BeautifulSoup, Tag
@@ -84,6 +85,25 @@ class TrilhoPerdidoScraper(BaseScraper):
     base_url = _BASE
     description = "Timing & event platform — trail, BTT, athletics in central Portugal"
 
+    _MAX_RETRIES = 3
+    _RETRY_DELAY = 5  # seconds
+
+    async def _fetch_with_retry(self, url: str) -> str:
+        """Fetch a URL with retry on transient failures."""
+        last_exc: Exception | None = None
+        for attempt in range(1, self._MAX_RETRIES + 1):
+            try:
+                return await self.fetch_page(url)
+            except Exception as exc:
+                last_exc = exc
+                logger.warning(
+                    "Attempt %d/%d failed for %s: %s",
+                    attempt, self._MAX_RETRIES, url, repr(exc),
+                )
+                if attempt < self._MAX_RETRIES:
+                    await sleep(self._RETRY_DELAY * attempt)
+        raise last_exc  # type: ignore[misc]
+
     async def scrape(self) -> list[ScrapedEventData]:
         cards = await self._fetch_all_cards()
         logger.info("Found %d upcoming events on Trilho Perdido", len(cards))
@@ -119,7 +139,7 @@ class TrilhoPerdidoScraper(BaseScraper):
         all_cards: list[dict] = []
         for page in range(1, _MAX_PAGES + 1):
             url = f"{_EVENTS_URL}?pag={page}"
-            html = await self.fetch_page(url)
+            html = await self._fetch_with_retry(url)
             cards = self._parse_listing(html)
             if not cards:
                 break
@@ -204,7 +224,7 @@ class TrilhoPerdidoScraper(BaseScraper):
         # Fetch detail page for regulamento PDF
         docs: list[ScrapedDocumentData] = []
         try:
-            detail_html = await self.fetch_page(source_url)
+            detail_html = await self._fetch_with_retry(source_url)
             detail_soup = BeautifulSoup(detail_html, "lxml")
             docs = self._extract_documents(detail_soup, slug)
         except Exception:

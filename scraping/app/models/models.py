@@ -165,11 +165,17 @@ class ScrapedEvent(Base):
     review_notes: Mapped[str | None] = mapped_column(Text)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    # ── Admin-only supplementary info (never overwritten by scrapers) ──
+    admin_notes: Mapped[str | None] = mapped_column(Text)
+
     # ── Link to production (after approval pushed to main DB) ──
     athlifyr_event_id: Mapped[str | None] = mapped_column(String(255))
 
     # ── Visibility ──
     is_hidden: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # ── AI processing queue ──
+    ai_pending: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
     # ── Timestamps ──
     raw_data: Mapped[str | None] = mapped_column(Text)  # JSON dump of raw scraped data

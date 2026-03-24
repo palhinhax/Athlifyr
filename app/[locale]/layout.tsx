@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     template: "%s | Athlifyr",
   },
   description:
-    "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you. Free gym management software for CrossFit boxes, yoga studios and personal trainers.",
+    "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon, duathlon, aquathlon and swimming events near you. Free gym management software for CrossFit boxes, yoga studios and personal trainers.",
   keywords: [
     "sports events",
     "running",

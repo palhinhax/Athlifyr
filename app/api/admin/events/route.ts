@@ -65,9 +65,24 @@ export async function GET(request: NextRequest) {
         ? prisma.event.count({ where }).catch(() => 999) // Return approximate count on timeout
         : prisma.event.count({ where }),
 
-      // Fetch paginated events - NO includes for performance
+      // Fetch paginated events - select ONLY needed fields for performance
       prisma.event.findMany({
         where,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          sportTypes: true,
+          startDate: true,
+          city: true,
+          country: true,
+          imageUrl: true,
+          latitude: true,
+          longitude: true,
+          googleMapsUrl: true,
+          externalUrl: true,
+          description: true,
+        },
         orderBy: {
           startDate: "desc", // Most recent first for admin
         },
@@ -76,9 +91,15 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    // Strip large description field — only send a boolean flag
+    const lightEvents = events.map(({ description, ...rest }) => ({
+      ...rest,
+      hasDescription: description.trim().length > 0,
+    }));
+
     // Return paginated response with metadata
     return NextResponse.json({
-      events,
+      events: lightEvents,
       pagination: {
         page,
         pageSize,

@@ -652,6 +652,11 @@
         "generateSuccess": "Análisis completado",
         "dedupPendingTitle": "Posible duplicado detectado",
         "dedupPendingDesc": "Revisa la pestaña Deduplicación antes de enviar.",
+        "dedup": {
+          "confirmed": "Duplicado confirmado",
+          "pending": "Posible duplicado",
+          "rejected": "Duplicado descartado"
+        },
         "rescrape": "Volver a buscar",
         "delete": "Eliminar",
         "hasImage": "Tiene imagen",
@@ -674,7 +679,15 @@
         "uploadSuccess": "Imagen subida correctamente",
         "uploadError": "Error al subir la imagen",
         "uploadInvalidFile": "Selecciona un archivo de imagen",
-        "uploadFileTooLarge": "La imagen debe ser menor de 5 MB"
+        "uploadFileTooLarge": "La imagen debe ser menor de 5 MB",
+        "selectEvent": "Seleccionar evento",
+        "manualDedupSelected": "{count} eventos seleccionados",
+        "manualDedupAction": "Marcar como duplicados",
+        "manualDedupMax2": "Selecciona exactamente 2 eventos",
+        "manualDedupClear": "Limpiar",
+        "manualDedupSuccess": "Eventos marcados como posibles duplicados",
+        "manualDedupError": "Error al marcar como duplicados",
+        "manualDedupAlreadyExists": "Estos eventos ya están marcados como duplicados"
       },
       "scrapeUrl": {
         "title": "Recopilar URL Individual",
@@ -779,7 +792,8 @@
           "nearIdenticalName": "Nombre casi idéntico",
           "similarName": "Nombre similar",
           "closeDates": "Fechas cercanas",
-          "sameLocation": "Misma ubicación"
+          "sameLocation": "Misma ubicación",
+          "manual": "Manual"
         },
         "origin": {
           "scraping": "Scraping",

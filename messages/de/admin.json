@@ -652,6 +652,11 @@
         "generateSuccess": "Analyse abgeschlossen",
         "dedupPendingTitle": "Mögliches Duplikat erkannt",
         "dedupPendingDesc": "Prüfe den Tab Deduplizierung vor dem Einreichen.",
+        "dedup": {
+          "confirmed": "Bestätigtes Duplikat",
+          "pending": "Mögliches Duplikat",
+          "rejected": "Duplikat verworfen"
+        },
         "rescrape": "Erneut scrapen",
         "delete": "L\u00f6schen",
         "hasImage": "Hat Bild",
@@ -674,7 +679,15 @@
         "uploadSuccess": "Bild erfolgreich hochgeladen",
         "uploadError": "Fehler beim Hochladen des Bildes",
         "uploadInvalidFile": "Bitte wähle eine Bilddatei aus",
-        "uploadFileTooLarge": "Das Bild muss kleiner als 5 MB sein"
+        "uploadFileTooLarge": "Das Bild muss kleiner als 5 MB sein",
+        "selectEvent": "Ereignis auswählen",
+        "manualDedupSelected": "{count} Ereignisse ausgewählt",
+        "manualDedupAction": "Als Duplikate markieren",
+        "manualDedupMax2": "Wähle genau 2 Ereignisse aus",
+        "manualDedupClear": "Löschen",
+        "manualDedupSuccess": "Ereignisse als mögliche Duplikate markiert",
+        "manualDedupError": "Fehler beim Markieren als Duplikate",
+        "manualDedupAlreadyExists": "Diese Events sind bereits als Duplikate markiert"
       },
       "scrapeUrl": {
         "title": "Einzelne URL Scrapen",
@@ -779,7 +792,8 @@
           "nearIdenticalName": "Fast identischer Name",
           "similarName": "Ähnlicher Name",
           "closeDates": "Nahe Daten",
-          "sameLocation": "Gleicher Ort"
+          "sameLocation": "Gleicher Ort",
+          "manual": "Manuell"
         },
         "origin": {
           "scraping": "Scraping",

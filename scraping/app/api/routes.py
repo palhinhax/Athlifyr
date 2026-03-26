@@ -344,12 +344,39 @@ async def list_events(
         select(func.count(ScrapedEvent.id)).where(and_(*pending_img_conditions))
     ) or 0
 
+    # ── Dedup status per event ──
+    event_ids = [ev.id for ev in events]
+    dedup_map: dict[uuid.UUID, str] = {}
+    if event_ids:
+        dedup_rows = await db.execute(
+            select(
+                DedupPair.event_a_id,
+                DedupPair.event_b_id,
+                DedupPair.status,
+            ).where(
+                (DedupPair.event_a_id.in_(event_ids))
+                | (DedupPair.event_b_id.in_(event_ids))
+            )
+        )
+        for row in dedup_rows:
+            for eid in (row.event_a_id, row.event_b_id):
+                if eid in event_ids:
+                    existing = dedup_map.get(eid)
+                    # Priority: confirmed > pending > rejected
+                    if existing == "confirmed":
+                        continue
+                    if row.status == "confirmed" or (row.status == "pending" and existing != "confirmed"):
+                        dedup_map[eid] = row.status
+                    elif existing is None:
+                        dedup_map[eid] = row.status
+
     items = [
         {
             **{c.key: getattr(ev, c.key) for c in ev.__table__.columns},
             "has_image": bool(ev.image_url),
             "has_ai_output": bool(ev.ai_output),
             "documents_count": len(ev.documents),
+            "dedup_status": dedup_map.get(ev.id),
         }
         for ev in events
     ]
@@ -1499,7 +1526,7 @@ async def cleanup_false_positives(
 async def list_dedup_pairs(
     status: str | None = Query(None, description="pending | confirmed | rejected"),
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
 ) -> PaginatedDedupPairsOut:
     """List dedup pairs with optional status filter."""
@@ -1652,6 +1679,70 @@ async def reject_dedup_pair(
         status=pair.status,
         similarity_score=pair.similarity_score,
         reasons=reasons_list,
+        created_at=pair.created_at,
+        updated_at=pair.updated_at,
+    )
+
+
+@router.post("/dedup/pairs", response_model=DedupPairOut, status_code=201)
+async def create_dedup_pair(
+    event_a_id: uuid.UUID = Query(..., description="First event ID"),
+    event_b_id: uuid.UUID = Query(..., description="Second event ID"),
+    db: AsyncSession = Depends(get_db),
+) -> DedupPairOut:
+    """Manually create a pending dedup pair between two events."""
+    if event_a_id == event_b_id:
+        raise HTTPException(status_code=400, detail="Cannot pair an event with itself")
+
+    # Canonical ordering: str(a) < str(b)
+    a_id, b_id = (
+        (event_a_id, event_b_id)
+        if str(event_a_id) < str(event_b_id)
+        else (event_b_id, event_a_id)
+    )
+
+    # Check both events exist
+    for eid in (a_id, b_id):
+        ev = await db.get(ScrapedEvent, eid)
+        if not ev:
+            raise HTTPException(status_code=404, detail=f"Event {eid} not found")
+
+    # Check if pair already exists
+    existing = await db.execute(
+        select(DedupPair).where(
+            DedupPair.event_a_id == a_id, DedupPair.event_b_id == b_id
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Dedup pair already exists for these events")
+
+    pair = DedupPair(
+        event_a_id=a_id,
+        event_b_id=b_id,
+        status="pending",
+        similarity_score=1.0,
+        reasons=json.dumps(["manual"]),
+    )
+    db.add(pair)
+    await db.commit()
+    await db.refresh(pair)
+
+    # Reload with relationships
+    result = await db.execute(
+        select(DedupPair)
+        .options(selectinload(DedupPair.event_a), selectinload(DedupPair.event_b))
+        .where(DedupPair.id == pair.id)
+    )
+    pair = result.scalar_one()
+
+    return DedupPairOut(
+        id=pair.id,
+        event_a=pair.event_a,
+        event_b=pair.event_b,
+        primary_event_id=pair.primary_event_id,
+        status=pair.status,
+        similarity_score=pair.similarity_score,
+        reasons=["manual"],
         created_at=pair.created_at,
         updated_at=pair.updated_at,
     )

@@ -653,6 +653,11 @@
         "generateSuccess": "Analyse terminée",
         "dedupPendingTitle": "Doublon potentiel détecté",
         "dedupPendingDesc": "Consultez l'onglet Déduplication avant de soumettre.",
+        "dedup": {
+          "confirmed": "Doublon confirmé",
+          "pending": "Doublon possible",
+          "rejected": "Doublon écarté"
+        },
         "rescrape": "Re-collecter",
         "delete": "Supprimer",
         "hasImage": "Avec image",
@@ -675,7 +680,15 @@
         "uploadSuccess": "Image téléchargée avec succès",
         "uploadError": "Échec du téléchargement de l'image",
         "uploadInvalidFile": "Veuillez sélectionner un fichier image",
-        "uploadFileTooLarge": "L'image doit faire moins de 5 Mo"
+        "uploadFileTooLarge": "L'image doit faire moins de 5 Mo",
+        "selectEvent": "Sélectionner l'événement",
+        "manualDedupSelected": "{count} événements sélectionnés",
+        "manualDedupAction": "Marquer comme doublons",
+        "manualDedupMax2": "Sélectionnez exactement 2 événements",
+        "manualDedupClear": "Effacer",
+        "manualDedupSuccess": "Événements marqués comme doublons possibles",
+        "manualDedupError": "Échec du marquage comme doublons",
+        "manualDedupAlreadyExists": "Ces événements sont déjà marqués comme doublons"
       },
       "scrapeUrl": {
         "title": "Collecter une URL",
@@ -780,7 +793,8 @@
           "nearIdenticalName": "Nom quasi identique",
           "similarName": "Nom similaire",
           "closeDates": "Dates proches",
-          "sameLocation": "Même lieu"
+          "sameLocation": "Même lieu",
+          "manual": "Manuel"
         },
         "origin": {
           "scraping": "Scraping",

@@ -4,16 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ScanSearch,
@@ -179,12 +170,14 @@ function PairCard({
   pair,
   onConfirm,
   onReject,
+  confirmingId,
   rejectingId,
   t,
 }: Readonly<{
   pair: DedupPairItem;
   onConfirm: (id: string) => void;
   onReject: (id: string) => void;
+  confirmingId: string | null;
   rejectingId: string | null;
   t: ReturnType<typeof useTranslations>;
 }>) {
@@ -201,6 +194,7 @@ function PairCard({
       similar_name: t("reasons.similarName"),
       close_dates: t("reasons.closeDates"),
       same_location: t("reasons.sameLocation"),
+      manual: t("reasons.manual"),
     };
     return map[r] ?? r;
   };
@@ -263,8 +257,13 @@ function PairCard({
                 variant="destructive"
                 className="gap-1"
                 onClick={() => onConfirm(pair.id)}
+                disabled={confirmingId === pair.id}
               >
-                <CheckCircle2 className="h-3.5 w-3.5" />
+                {confirmingId === pair.id ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                )}
                 {t("confirmDuplicate")}
               </Button>
               <Button
@@ -302,11 +301,7 @@ export function ScrapingDedup({
   const [loading, setLoading] = useState(true);
   const [detecting, setDetecting] = useState(false);
   const [cleaning, setCleaning] = useState(false);
-  const [actionId, setActionId] = useState<{
-    id: string;
-    type: "confirm" | "reject";
-  } | null>(null);
-  const [actioning, setActioning] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
@@ -343,6 +338,29 @@ export function ScrapingDedup({
     void fetchPairs("pending", 1);
   }, [fetchPairs]);
 
+  // Remove a pair from local state without re-fetching
+  const removePairLocally = useCallback(
+    (pairId: string) => {
+      setData((prev) => {
+        if (!prev) return prev;
+        const removed = prev.items.find((p) => p.id === pairId);
+        const wasPending = removed?.status === "pending";
+        const newItems = prev.items.filter((p) => p.id !== pairId);
+        const newPendingCount = wasPending
+          ? Math.max(0, prev.pending_count - 1)
+          : prev.pending_count;
+        onPendingCountChange?.(newPendingCount);
+        return {
+          ...prev,
+          items: newItems,
+          total: Math.max(0, prev.total - 1),
+          pending_count: newPendingCount,
+        };
+      });
+    },
+    [onPendingCountChange]
+  );
+
   const handleDetect = async () => {
     setDetecting(true);
     try {
@@ -371,34 +389,28 @@ export function ScrapingDedup({
     }
   };
 
-  const handleAction = async () => {
-    if (!actionId) return;
-    setActioning(true);
+  const handleConfirmDirect = async (id: string) => {
+    setConfirmingId(id);
     try {
-      const res = await fetch(
-        `${apiUrl}/dedup/pairs/${actionId.id}/${actionId.type}`,
-        { method: "POST" }
-      );
+      const res = await fetch(`${apiUrl}/dedup/pairs/${id}/confirm`, {
+        method: "POST",
+      });
       if (!res.ok) {
         const err = await res
           .json()
           .catch(() => ({ detail: `HTTP ${res.status}` }));
         throw new Error(err.detail ?? String(err));
       }
-      toast({
-        title: actionId.type === "confirm" ? t("confirmed") : t("rejected"),
-      });
-      await fetchPairs(statusFilter, page);
+      toast({ title: t("confirmed") });
+      removePairLocally(id);
     } catch (err) {
       toast({
-        title:
-          actionId.type === "confirm" ? t("confirmError") : t("rejectError"),
+        title: t("confirmError"),
         variant: "destructive",
         description: err instanceof Error ? err.message : String(err),
       });
     } finally {
-      setActioning(false);
-      setActionId(null);
+      setConfirmingId(null);
     }
   };
 
@@ -415,7 +427,7 @@ export function ScrapingDedup({
         throw new Error(err.detail ?? String(err));
       }
       toast({ title: t("rejected") });
-      await fetchPairs(statusFilter, page);
+      removePairLocally(id);
     } catch (err) {
       toast({
         title: t("rejectError"),
@@ -549,8 +561,9 @@ export function ScrapingDedup({
                 <PairCard
                   key={pair.id}
                   pair={pair}
-                  onConfirm={(id) => setActionId({ id, type: "confirm" })}
+                  onConfirm={handleConfirmDirect}
                   onReject={handleRejectDirect}
+                  confirmingId={confirmingId}
                   rejectingId={rejectingId}
                   t={t}
                 />
@@ -584,36 +597,6 @@ export function ScrapingDedup({
           )}
         </>
       )}
-
-      {/* Confirm dialog */}
-      <AlertDialog
-        open={actionId?.type === "confirm"}
-        onOpenChange={(open) => !open && setActionId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("confirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("confirmDescription")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={actioning}>
-              {t("cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleAction}
-              disabled={actioning}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {actioning ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              {actioning ? t("confirming") : t("confirmDuplicate")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

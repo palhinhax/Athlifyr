@@ -652,6 +652,11 @@
         "generateSuccess": "Analysis complete",
         "dedupPendingTitle": "Possible duplicate detected",
         "dedupPendingDesc": "Review the Deduplication tab before submitting.",
+        "dedup": {
+          "confirmed": "Confirmed duplicate",
+          "pending": "Possible duplicate",
+          "rejected": "Duplicate discarded"
+        },
         "rescrape": "Re-scrape",
         "delete": "Delete",
         "hasImage": "Has image",
@@ -674,7 +679,15 @@
         "uploadSuccess": "Image uploaded successfully",
         "uploadError": "Failed to upload image",
         "uploadInvalidFile": "Please select an image file",
-        "uploadFileTooLarge": "Image must be less than 5 MB"
+        "uploadFileTooLarge": "Image must be less than 5 MB",
+        "selectEvent": "Select event",
+        "manualDedupSelected": "{count} events selected",
+        "manualDedupAction": "Mark as duplicates",
+        "manualDedupMax2": "Select exactly 2 events",
+        "manualDedupClear": "Clear",
+        "manualDedupSuccess": "Events marked as possible duplicates",
+        "manualDedupError": "Failed to mark as duplicates",
+        "manualDedupAlreadyExists": "These events are already marked as duplicates"
       },
       "scrapeUrl": {
         "title": "Scrape Single URL",
@@ -779,7 +792,8 @@
           "nearIdenticalName": "Near-identical name",
           "similarName": "Similar name",
           "closeDates": "Close dates",
-          "sameLocation": "Same location"
+          "sameLocation": "Same location",
+          "manual": "Manual"
         },
         "origin": {
           "scraping": "Scraping",

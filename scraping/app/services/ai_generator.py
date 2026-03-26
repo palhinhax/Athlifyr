@@ -147,7 +147,9 @@ MANDATORY FIELDS — you MUST always generate these:
     If no variants are provided, create one from the event title and any available distance/price info.
     Each variant MUST have: name, translations (6 langs), and pricingPhases (at least one phase if price is known).
 15. **latitude / longitude**: ALWAYS provide GPS coordinates for the event location.
-    Use the city name to look up approximate coordinates. For example:
+    If the input already contains latitude/longitude (e.g. extracted from a GPX track start point),
+    USE those exact coordinates — they are precise and reliable.
+    Otherwise, use the city name to look up approximate coordinates. For example:
     - Porto, Portugal → 41.1579, -8.6291
     - Lisboa, Portugal → 38.7223, -9.1393
     - Pardilhó, Portugal → 40.7667, -8.6333

@@ -526,10 +526,18 @@ async def generate_event(
                 "price": v.price,
                 "currency": v.currency,
                 "start_time": v.start_time,
+                "gpx_url": v.gpx_file_path or v.gpx_url,
             }
             for v in event.variants
         ],
         "raw_pricing_text": event.raw_pricing_text,
+    }
+
+    # Build lookup: variant name (lowercase) → bucket GPX URL for post-AI injection
+    gpx_url_by_name: dict[str, str] = {
+        v.name.lower(): (v.gpx_file_path or v.gpx_url)
+        for v in event.variants
+        if (v.gpx_file_path or v.gpx_url)
     }
 
     # Include admin notes as extra context for AI (if provided)
@@ -609,6 +617,20 @@ async def generate_event(
     # Always inject image_url from the scraped event (bucket URL)
     # The AI does NOT control this field — we set it from our stored data
     generated["imageUrl"] = event.image_url
+
+    # Inject gpxUrl per variant by matching AI-generated variant names to scraped variants
+    for v in generated.get("variants", []):
+        name_key = (v.get("name") or "").lower()
+        gpx_url = gpx_url_by_name.get(name_key)
+        if not gpx_url:
+            # Fuzzy fallback: find the first scraped variant whose name contains
+            # the AI-generated name or vice versa
+            for scraped_name, url in gpx_url_by_name.items():
+                if scraped_name in name_key or name_key in scraped_name:
+                    gpx_url = url
+                    break
+        if gpx_url:
+            v["gpxUrl"] = gpx_url
 
     # Ensure externalUrl is set (fallback to source_url)
     if not generated.get("externalUrl"):

@@ -85,6 +85,8 @@ class ScrapedVariantOut(BaseModel):
     start_time: str | None = None
     price: float | None = None
     currency: str = "EUR"
+    gpx_url: str | None = None
+    gpx_file_path: str | None = None
 
 
 # ── Scraped Pricing Phase ────────────────────────────────────────────────────

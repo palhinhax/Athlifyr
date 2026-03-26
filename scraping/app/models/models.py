@@ -222,6 +222,8 @@ class ScrapedVariant(Base):
     start_time: Mapped[str | None] = mapped_column(String(10))
     price: Mapped[float | None] = mapped_column(Float)
     currency: Mapped[str] = mapped_column(String(3), default="EUR")
+    gpx_url: Mapped[str | None] = mapped_column(Text)  # Original GPX URL
+    gpx_file_path: Mapped[str | None] = mapped_column(Text)  # Bucket path after upload
 
     event: Mapped[ScrapedEvent] = relationship(back_populates="variants")
 

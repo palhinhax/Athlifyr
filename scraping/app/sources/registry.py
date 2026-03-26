@@ -22,9 +22,13 @@ from app.sources.sportchip.scraper import SportChipScraper
 from app.sources.timerspeed.scraper import TimerSpeedScraper
 from app.sources.totalcrono.scraper import TotalCronoScraper
 from app.sources.tictactiming.scraper import TicTacTimingScraper
+from app.sources.atrp.scraper import ATRPScraper
 
 # Register new scrapers here ↓
+# ATRP runs first so cross-source deduplication works correctly
+# (other scrapers merge into ATRP events when matched).
 _SCRAPERS: dict[str, type[BaseScraper]] = {
+    "atrp": ATRPScraper,
     "lap2go": Lap2GoScraper,
     "correr_por_prazer": CorrerPorPrazerScraper,
     "stopandgo": StopAndGoScraper,

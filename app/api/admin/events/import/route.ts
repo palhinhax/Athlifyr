@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SportType, Language, Currency } from "@prisma/client";
+import { parseGpx } from "@/lib/gpx-parser";
 
 /**
  * POST /api/admin/events/import
@@ -42,6 +43,7 @@ interface ImportVariant {
   itraPoints?: number;
   mountainLevel?: number;
   teamSize?: number;
+  gpxUrl?: string;
   translations?: Record<string, ImportVariantTranslation>;
   pricingPhases?: ImportPricingPhase[];
 }
@@ -243,10 +245,20 @@ export async function POST(req: NextRequest) {
     if (body.translations) {
       for (const [lang, t] of Object.entries(body.translations)) {
         if (!VALID_LANGUAGES.has(lang as Language)) continue;
-        await prisma.eventTranslation.create({
-          data: {
+        await prisma.eventTranslation.upsert({
+          where: {
+            eventId_language: { eventId: event.id, language: lang as Language },
+          },
+          create: {
             eventId: event.id,
             language: lang as Language,
+            title: t.title,
+            description: t.description,
+            city: t.city ?? body.city,
+            metaTitle: t.metaTitle ?? null,
+            metaDescription: t.metaDescription ?? null,
+          },
+          update: {
             title: t.title,
             description: t.description,
             city: t.city ?? body.city,
@@ -311,6 +323,55 @@ export async function POST(req: NextRequest) {
                 note: pp.note ?? null,
               },
             });
+          }
+        }
+
+        // GPX route — download and parse if a bucket URL is provided
+        if (v.gpxUrl) {
+          try {
+            const gpxRes = await fetch(v.gpxUrl);
+            if (gpxRes.ok) {
+              const gpxXml = await gpxRes.text();
+              const parsed = parseGpx(gpxXml);
+              await prisma.eventRoute.upsert({
+                where: { variantId: variant.id },
+                create: {
+                  variantId: variant.id,
+                  gpxData: gpxXml,
+                  routePoints: parsed.routePoints,
+                  distanceKm: parsed.distanceKm || null,
+                  elevationGainM: parsed.elevationGainM
+                    ? Math.round(parsed.elevationGainM)
+                    : null,
+                  elevationLossM: parsed.elevationLossM
+                    ? Math.round(parsed.elevationLossM)
+                    : null,
+                },
+                update: {
+                  gpxData: gpxXml,
+                  routePoints: parsed.routePoints,
+                  distanceKm: parsed.distanceKm || null,
+                  elevationGainM: parsed.elevationGainM
+                    ? Math.round(parsed.elevationGainM)
+                    : null,
+                  elevationLossM: parsed.elevationLossM
+                    ? Math.round(parsed.elevationLossM)
+                    : null,
+                },
+              });
+              console.log(
+                `[import]   GPX route created for variant: ${variant.name} (${parsed.routePoints.length} points, ${parsed.distanceKm} km)`
+              );
+            } else {
+              console.warn(
+                `[import]   GPX fetch failed for ${variant.name}: ${gpxRes.status} ${v.gpxUrl}`
+              );
+            }
+          } catch (gpxErr) {
+            console.error(
+              `[import]   GPX parse/upsert error for ${variant.name}:`,
+              gpxErr
+            );
           }
         }
       }

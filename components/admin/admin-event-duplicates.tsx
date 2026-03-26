@@ -59,30 +59,32 @@ interface DuplicatesResponse {
   eventsAnalysed: number;
 }
 
-function ReasonBadge({ reason }: { reason: string }) {
-  const t = useTranslations("admin.duplicates");
+const REASON_VARIANT_MAP: Record<
+  string,
+  "destructive" | "secondary" | "outline"
+> = {
+  "near-identical-name": "destructive",
+  "same-location": "secondary",
+};
+
+const REASON_LABEL_MAP: Record<string, string> = {
+  "near-identical-name": "reasons.nearIdenticalName",
+  "similar-name": "reasons.similarName",
+  "close-dates": "reasons.closeDates",
+};
+
+function ReasonBadge({ reason }: Readonly<{ reason: string }>) {
+  const t = useTranslations("admin.scraping.duplicates");
   const reasons = reason.split(", ");
 
   return (
     <div className="flex flex-wrap gap-1">
       {reasons.map((r) => {
-        const variant =
-          r === "near-identical-name"
-            ? "destructive"
-            : r === "same-location"
-              ? "secondary"
-              : "outline";
-        const label =
-          r === "near-identical-name"
-            ? t("reasons.nearIdenticalName")
-            : r === "similar-name"
-              ? t("reasons.similarName")
-              : r === "close-dates"
-                ? t("reasons.closeDates")
-                : t("reasons.sameLocation");
+        const variant = REASON_VARIANT_MAP[r] ?? "outline";
+        const labelKey = REASON_LABEL_MAP[r] ?? "reasons.sameLocation";
         return (
           <Badge key={r} variant={variant} className="text-[10px]">
-            {label}
+            {t(labelKey)}
           </Badge>
         );
       })}
@@ -90,10 +92,12 @@ function ReasonBadge({ reason }: { reason: string }) {
   );
 }
 
-function ScoreIndicator({ score }: { score: number }) {
+function ScoreIndicator({ score }: Readonly<{ score: number }>) {
   const pct = Math.round((score / 1.5) * 100);
-  const color =
-    pct >= 80 ? "bg-red-500" : pct >= 50 ? "bg-amber-500" : "bg-yellow-400";
+
+  let color = "bg-yellow-400";
+  if (pct >= 80) color = "bg-red-500";
+  else if (pct >= 50) color = "bg-amber-500";
 
   return (
     <div className="flex items-center gap-2">

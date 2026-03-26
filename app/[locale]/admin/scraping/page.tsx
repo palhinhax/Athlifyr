@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { CalendarDays, Globe, Loader2, Play } from "lucide-react";
+import { CalendarDays, Globe, Loader2, Play, GitMerge } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { ScrapingStats } from "@/components/admin/scraping/scraping-stats";
 import { ScrapingSources } from "@/components/admin/scraping/scraping-sources";
 import { ScrapingRuns } from "@/components/admin/scraping/scraping-runs";
 import { ScrapingEvents } from "@/components/admin/scraping/scraping-events";
 import { ScrapingEventDetail } from "@/components/admin/scraping/scraping-event-detail";
 import { ScrapeUrlForm } from "@/components/admin/scraping/scrape-url-form";
+import { ScrapingDedup } from "@/components/admin/scraping/scraping-dedup";
 
 const API_URL = "/api/admin/scraping";
 
@@ -46,6 +48,7 @@ export default function AdminScrapingPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
+  const [dedupPendingCount, setDedupPendingCount] = useState(0);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -197,6 +200,15 @@ export default function AdminScrapingPage() {
             <CalendarDays className="h-4 w-4" />
             <span className="hidden sm:inline">{t("events.title")}</span>
           </TabsTrigger>
+          <TabsTrigger value="dedup" className="gap-2">
+            <GitMerge className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("duplicates.tab")}</span>
+            {dedupPendingCount > 0 && (
+              <Badge className="h-4 min-w-[1.1rem] bg-destructive px-1 text-[10px] text-destructive-foreground">
+                {dedupPendingCount}
+              </Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sources" className="mt-4 space-y-4">
@@ -225,6 +237,13 @@ export default function AdminScrapingPage() {
             apiUrl={API_URL}
             onEventSelect={setSelectedEventId}
             onEventsChanged={fetchAll}
+          />
+        </TabsContent>
+
+        <TabsContent value="dedup" className="mt-4">
+          <ScrapingDedup
+            apiUrl={API_URL}
+            onPendingCountChange={setDedupPendingCount}
           />
         </TabsContent>
       </Tabs>

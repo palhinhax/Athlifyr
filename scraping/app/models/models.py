@@ -15,6 +15,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID
@@ -310,3 +311,52 @@ class EventChangeLog(Base):
 
     event: Mapped[ScrapedEvent] = relationship()
     scraping_run: Mapped[ScrapingRun | None] = relationship()
+
+
+# ── Dedup Pair ────────────────────────────────────────────────────────────────
+
+
+class DedupPair(Base):
+    """A suspect duplicate pair between two scraped events from different sources."""
+
+    __tablename__ = "dedup_pairs"
+    __table_args__ = (
+        UniqueConstraint("event_a_id", "event_b_id", name="uq_dedup_pair"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+
+    # Always: str(event_a_id) < str(event_b_id) — enforced at insertion time
+    event_a_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("scraped_events.id", ondelete="CASCADE")
+    )
+    event_b_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("scraped_events.id", ondelete="CASCADE")
+    )
+
+    # Set on confirm — always the older (earliest created_at) of the two events
+    primary_event_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("scraped_events.id", ondelete="SET NULL"), nullable=True
+    )
+
+    # pending | confirmed | rejected
+    status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
+
+    # 0.0 – 1.0
+    similarity_score: Mapped[float] = mapped_column(Float, default=0.0)
+
+    # JSON array: ["similar_name", "same_date", "same_location", "near_identical_name"]
+    reasons: Mapped[str | None] = mapped_column(Text)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    event_a: Mapped[ScrapedEvent] = relationship(foreign_keys=[event_a_id])
+    event_b: Mapped[ScrapedEvent] = relationship(foreign_keys=[event_b_id])
+    primary_event: Mapped[ScrapedEvent | None] = relationship(foreign_keys=[primary_event_id])

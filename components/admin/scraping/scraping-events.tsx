@@ -45,6 +45,7 @@ import {
   Trash2,
   RefreshCw,
   Sparkles,
+  Send,
   Loader2,
   ArrowUpDown,
   ArrowUp,
@@ -67,6 +68,7 @@ interface ScrapedEventListItem {
   organizer_name: string | null;
   image_url: string | null;
   has_image: boolean;
+  has_ai_output: boolean;
   documents_count: number;
   review_status: string;
   is_hidden: boolean;
@@ -269,27 +271,49 @@ export function ScrapingEvents({
   // ── Actions ──
   const handleAction = async (
     eventId: string,
-    action: "delete" | "rescrape" | "generate"
+    action: "delete" | "rescrape" | "generate" | "analyze" | "submit"
   ) => {
     setActionLoading((prev) => ({ ...prev, [eventId]: action }));
     try {
-      const url =
-        action === "delete"
-          ? `${apiUrl}/events/${eventId}`
-          : `${apiUrl}/events/${eventId}/${action}`;
-      const method = action === "delete" ? "DELETE" : "POST";
+      let url: string;
+      let method = "POST";
+      if (action === "delete") {
+        url = `${apiUrl}/events/${eventId}`;
+        method = "DELETE";
+      } else if (action === "analyze") {
+        url = `${apiUrl}/events/${eventId}/generate?submit=false`;
+      } else if (action === "submit") {
+        url = `${apiUrl}/events/${eventId}/submit`;
+      } else {
+        url = `${apiUrl}/events/${eventId}/${action}`;
+      }
       const res = await fetch(url, { method });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: "Failed" }));
         console.error(`${action} failed:`, err.detail);
+        toast({
+          title: t(`events.${action}Error` as Parameters<typeof t>[0], {
+            defaultValue: "Erro",
+          }),
+          description: err.detail,
+          variant: "destructive",
+        });
         return;
       }
-      if (action === "generate") {
-        await fetch(`${apiUrl}/events/${eventId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ review_status: "approved" }),
+      // Check for dedup_pending — successful response but blocked submission
+      const body = (await res.json().catch(() => null)) as {
+        status?: string;
+        message?: string;
+        dedup_pairs?: number;
+      } | null;
+      if (body?.status === "dedup_pending") {
+        toast({
+          title: t("events.dedupPendingTitle"),
+          description: body.message ?? t("events.dedupPendingDesc"),
+          variant: "destructive",
         });
+      } else if (action === "generate" || action === "analyze") {
+        toast({ title: t("events.generateSuccess") });
       }
       fetchEvents();
       onEventsChanged();
@@ -730,11 +754,12 @@ export function ScrapingEvents({
                           >
                             {t("events.view")}
                           </Button>
+                          {/* Analisar + Submeter */}
                           <Button
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8"
-                            title={t("events.generate")}
+                            title={t("events.generateAndSubmit")}
                             disabled={
                               !event.has_image || !!actionLoading[event.id]
                             }
@@ -744,6 +769,40 @@ export function ScrapingEvents({
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <Sparkles className="h-4 w-4" />
+                            )}
+                          </Button>
+                          {/* Só Analisar */}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.analyzeOnly")}
+                            disabled={
+                              !event.has_image || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "analyze")}
+                          >
+                            {actionLoading[event.id] === "analyze" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                          {/* Só Submeter */}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.submitOnly")}
+                            disabled={
+                              !event.has_ai_output || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "submit")}
+                          >
+                            {actionLoading[event.id] === "submit" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
                             )}
                           </Button>
                           <Button

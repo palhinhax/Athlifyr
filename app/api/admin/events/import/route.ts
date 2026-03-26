@@ -72,7 +72,7 @@ interface ImportFAQ {
 interface ImportEventPayload {
   title: string;
   slug?: string;
-  description: string;
+  description: string | Record<string, string>;
   sportTypes: string[];
   startDate: string;
   endDate?: string;
@@ -120,6 +120,35 @@ export async function POST(req: NextRequest) {
 
   try {
     const body: ImportEventPayload = await req.json();
+
+    // Normalize description — AI may return it as a multilingual object
+    // In that case, extract the Portuguese (or first available) string for the
+    // Event-level field, and merge per-language descriptions into translations.
+    if (typeof body.description === "object" && body.description !== null) {
+      const descObj = body.description as Record<string, string>;
+      const langs = Object.keys(descObj);
+      // Populate translations.description from the object if not already set
+      body.translations = body.translations ?? {};
+      for (const lang of langs) {
+        if (VALID_LANGUAGES.has(lang as Language)) {
+          body.translations[lang] = body.translations[lang] ?? {
+            title: body.title,
+            description: descObj[lang],
+            city: body.city,
+          };
+          // Only override description field if it wasn't already set
+          if (!body.translations[lang].description) {
+            body.translations[lang].description = descObj[lang];
+          }
+        }
+      }
+      // Use Portuguese as the canonical Event-level description fallback
+      body.description =
+        descObj["pt"] ?? descObj["en"] ?? descObj[langs[0]] ?? "";
+    }
+
+    // After normalization, description is guaranteed to be a string
+    const descriptionStr = body.description as string;
 
     // Debug: log what we received
     console.log("[import] Received event:", body.title);
@@ -199,7 +228,7 @@ export async function POST(req: NextRequest) {
         where: { id: existingEvent.id },
         data: {
           title: body.title,
-          description: body.description,
+          description: descriptionStr,
           sportTypes,
           startDate: new Date(body.startDate),
           endDate: body.endDate ? new Date(body.endDate) : null,
@@ -222,7 +251,7 @@ export async function POST(req: NextRequest) {
         data: {
           title: body.title,
           slug,
-          description: body.description,
+          description: descriptionStr,
           sportTypes,
           startDate: new Date(body.startDate),
           endDate: body.endDate ? new Date(body.endDate) : null,

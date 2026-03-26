@@ -109,7 +109,7 @@ function ScoreIndicator({ score }: { score: number }) {
 }
 
 export function AdminEventDuplicates() {
-  const t = useTranslations("admin.duplicates");
+  const t = useTranslations("admin.scraping.duplicates");
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<DuplicatesResponse | null>(null);
@@ -198,12 +198,14 @@ export function AdminEventDuplicates() {
             <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
 
-          {isLoading ? (
+          {isLoading && (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("loading")}</p>
             </div>
-          ) : data ? (
+          )}
+
+          {!isLoading && data && (
             <div className="space-y-4">
               {/* Summary */}
               <div className="flex items-center gap-4 rounded-lg border bg-muted/50 p-3 text-sm">
@@ -307,7 +309,7 @@ export function AdminEventDuplicates() {
                 </Button>
               </div>
             </div>
-          ) : null}
+          )}
         </DialogContent>
       </Dialog>
 

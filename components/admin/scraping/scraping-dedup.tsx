@@ -293,7 +293,7 @@ export function ScrapingDedup({
   apiUrl,
   onPendingCountChange,
 }: Readonly<ScrapingDedupProps>) {
-  const t = useTranslations("admin.duplicates");
+  const t = useTranslations("admin.scraping.duplicates");
 
   const [statusFilter, setStatusFilter] = useState<
     "pending" | "confirmed" | "rejected" | "all"

@@ -55,6 +55,7 @@ class ScrapedVariantData:
     start_time: str | None = None
     price: float | None = None
     currency: str = "EUR"
+    gpx_url: str | None = None  # Original GPX file URL
 
 
 @dataclass

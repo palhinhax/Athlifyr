@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SportType, Language, Currency } from "@prisma/client";
+import { parseGpx } from "@/lib/gpx-parser";
 
 /**
  * POST /api/admin/events/import
@@ -42,6 +43,7 @@ interface ImportVariant {
   itraPoints?: number;
   mountainLevel?: number;
   teamSize?: number;
+  gpxUrl?: string;
   translations?: Record<string, ImportVariantTranslation>;
   pricingPhases?: ImportPricingPhase[];
 }
@@ -70,7 +72,7 @@ interface ImportFAQ {
 interface ImportEventPayload {
   title: string;
   slug?: string;
-  description: string;
+  description: string | Record<string, string>;
   sportTypes: string[];
   startDate: string;
   endDate?: string;
@@ -118,6 +120,35 @@ export async function POST(req: NextRequest) {
 
   try {
     const body: ImportEventPayload = await req.json();
+
+    // Normalize description — AI may return it as a multilingual object
+    // In that case, extract the Portuguese (or first available) string for the
+    // Event-level field, and merge per-language descriptions into translations.
+    if (typeof body.description === "object" && body.description !== null) {
+      const descObj = body.description as Record<string, string>;
+      const langs = Object.keys(descObj);
+      // Populate translations.description from the object if not already set
+      body.translations = body.translations ?? {};
+      for (const lang of langs) {
+        if (VALID_LANGUAGES.has(lang as Language)) {
+          body.translations[lang] = body.translations[lang] ?? {
+            title: body.title,
+            description: descObj[lang],
+            city: body.city,
+          };
+          // Only override description field if it wasn't already set
+          if (!body.translations[lang].description) {
+            body.translations[lang].description = descObj[lang];
+          }
+        }
+      }
+      // Use Portuguese as the canonical Event-level description fallback
+      body.description =
+        descObj["pt"] ?? descObj["en"] ?? descObj[langs[0]] ?? "";
+    }
+
+    // After normalization, description is guaranteed to be a string
+    const descriptionStr = body.description as string;
 
     // Debug: log what we received
     console.log("[import] Received event:", body.title);
@@ -197,7 +228,7 @@ export async function POST(req: NextRequest) {
         where: { id: existingEvent.id },
         data: {
           title: body.title,
-          description: body.description,
+          description: descriptionStr,
           sportTypes,
           startDate: new Date(body.startDate),
           endDate: body.endDate ? new Date(body.endDate) : null,
@@ -220,7 +251,7 @@ export async function POST(req: NextRequest) {
         data: {
           title: body.title,
           slug,
-          description: body.description,
+          description: descriptionStr,
           sportTypes,
           startDate: new Date(body.startDate),
           endDate: body.endDate ? new Date(body.endDate) : null,
@@ -243,10 +274,20 @@ export async function POST(req: NextRequest) {
     if (body.translations) {
       for (const [lang, t] of Object.entries(body.translations)) {
         if (!VALID_LANGUAGES.has(lang as Language)) continue;
-        await prisma.eventTranslation.create({
-          data: {
+        await prisma.eventTranslation.upsert({
+          where: {
+            eventId_language: { eventId: event.id, language: lang as Language },
+          },
+          create: {
             eventId: event.id,
             language: lang as Language,
+            title: t.title,
+            description: t.description,
+            city: t.city ?? body.city,
+            metaTitle: t.metaTitle ?? null,
+            metaDescription: t.metaDescription ?? null,
+          },
+          update: {
             title: t.title,
             description: t.description,
             city: t.city ?? body.city,
@@ -311,6 +352,55 @@ export async function POST(req: NextRequest) {
                 note: pp.note ?? null,
               },
             });
+          }
+        }
+
+        // GPX route — download and parse if a bucket URL is provided
+        if (v.gpxUrl) {
+          try {
+            const gpxRes = await fetch(v.gpxUrl);
+            if (gpxRes.ok) {
+              const gpxXml = await gpxRes.text();
+              const parsed = parseGpx(gpxXml);
+              await prisma.eventRoute.upsert({
+                where: { variantId: variant.id },
+                create: {
+                  variantId: variant.id,
+                  gpxData: gpxXml,
+                  routePoints: parsed.routePoints,
+                  distanceKm: parsed.distanceKm || null,
+                  elevationGainM: parsed.elevationGainM
+                    ? Math.round(parsed.elevationGainM)
+                    : null,
+                  elevationLossM: parsed.elevationLossM
+                    ? Math.round(parsed.elevationLossM)
+                    : null,
+                },
+                update: {
+                  gpxData: gpxXml,
+                  routePoints: parsed.routePoints,
+                  distanceKm: parsed.distanceKm || null,
+                  elevationGainM: parsed.elevationGainM
+                    ? Math.round(parsed.elevationGainM)
+                    : null,
+                  elevationLossM: parsed.elevationLossM
+                    ? Math.round(parsed.elevationLossM)
+                    : null,
+                },
+              });
+              console.log(
+                `[import]   GPX route created for variant: ${variant.name} (${parsed.routePoints.length} points, ${parsed.distanceKm} km)`
+              );
+            } else {
+              console.warn(
+                `[import]   GPX fetch failed for ${variant.name}: ${gpxRes.status} ${v.gpxUrl}`
+              );
+            }
+          } catch (gpxErr) {
+            console.error(
+              `[import]   GPX parse/upsert error for ${variant.name}:`,
+              gpxErr
+            );
           }
         }
       }

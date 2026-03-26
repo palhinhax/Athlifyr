@@ -266,14 +266,14 @@ export function ScrapingEventDetail({
               {renderDetailsContent(event)}
             </TabsContent>
             <TabsContent value="ai-input">
-              <pre className="max-h-[60vh] overflow-auto rounded-lg border bg-muted/50 p-4 text-xs">
+              <pre className="overflow-auto whitespace-pre-wrap break-all rounded-lg border bg-muted/50 p-4 text-xs">
                 {event.ai_input
                   ? JSON.stringify(JSON.parse(event.ai_input), null, 2)
                   : t("eventDetail.noAiData")}
               </pre>
             </TabsContent>
             <TabsContent value="ai-output">
-              <pre className="max-h-[60vh] overflow-auto rounded-lg border bg-muted/50 p-4 text-xs">
+              <pre className="overflow-auto whitespace-pre-wrap break-all rounded-lg border bg-muted/50 p-4 text-xs">
                 {event.ai_output
                   ? JSON.stringify(JSON.parse(event.ai_output), null, 2)
                   : t("eventDetail.noAiData")}
@@ -584,7 +584,7 @@ export function ScrapingEventDetail({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto">
+      <DialogContent className="max-w-3xl overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>
             {loading ? t("eventDetail.loading") : event?.title || ""}

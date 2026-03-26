@@ -6,13 +6,14 @@ import asyncio
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
+import xml.etree.ElementTree as ET
+from datetime import date, datetime, timezone
 from pathlib import PurePosixPath
 from urllib.parse import urlparse
 
 import httpx
 from slugify import slugify
-from sqlalchemy import delete, func, select
+from sqlalchemy import cast, delete, func, select, Date as SADate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -105,8 +106,17 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
         created = 0
         updated = 0
         failed = 0
+        skipped = 0
+        today = date.today()
 
         for ev_data in events_data:
+            # Skip past events — only future/upcoming events are relevant.
+            event_date = ev_data.start_date or ev_data.end_date
+            if event_date is not None and event_date.date() < today:
+                logger.debug("[PAST] Skipping past event: %s (%s)", ev_data.title, event_date.date())
+                skipped += 1
+                continue
+
             try:
                 async with db.begin_nested():
                     is_new = await _upsert_scraped_event(db, run.id, source_name, ev_data)
@@ -142,8 +152,8 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
         run.status = ScrapingRunStatus.COMPLETED
 
         logger.info(
-            "[%s] Run complete — found: %d | new: %d | existing: %d | failed: %d | AI queue: %d",
-            source_name, len(events_data), created, updated, failed, len(ai_event_ids),
+            "[%s] Run complete — found: %d | new: %d | existing: %d | failed: %d | skipped (past): %d | AI queue: %d",
+            source_name, len(events_data), created, updated, failed, skipped, len(ai_event_ids),
         )
 
         # Update source config
@@ -343,6 +353,82 @@ async def _upload_image(
         return None
 
 
+async def _upload_variant_gpx_files(
+    event_id: uuid.UUID, db: AsyncSession,
+) -> None:
+    """Download and upload GPX files for variants that have a gpx_url but no gpx_file_path."""
+    result = await db.execute(
+        select(ScrapedVariant).where(
+            ScrapedVariant.event_id == event_id,
+            ScrapedVariant.gpx_url.isnot(None),
+            ScrapedVariant.gpx_file_path.is_(None),
+        )
+    )
+    variants = result.scalars().all()
+    if not variants:
+        return
+
+    storage = get_storage()
+    async with httpx.AsyncClient(follow_redirects=True, timeout=_DOWNLOAD_TIMEOUT) as client:
+        for v in variants:
+            clean_url = _clean_url(v.gpx_url)
+            if not clean_url:
+                continue
+            try:
+                resp = await client.get(clean_url)
+                resp.raise_for_status()
+                data = resp.content
+                ext = _extension_from_url(clean_url) or ".gpx"
+                key = f"gpx/{event_id}/{v.id}{ext}"
+                url = await storage.save(key, data)
+                v.gpx_file_path = url
+                logger.info("Uploaded GPX %s → %s", v.gpx_url, url)
+            except Exception:
+                logger.exception("Failed to upload GPX %s", v.gpx_url)
+
+
+def _extract_gpx_start_coords(gpx_content: bytes) -> tuple[float, float] | None:
+    """Extract the starting point (lat, lon) from GPX file content.
+
+    Tries track points first, then route points, then waypoints.
+    """
+    try:
+        root = ET.fromstring(gpx_content)
+        ns = "http://www.topografix.com/GPX/1/1"
+        for tag in ("trkpt", "rtept", "wpt"):
+            elem = root.find(f".//{{{ns}}}{tag}")
+            if elem is None:
+                elem = root.find(f".//{tag}")
+            if elem is not None:
+                lat_s = elem.get("lat")
+                lon_s = elem.get("lon")
+                if lat_s and lon_s:
+                    return (float(lat_s), float(lon_s))
+    except Exception:
+        logger.warning("Failed to parse GPX for start coordinates")
+    return None
+
+
+async def _get_gpx_start_coords_for_event(
+    variants: list[ScrapedVariant],
+) -> tuple[float, float] | None:
+    """Return (lat, lon) from the first variant that has a downloadable GPX file."""
+    async with httpx.AsyncClient(follow_redirects=True, timeout=_DOWNLOAD_TIMEOUT) as client:
+        for v in variants:
+            url = v.gpx_file_path or v.gpx_url
+            if not url:
+                continue
+            try:
+                resp = await client.get(url)
+                resp.raise_for_status()
+                coords = _extract_gpx_start_coords(resp.content)
+                if coords:
+                    return coords
+            except Exception:
+                logger.debug("Could not fetch GPX from %s for coord extraction", url)
+    return None
+
+
 async def _upload_event_documents_inline(
     event_id: uuid.UUID, db: AsyncSession,
 ) -> None:
@@ -409,6 +495,7 @@ async def _upsert_scraped_event(
     data: ScrapedEventData,
 ) -> bool:
     """Insert or update a ScrapedEvent. Returns True if newly created."""
+    # 1. Same-source match (exact source_url)
     result = await db.execute(
         select(ScrapedEvent).where(
             ScrapedEvent.source_name == source_name,
@@ -417,7 +504,63 @@ async def _upsert_scraped_event(
     )
     existing = result.scalar_one_or_none()
 
+    # 2. Cross-source deduplication: if no same-source match, look for an
+    #    event from *any* source with a matching title and same start_date.
+    #    Strategy (in order):
+    #      a) Exact slug match + same date
+    #      b) One slug contains the other + same date (handles prefix/suffix diffs)
+    if existing is None and data.title and data.start_date:
+        candidate_slug = slugify(data.title)[:500]
+        # Also build a slug without a trailing 4-digit year suffix to use as fallback
+        import re as _re
+        candidate_slug_no_year = _re.sub(r'-\d{4}$', '', candidate_slug)
+        target_date = data.start_date.date() if hasattr(data.start_date, 'date') else data.start_date
+        if candidate_slug:
+            # a) Exact slug match + same date (date only, ignore time/tz)
+            result = await db.execute(
+                select(ScrapedEvent).where(
+                    ScrapedEvent.slug == candidate_slug,
+                    cast(ScrapedEvent.start_date, SADate) == target_date,
+                    ScrapedEvent.source_name != source_name,
+                )
+            )
+            cross_match = result.scalar_one_or_none()
+
+            # b) Partial slug containment (one contains the other) + same date
+            if cross_match is None:
+                result = await db.execute(
+                    select(ScrapedEvent).where(
+                        cast(ScrapedEvent.start_date, SADate) == target_date,
+                        ScrapedEvent.source_name != source_name,
+                        ScrapedEvent.slug.isnot(None),
+                    )
+                )
+                candidates = result.scalars().all()
+                for c in candidates:
+                    if not c.slug:
+                        continue
+                    c_slug_no_year = _re.sub(r'-\d{4}$', '', c.slug)
+                    # Match if slugs overlap after stripping trailing year
+                    if (
+                        candidate_slug in c.slug
+                        or c.slug in candidate_slug
+                        or candidate_slug_no_year == c_slug_no_year
+                        or candidate_slug_no_year == c.slug
+                        or c_slug_no_year == candidate_slug
+                    ):
+                        cross_match = c
+                        break
+
+            if cross_match:
+                logger.info(
+                    "[CROSS-SOURCE] Merging '%s' (from %s) into existing '%s' (from %s)",
+                    data.title, source_name, cross_match.title, cross_match.source_name,
+                )
+                existing = cross_match
+
     if existing:
+        is_cross_source = existing.source_name != source_name
+
         # Record field-level diffs before updating
         has_changes = await _record_changes(db, existing, data, run_id)
 
@@ -438,7 +581,10 @@ async def _upsert_scraped_event(
             raw = {}
         prev_source_image = raw.get("image_url")
 
-        _apply_event_fields(existing, data)
+        if is_cross_source:
+            _enrich_event_fields(existing, data)
+        else:
+            _apply_event_fields(existing, data)
 
         # Handle image: for APPROVED events, always preserve the existing
         # bucket image (it may have been manually replaced by an operator).
@@ -466,7 +612,7 @@ async def _upsert_scraped_event(
         existing.last_seen_at = datetime.now(timezone.utc)
 
         # Replace variants, pricing phases, and documents
-        await _replace_child_records(db, existing.id, data)
+        await _replace_child_records(db, existing.id, data, merge_only=is_cross_source)
 
         await db.flush()
         return False
@@ -508,6 +654,7 @@ async def _upsert_scraped_event(
                 start_time=v.start_time,
                 price=v.price,
                 currency=v.currency,
+                gpx_url=v.gpx_url,
             )
         )
 
@@ -543,6 +690,9 @@ async def _upsert_scraped_event(
     # Upload documents to bucket
     await _upload_event_documents_inline(event.id, db)
 
+    # Upload GPX files for variants
+    await _upload_variant_gpx_files(event.id, db)
+
     return True
 
 
@@ -550,32 +700,92 @@ async def _replace_child_records(
     db: AsyncSession,
     event_id: uuid.UUID,
     data: ScrapedEventData,
+    *,
+    merge_only: bool = False,
 ) -> None:
-    """Delete and re-create variants, pricing phases, and documents.
+    """Update child records (variants, pricing phases, documents).
 
-    Only touches each child table when the scraper actually provides new
-    data for that category, so a scraper that never returns variants
-    won't accidentally wipe previously stored ones.
+    When *merge_only* is True (cross-source merge), only **add** new data
+    without deleting existing records — this preserves GPX, documents, etc.
+    already attached from a richer source.
+
+    When *merge_only* is False (same-source update), replaces child records
+    as before.  Only touches each child table when the scraper actually
+    provides new data for that category.
     """
     if data.variants:
-        await db.execute(
-            delete(ScrapedVariant).where(ScrapedVariant.event_id == event_id)
+        existing_variants_result = await db.execute(
+            select(ScrapedVariant).where(ScrapedVariant.event_id == event_id)
         )
-        for v in data.variants:
-            db.add(
-                ScrapedVariant(
-                    event_id=event_id,
-                    name=v.name,
-                    distance_km=v.distance_km,
-                    elevation_gain_m=v.elevation_gain_m,
-                    elevation_loss_m=v.elevation_loss_m,
-                    start_time=v.start_time,
-                    price=v.price,
-                    currency=v.currency,
-                )
-            )
+        existing_variants = existing_variants_result.scalars().all()
 
-    if data.pricing_phases:
+        if merge_only:
+            # Cross-source: only add new info, never delete existing variants.
+            # Enrich existing variants with GPX if they don't have one yet.
+            existing_by_name = {v.name: v for v in existing_variants}
+            for v in data.variants:
+                ev = existing_by_name.get(v.name)
+                if ev:
+                    # Fill in blanks on the existing variant
+                    if v.gpx_url and not ev.gpx_url:
+                        ev.gpx_url = v.gpx_url
+                    if v.distance_km and not ev.distance_km:
+                        ev.distance_km = v.distance_km
+                    if v.elevation_gain_m and not ev.elevation_gain_m:
+                        ev.elevation_gain_m = v.elevation_gain_m
+                    if v.elevation_loss_m and not ev.elevation_loss_m:
+                        ev.elevation_loss_m = v.elevation_loss_m
+                    if v.price is not None and ev.price is None:
+                        ev.price = v.price
+                    if v.start_time and not ev.start_time:
+                        ev.start_time = v.start_time
+                else:
+                    # New variant not in existing set → add it
+                    db.add(
+                        ScrapedVariant(
+                            event_id=event_id,
+                            name=v.name,
+                            distance_km=v.distance_km,
+                            elevation_gain_m=v.elevation_gain_m,
+                            elevation_loss_m=v.elevation_loss_m,
+                            start_time=v.start_time,
+                            price=v.price,
+                            currency=v.currency,
+                            gpx_url=v.gpx_url,
+                        )
+                    )
+            await db.flush()
+            await _upload_variant_gpx_files(event_id, db)
+        else:
+            # Same-source: replace all, preserving GPX bucket paths
+            gpx_by_url: dict[str, str] = {
+                v.gpx_url: v.gpx_file_path
+                for v in existing_variants
+                if v.gpx_url and v.gpx_file_path
+            }
+
+            await db.execute(
+                delete(ScrapedVariant).where(ScrapedVariant.event_id == event_id)
+            )
+            for v in data.variants:
+                db.add(
+                    ScrapedVariant(
+                        event_id=event_id,
+                        name=v.name,
+                        distance_km=v.distance_km,
+                        elevation_gain_m=v.elevation_gain_m,
+                        elevation_loss_m=v.elevation_loss_m,
+                        start_time=v.start_time,
+                        price=v.price,
+                        currency=v.currency,
+                        gpx_url=v.gpx_url,
+                        gpx_file_path=gpx_by_url.get(v.gpx_url) if v.gpx_url else None,
+                    )
+                )
+            await db.flush()
+            await _upload_variant_gpx_files(event_id, db)
+
+    if data.pricing_phases and not merge_only:
         await db.execute(
             delete(ScrapedPricingPhase).where(
                 ScrapedPricingPhase.event_id == event_id
@@ -596,21 +806,49 @@ async def _replace_child_records(
             )
 
     if data.documents:
-        await db.execute(
-            delete(ScrapedDocument).where(ScrapedDocument.event_id == event_id)
+        # Build a map of existing docs keyed by original_url so we can
+        # preserve already-downloaded files instead of re-downloading.
+        existing_docs_result = await db.execute(
+            select(ScrapedDocument).where(ScrapedDocument.event_id == event_id)
         )
+        existing_by_url: dict[str, ScrapedDocument] = {
+            doc.original_url: doc
+            for doc in existing_docs_result.scalars().all()
+            if doc.original_url
+        }
+
+        incoming_urls = {d.original_url for d in data.documents if d.original_url}
+
+        # In same-source mode, delete docs whose URL is no longer scraped.
+        # In merge mode, never delete — only add.
+        if not merge_only:
+            for url, doc in existing_by_url.items():
+                if url not in incoming_urls:
+                    if doc.file_path:
+                        await _delete_bucket_object(doc.file_path)
+                    await db.delete(doc)
+
+        # Add or keep each incoming document
         for d in data.documents:
-            db.add(
-                ScrapedDocument(
-                    event_id=event_id,
-                    document_type=d.document_type,
-                    original_url=d.original_url,
-                    file_name=d.file_name,
-                    mime_type=d.mime_type,
+            existing_doc = existing_by_url.get(d.original_url)
+            if existing_doc is not None:
+                # Update metadata but preserve download state
+                existing_doc.document_type = d.document_type
+                existing_doc.file_name = d.file_name
+                existing_doc.mime_type = d.mime_type
+            else:
+                db.add(
+                    ScrapedDocument(
+                        event_id=event_id,
+                        document_type=d.document_type,
+                        original_url=d.original_url,
+                        file_name=d.file_name,
+                        mime_type=d.mime_type,
+                    )
                 )
-            )
+
         await db.flush()
-        # Upload new documents to bucket
+        # Upload only documents that haven't been downloaded yet
         await _upload_event_documents_inline(event_id, db)
 
 
@@ -685,6 +923,37 @@ def _apply_event_fields(event: ScrapedEvent, data: ScrapedEventData) -> None:
     event.raw_data = data.raw_data
 
 
+def _enrich_event_fields(event: ScrapedEvent, data: ScrapedEventData) -> None:
+    """Fill in blank fields on *event* from *data* without overwriting existing values.
+
+    Used for cross-source merges so the richer source's data is preserved.
+    """
+    if data.description and not event.description:
+        event.description = data.description
+    if data.sport_types and not event.sport_types:
+        event.sport_types = ",".join(data.sport_types)
+    if data.start_date and not event.start_date:
+        event.start_date = data.start_date
+    if data.end_date and not event.end_date:
+        event.end_date = data.end_date
+    if data.registration_deadline and not event.registration_deadline:
+        event.registration_deadline = data.registration_deadline
+    if data.city and not event.city:
+        event.city = data.city
+    if data.latitude and not event.latitude:
+        event.latitude = data.latitude
+    if data.longitude and not event.longitude:
+        event.longitude = data.longitude
+    if data.google_maps_url and not event.google_maps_url:
+        event.google_maps_url = data.google_maps_url
+    if data.organizer_name and not event.organizer_name:
+        event.organizer_name = data.organizer_name
+    if data.external_url and not event.external_url:
+        event.external_url = data.external_url
+    if data.raw_pricing_text and not event.raw_pricing_text:
+        event.raw_pricing_text = data.raw_pricing_text
+
+
 # ── Auto AI generate + Next.js import ────────────────────────────────────────
 
 
@@ -747,6 +1016,9 @@ async def generate_and_import_event(
             )
         ]
 
+        # Extract start coordinates from GPX files (helps AI with precise positioning)
+        gpx_coords = await _get_gpx_start_coords_for_event(event.variants)
+
         # Build event data dict
         event_data = {
             "title": event.title,
@@ -758,8 +1030,8 @@ async def generate_and_import_event(
             "registration_deadline": str(event.registration_deadline) if event.registration_deadline else None,
             "city": event.city,
             "country": event.country,
-            "latitude": event.latitude,
-            "longitude": event.longitude,
+            "latitude": event.latitude or (gpx_coords[0] if gpx_coords else None),
+            "longitude": event.longitude or (gpx_coords[1] if gpx_coords else None),
             "organizer_name": event.organizer_name,
             "external_url": event.external_url,
             "image_url": event.image_url,
@@ -772,6 +1044,7 @@ async def generate_and_import_event(
                     "price": v.price,
                     "currency": v.currency,
                     "start_time": v.start_time,
+                    "gpx_url": v.gpx_file_path or v.gpx_url,
                 }
                 for v in event.variants
             ],
@@ -832,6 +1105,23 @@ async def generate_and_import_event(
             generated["externalUrl"] = event.external_url or event.source_url
         generated["scrapedEventId"] = str(event_id)
         generated["sourceName"] = event.source_name
+
+        # Inject gpxUrl per variant by matching AI-generated variant names to scraped variants
+        gpx_url_by_name: dict[str, str] = {
+            v.name.lower(): (v.gpx_file_path or v.gpx_url)
+            for v in event.variants
+            if (v.gpx_file_path or v.gpx_url)
+        }
+        for v in generated.get("variants", []):
+            name_key = (v.get("name") or "").lower()
+            gpx_url = gpx_url_by_name.get(name_key)
+            if not gpx_url:
+                for scraped_name, url in gpx_url_by_name.items():
+                    if scraped_name in name_key or name_key in scraped_name:
+                        gpx_url = url
+                        break
+            if gpx_url:
+                v["gpxUrl"] = gpx_url
 
         # Inject document bucket URLs so the frontend can link to them
         if docs:

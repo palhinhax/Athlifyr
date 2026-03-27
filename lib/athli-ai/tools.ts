@@ -52,6 +52,21 @@ export const athliTools = [
           type: "string",
           description: "Free text search for event name",
         },
+        latitude: {
+          type: "number",
+          description:
+            "Center latitude for proximity search. Use with longitude and optionally radiusKm to find events near a location. When the user mentions a city or area, use its approximate coordinates.",
+        },
+        longitude: {
+          type: "number",
+          description:
+            "Center longitude for proximity search. Use with latitude.",
+        },
+        radiusKm: {
+          type: "number",
+          description:
+            "Search radius in kilometers (default 50). Use smaller radius (20-30) for cities, larger (50-100) for regions.",
+        },
         limit: {
           type: "number",
           description: "Maximum number of results (default 10)",
@@ -143,6 +158,21 @@ export const athliTools = [
           ],
           description:
             "Filter by venue type. Use MASSAGE for massage therapists, PHYSIO for physiotherapy, NUTRITION for nutritionists.",
+        },
+        latitude: {
+          type: "number",
+          description:
+            "Center latitude for proximity search. Use with longitude to find venues near a location.",
+        },
+        longitude: {
+          type: "number",
+          description:
+            "Center longitude for proximity search. Use with latitude.",
+        },
+        radiusKm: {
+          type: "number",
+          description:
+            "Search radius in kilometers (default 30). Use smaller radius (10-20) for cities.",
         },
         limit: {
           type: "number",

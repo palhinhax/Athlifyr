@@ -7,7 +7,7 @@
 
 // System prompt
 export { getSystemPrompt } from "./system-prompt";
-export type { AthliPageContext } from "./system-prompt";
+export type { AthliPageContext, AthliUserLocation } from "./system-prompt";
 
 // Platform knowledge base
 export { getPlatformInfo } from "./platform";

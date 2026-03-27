@@ -612,6 +612,25 @@
     "noConversationsDescription": "Start a conversation with someone from the community.",
     "newConversationButton": "New Conversation"
   },
+  "athli": {
+    "welcome": "Hey! I'm Athli",
+    "welcomeDescription": "Your AI sports assistant. I can help you find events, discover venues, check your booked classes, create workouts and training plans.",
+    "subtitle": "Your AI sports assistant",
+    "inputPlaceholder": "Ask me anything about sports, events, training...",
+    "thinking": "Thinking...",
+    "suggestions": {
+      "events": "Find events near me",
+      "eventsMessage": "What sporting events are coming up near me?",
+      "venues": "Discover venues",
+      "venuesMessage": "What gyms and training venues are available?",
+      "training": "Create a training plan",
+      "trainingMessage": "I want a weekly training plan. Can you help me create one?",
+      "workout": "Create a workout",
+      "workoutMessage": "I want a workout for today. Can you create one for me?"
+    },
+    "history": "Previous conversations",
+    "noHistory": "You don't have any previous conversations yet."
+  },
   "settings": {
     "title": "Settings",
     "tabProfile": "Profile",

@@ -9,11 +9,13 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { MessageCircle, Plus } from "lucide-react-native";
+import { MessageCircle } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useConversations } from "@/src/hooks/useChat";
+import { useAthliConversations } from "@/src/hooks/useAthliChat";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { ConversationListItem } from "@/src/components/chat/ConversationListItem";
+import { AthliConversationItem } from "@/src/components/chat/AthliConversationItem";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { theme } from "@/src/constants/theme";
 import { useSocket } from "@/src/hooks/useSocket";
@@ -34,6 +36,10 @@ export default function MessagesScreen() {
     refetch,
   } = useConversations(isAuthenticated);
 
+  const { data: athliConversations = [] } =
+    useAthliConversations(isAuthenticated);
+  const lastAthliConversation = athliConversations[0] ?? null;
+
   // Listen for incoming messages to refresh conversations list in real-time
   useEffect(() => {
     if (!socket || !isConnected) return;
@@ -51,7 +57,10 @@ export default function MessagesScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([
+      refetch(),
+      queryClient.invalidateQueries({ queryKey: ["athli-conversations"] }),
+    ]);
     setRefreshing(false);
   };
 
@@ -59,9 +68,12 @@ export default function MessagesScreen() {
     router.push(`/chat/${conversationId}`);
   };
 
-  const handleNewConversation = () => {
-    // TODO: Implement new conversation modal/screen
-    // For now, users can start conversations by going to user profiles
+  const handleAthliPress = () => {
+    if (lastAthliConversation) {
+      router.push(`/chat/athli?conversationId=${lastAthliConversation.id}`);
+    } else {
+      router.push("/chat/athli");
+    }
   };
 
   // Not authenticated state
@@ -105,10 +117,15 @@ export default function MessagesScreen() {
     );
   }
 
-  // Empty state
+  // Empty state — still show Athli AI as a conversation
   if (conversations.length === 0) {
     return (
       <View style={styles.container}>
+        <AthliConversationItem
+          lastConversation={lastAthliConversation}
+          subtitle={t("athli.subtitle")}
+          onPress={handleAthliPress}
+        />
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIcon}>
             <MessageCircle size={48} color={theme.colors.textSecondary} />
@@ -117,15 +134,6 @@ export default function MessagesScreen() {
           <Text style={styles.emptyDescription}>
             {t("chat.noConversationsDescription")}
           </Text>
-          <TouchableOpacity
-            style={styles.newConversationButton}
-            onPress={handleNewConversation}
-          >
-            <Plus size={20} color={theme.colors.white} />
-            <Text style={styles.newConversationButtonText}>
-              {t("chat.newConversationButton")}
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -137,6 +145,13 @@ export default function MessagesScreen() {
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <AthliConversationItem
+            lastConversation={lastAthliConversation}
+            subtitle={t("athli.subtitle")}
+            onPress={handleAthliPress}
+          />
+        }
         renderItem={({ item }) => (
           <ConversationListItem
             conversation={item}

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { MapPin, Navigation } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 
 // Try to import Mapbox - it requires native code and won't work in Expo Go
@@ -45,6 +46,8 @@ export function EventLocationMap({
   country,
   googleMapsUrl,
 }: EventLocationMapProps) {
+  const { t } = useTranslation();
+
   const handleOpenMaps = () => {
     const url =
       googleMapsUrl ||
@@ -58,7 +61,7 @@ export function EventLocationMap({
     <View style={styles.container}>
       <View style={styles.header}>
         <MapPin size={20} color={theme.colors.primary} />
-        <Text style={styles.title}>Location</Text>
+        <Text style={styles.title}>{t("events.meta.location")}</Text>
       </View>
 
       <View style={styles.mapCard}>
@@ -111,7 +114,7 @@ export function EventLocationMap({
           activeOpacity={0.8}
         >
           <Navigation size={20} color={theme.colors.white} />
-          <Text style={styles.openMapsText}>Open in Maps</Text>
+          <Text style={styles.openMapsText}>{t("events.openInMaps")}</Text>
         </TouchableOpacity>
       </View>
     </View>

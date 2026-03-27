@@ -37,8 +37,8 @@ export const metadata: Metadata = {
   description:
     "See the latest updates from your events. Follow posts, photos, and results from the sports community.",
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
   },
 };
 

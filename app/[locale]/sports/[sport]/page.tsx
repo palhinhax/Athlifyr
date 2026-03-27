@@ -112,6 +112,8 @@ export async function generateMetadata({
     };
   }
 
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
   const sportName = sportTypeLabels[sportType];
   const title = t("metaTitle", { sport: sportName });
   const description = t("metaDescription", { sport: sportName });
@@ -119,10 +121,17 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: `${baseUrl}/pt/sports/${sport}`,
+    },
     openGraph: {
       title,
       description,
       type: "website",
+    },
+    robots: {
+      index: localeParam === "pt",
+      follow: true,
     },
   };
 }

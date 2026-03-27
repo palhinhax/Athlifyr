@@ -33,14 +33,14 @@ export async function generateMetadata({
   for (const loc of SUPPORTED_LOCALES) {
     languageAlternates[loc] = `${baseUrl}/${loc}/video-analysis`;
   }
-  languageAlternates["x-default"] = `${baseUrl}/en/video-analysis`;
+  languageAlternates["x-default"] = `${baseUrl}/pt/video-analysis`;
 
   return {
     title: t("title"),
     description: t("description"),
     keywords: t("keywords"),
     alternates: {
-      canonical: pageUrl,
+      canonical: `${baseUrl}/pt/video-analysis`,
       languages: languageAlternates,
     },
     openGraph: {
@@ -67,10 +67,10 @@ export async function generateMetadata({
       creator: "@athlifyr",
     },
     robots: {
-      index: true,
+      index: locale === "pt",
       follow: true,
       googleBot: {
-        index: true,
+        index: locale === "pt",
         follow: true,
         "max-video-preview": -1,
         "max-image-preview": "large",

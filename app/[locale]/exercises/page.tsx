@@ -5,6 +5,11 @@ import { getTranslations } from "next-intl/server";
 import { ExercisesPageClient } from "@/components/exercises-page-client";
 import { Language } from "@prisma/client";
 import { isVenueStaff } from "@/lib/venues/authorization";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export const dynamic = "force-dynamic";
 

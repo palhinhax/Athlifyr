@@ -46,14 +46,14 @@ export async function generatePresentationMetadata({
   for (const loc of SUPPORTED_LOCALES) {
     languageAlternates[loc] = `${baseUrl}/${loc}/presentation/${pagePath}`;
   }
-  languageAlternates["x-default"] = `${baseUrl}/en/presentation/${pagePath}`;
+  languageAlternates["x-default"] = `${baseUrl}/pt/presentation/${pagePath}`;
 
   return {
     title: t("title"),
     description: t("description"),
     keywords: t("keywords"),
     alternates: {
-      canonical: pageUrl,
+      canonical: `${baseUrl}/pt/presentation/${pagePath}`,
       languages: languageAlternates,
     },
     openGraph: {
@@ -80,10 +80,10 @@ export async function generatePresentationMetadata({
       creator: "@athlifyr",
     },
     robots: {
-      index: true,
+      index: locale === "pt",
       follow: true,
       googleBot: {
-        index: true,
+        index: locale === "pt",
         follow: true,
         "max-video-preview": -1,
         "max-image-preview": "large",

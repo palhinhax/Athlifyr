@@ -47,7 +47,7 @@ export async function generateMetadata({
     title: t("meta.title"),
     description: t("meta.description"),
     alternates: {
-      canonical: `${baseUrl}/${locale}/pricing`,
+      canonical: `${baseUrl}/pt/pricing`,
       languages: Object.fromEntries(
         locales.map((l) => [l, `${baseUrl}/${l}/pricing`])
       ),
@@ -60,7 +60,7 @@ export async function generateMetadata({
       type: "website",
     },
     robots: {
-      index: true,
+      index: locale === "pt",
       follow: true,
     },
   };

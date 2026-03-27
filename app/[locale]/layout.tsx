@@ -140,7 +140,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://www.athlifyr.com",
+    canonical: "https://www.athlifyr.com/pt",
     languages: {
       pt: "https://www.athlifyr.com/pt",
       en: "https://www.athlifyr.com/en",

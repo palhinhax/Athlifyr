@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 import { Calendar, Trophy, Users } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
 import { Link } from "@/i18n/routing";

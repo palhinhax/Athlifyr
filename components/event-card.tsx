@@ -163,26 +163,23 @@ export function EventCard({
                       return (
                         <span
                           key={variant.id}
-                          className="inline-flex items-center rounded-full border border-border/60 bg-card px-2.5 py-1 shadow-sm"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-1 ring-1 ring-primary/20"
                         >
-                          <span className="text-xs font-semibold text-foreground">
+                          <span className="text-[11px] font-bold tracking-tight text-foreground">
                             {variant.distanceKm
                               ? `${variant.distanceKm} km`
                               : variant.name}
                           </span>
                           {currentPrice && (
-                            <>
-                              <span className="mx-1.5 h-3 w-px bg-border" />
-                              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                {currentPrice.price}€
-                              </span>
-                            </>
+                            <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-sm">
+                              {currentPrice.price}€
+                            </span>
                           )}
                         </span>
                       );
                     })}
                     {event.variants.length > 3 && (
-                      <span className="inline-flex items-center rounded-full border border-border/60 bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-sm">
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-1 text-[11px] font-bold text-muted-foreground ring-1 ring-primary/20">
                         +{event.variants.length - 3}
                       </span>
                     )}

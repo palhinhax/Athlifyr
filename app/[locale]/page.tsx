@@ -13,6 +13,27 @@ import {
 import { AppDownloadSection } from "@/components/app-download-section";
 import { sportIcons } from "@/lib/sport-config";
 import { Link } from "@/i18n/routing";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
+
+  return {
+    alternates: {
+      canonical: `${baseUrl}/pt`,
+    },
+    robots: {
+      index: locale === "pt",
+      follow: true,
+    },
+  };
+}
 
 async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({

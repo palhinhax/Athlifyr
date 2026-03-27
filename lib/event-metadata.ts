@@ -25,13 +25,37 @@ interface EventMetadataProps {
   locale?: string;
 }
 
+/**
+ * Determines if an event should be indexed by search engines.
+ * NOINDEX for: non-pt locales, past events, events missing critical data.
+ */
+function shouldIndexEvent(
+  event: EventMetadataProps["event"],
+  locale: string
+): boolean {
+  // Only index the canonical locale (pt)
+  if (locale !== "pt") return false;
+
+  // Don't index past events
+  if (new Date(event.startDate) < new Date()) return false;
+
+  // Don't index events missing critical info
+  if (!event.description || event.description.trim().length < 10) return false;
+  if (!event.city || event.city.trim().length === 0) return false;
+
+  return true;
+}
+
 export async function generateEventMetadata({
   event,
   locale = "pt",
 }: EventMetadataProps): Promise<Metadata> {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
+  // Canonical URL always points to pt (default locale)
+  const canonicalUrl = `${baseUrl}/pt/events/${event.slug}`;
   const eventUrl = `${baseUrl}/${locale}/events/${event.slug}`;
+  const shouldIndex = shouldIndexEvent(event, locale);
 
   // Ensure image URL is absolute
   let eventImage = event.imageUrl || `${baseUrl}/logo.png`;
@@ -78,7 +102,6 @@ export async function generateEventMetadata({
   ];
 
   // Generate hreflang alternates for all supported locales
-  // This helps Google understand that the same content exists in multiple languages
   const languageAlternates: Record<string, string> = {};
   for (const loc of SUPPORTED_LOCALES) {
     languageAlternates[loc] = `${baseUrl}/${loc}/events/${event.slug}`;
@@ -91,7 +114,7 @@ export async function generateEventMetadata({
     description: metaDescription,
     keywords: keywords.join(", "),
     alternates: {
-      canonical: eventUrl,
+      canonical: canonicalUrl,
       languages: languageAlternates,
     },
     openGraph: {
@@ -120,10 +143,10 @@ export async function generateEventMetadata({
       creator: "@athlifyr",
     },
     robots: {
-      index: true,
+      index: shouldIndex,
       follow: true,
       googleBot: {
-        index: true,
+        index: shouldIndex,
         follow: true,
         "max-video-preview": -1,
         "max-image-preview": "large",

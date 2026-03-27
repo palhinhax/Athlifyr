@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "../globals.css";
@@ -41,10 +42,10 @@ import { MobileNav } from "@/components/mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
 import { AnalysisButton } from "@/components/analysis-button";
 
-const geistSans = localFont({
-  src: "../fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-inter",
+  display: "swap",
 });
 const geistMono = localFont({
   src: "../fonts/GeistMonoVF.woff",
@@ -207,7 +208,7 @@ export default async function RootLayout({
         <StructuredData data={softwareAppSchema} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
+        className={`${inter.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
         {/* Skip to main content: must be the very first focusable element (WCAG 2.4.1) */}
         <a

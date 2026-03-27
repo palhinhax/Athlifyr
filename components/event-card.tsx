@@ -169,7 +169,7 @@ export function EventCard({
                             ? `${variant.distanceKm} km`
                             : variant.name}
                           {currentPrice && (
-                            <span className="text-accent">
+                            <span className="font-semibold text-primary">
                               {currentPrice.price}€
                             </span>
                           )}

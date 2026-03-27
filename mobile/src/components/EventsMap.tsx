@@ -1,7 +1,13 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { MapPin } from "lucide-react-native";
+import { MapPin, LocateFixed } from "lucide-react-native";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import {
@@ -10,7 +16,6 @@ import {
   getPrimarySport,
 } from "@/src/lib/event-utils";
 import { MapEventPreview } from "@/src/components/MapEventPreview";
-import { MapSportFilter } from "@/src/components/MapSportFilter";
 
 // Try to import Mapbox
 let Mapbox: typeof import("@rnmapbox/maps").default | null = null;
@@ -45,26 +50,41 @@ interface MapEvent {
 }
 
 interface EventsMapProps {
-  searchQuery?: string;
+  readonly searchQuery?: string;
+  readonly selectedSports: string[];
+  readonly onSportsChange: (sports: string[]) => void;
+  readonly startDays?: number;
+  readonly endDays?: number;
+  readonly userLatitude?: number | null;
+  readonly userLongitude?: number | null;
 }
 
-export function EventsMap({ searchQuery }: EventsMapProps) {
+export function EventsMap({
+  searchQuery,
+  selectedSports,
+  onSportsChange: _onSportsChange,
+  startDays = 0,
+  endDays = 60,
+  userLatitude,
+  userLongitude,
+}: EventsMapProps) {
   const { t } = useTranslation();
   const [events, setEvents] = useState<MapEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
-  const [selectedSports, setSelectedSports] = useState<string[]>([]);
+  const cameraRef = useRef<InstanceType<
+    typeof import("@rnmapbox/maps").default.Camera
+  > | null>(null);
 
   const fetchMapEvents = useCallback(async () => {
     try {
-      setLoading(true);
-
       const params = new URLSearchParams();
-      // Default: today to 2 months from now
       const now = new Date();
-      const endDate = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
-      params.append("startDate", now.toISOString());
-      params.append("endDate", endDate.toISOString());
+      now.setHours(0, 0, 0, 0);
+      const start = new Date(now.getTime() + startDays * 24 * 60 * 60 * 1000);
+      const end = new Date(now.getTime() + endDays * 24 * 60 * 60 * 1000);
+      params.append("startDate", start.toISOString());
+      params.append("endDate", end.toISOString());
 
       // Apply sport type filters
       if (selectedSports.length > 0) {
@@ -91,18 +111,13 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
     } catch (error) {
       console.error("Error fetching map events:", error);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
-  }, [searchQuery, selectedSports]);
+  }, [searchQuery, selectedSports, startDays, endDays]);
 
   useEffect(() => {
     fetchMapEvents();
   }, [fetchMapEvents]);
-
-  const handleSportsChange = useCallback((sports: string[]) => {
-    setSelectedSports(sports);
-    setSelectedEvent(null);
-  }, []);
 
   const handleMarkerPress = useCallback(
     (event: MapEvent) => {
@@ -120,9 +135,19 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
     setSelectedEvent(null);
   }, []);
 
+  const handleCenterOnUser = useCallback(() => {
+    if (userLatitude != null && userLongitude != null && cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [userLongitude, userLatitude],
+        zoomLevel: 8,
+        animationDuration: 1000,
+      });
+    }
+  }, [userLatitude, userLongitude]);
+
   const canShowMap = mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN;
 
-  if (loading) {
+  if (initialLoading && events.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -156,10 +181,18 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
         onPress={handleClosePreview}
       >
         <Mapbox.Camera
-          centerCoordinate={[-8.0, 39.5]}
-          zoomLevel={6}
-          animationMode="flyTo"
+          ref={(ref) => {
+            cameraRef.current = ref;
+          }}
+          defaultSettings={{
+            centerCoordinate:
+              userLatitude != null && userLongitude != null
+                ? [userLongitude, userLatitude]
+                : [-8.0, 39.5],
+            zoomLevel: userLatitude == null ? 6 : 8,
+          }}
         />
+        <Mapbox.UserLocation visible animated />
         {events.map((event) => {
           const primarySport = getPrimarySport(event.sportTypes);
           const sportColor = getSportColor(primarySport);
@@ -194,11 +227,16 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
         })}
       </Mapbox.MapView>
 
-      {/* Sport filters */}
-      <MapSportFilter
-        selectedSports={selectedSports}
-        onSportsChange={handleSportsChange}
-      />
+      {/* Center on user button */}
+      {userLatitude != null && userLongitude != null && (
+        <TouchableOpacity
+          style={styles.centerButton}
+          onPress={handleCenterOnUser}
+          activeOpacity={0.8}
+        >
+          <LocateFixed size={20} color={theme.colors.primary} />
+        </TouchableOpacity>
+      )}
 
       {/* Event count badge */}
       <View style={styles.eventCountBadge}>
@@ -282,5 +320,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: theme.colors.text,
+  },
+  centerButton: {
+    position: "absolute",
+    bottom: 16,
+    right: 12,
+    zIndex: 999,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    ...theme.shadows.md,
   },
 });

@@ -21,6 +21,8 @@
     "CYCLING": "Cyclisme",
     "SURF": "Surf",
     "TRIATHLON": "Triathlon",
+    "DUATHLON": "Duathlon",
+    "AQUATHLON": "Aquathlon",
     "SWIMMING": "Natation",
     "OTHER": "Autre"
   },
@@ -57,6 +59,16 @@
     "notFound": "Événement introuvable",
     "about": "À propos",
     "visitWebsite": "Visiter le site officiel",
+    "meta": {
+      "date": "Date",
+      "location": "Lieu",
+      "friendsGoing": "Amis qui y vont",
+      "friend_one": "{{count}} ami",
+      "friend_other": "{{count}} amis"
+    },
+    "distances": "Distances",
+    "faq": "Questions Fréquentes",
+    "openInMaps": "Ouvrir dans Maps",
     "shareMessage": "Découvrez cet événement : {{title}}",
     "shareDate": "Date : {{date}}",
     "shareLocation": "Lieu : {{location}}",
@@ -73,6 +85,12 @@
       "applyFilters": "Appliquer les filtres",
       "clearFilters": "Effacer les filtres",
       "eventsCount": "{{count}} événements"
+    },
+    "locationFilter": {
+      "enable": "Activer la Localisation",
+      "disable": "Désactiver la Localisation",
+      "active": "Active",
+      "radius": "Rayon"
     },
     "registration": {
       "willYouGo": "Allez-vous y participer ?",
@@ -154,6 +172,7 @@
       "eventCard": "{{title}}, {{date}}, {{location}}",
       "eventCardParticipating": "{{title}}, {{date}}, {{location}}, participe",
       "listView": "Vue liste",
+      "gridView": "Vue grille",
       "mapView": "Vue carte",
       "suggestEvent": "Suggérer un événement",
       "searchEvents": "Rechercher des événements",
@@ -601,7 +620,29 @@
     "typeMessage": "Écris un message...",
     "noConversations": "Aucune conversation",
     "noConversationsDescription": "Commence une conversation avec quelqu'un de la communauté.",
-    "newConversationButton": "Nouvelle Conversation"
+    "newConversationButton": "Nouvelle Conversation",
+    "searchFriends": "Rechercher des amis...",
+    "noFriends": "Pas encore d'amis. Ajoute des amis pour commencer à discuter !",
+    "noFriendsFound": "Aucun ami trouvé"
+  },
+  "athli": {
+    "welcome": "Salut ! Je suis Athli",
+    "welcomeDescription": "Votre assistant sportif IA. Je peux vous aider à trouver des événements, découvrir des salles, consulter vos cours réservés, créer des entraînements et des plans d'entraînement.",
+    "subtitle": "Votre assistant sportif IA",
+    "inputPlaceholder": "Demandez-moi tout sur le sport, les événements, l'entraînement...",
+    "thinking": "Réflexion...",
+    "suggestions": {
+      "events": "Trouver des événements",
+      "eventsMessage": "Quels événements sportifs y a-t-il près de chez moi ?",
+      "venues": "Découvrir des salles",
+      "venuesMessage": "Quelles salles et espaces d'entraînement sont disponibles ?",
+      "training": "Créer un plan d'entraînement",
+      "trainingMessage": "Je veux un plan d'entraînement hebdomadaire. Pouvez-vous m'aider à en créer un ?",
+      "workout": "Créer un entraînement",
+      "workoutMessage": "Je veux un entraînement pour aujourd'hui. Pouvez-vous en créer un pour moi ?"
+    },
+    "history": "Conversations précédentes",
+    "noHistory": "Vous n'avez pas encore de conversations précédentes."
   },
   "settings": {
     "title": "Paramètres",

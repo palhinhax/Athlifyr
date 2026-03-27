@@ -214,8 +214,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { message, conversationId, locale, pageContext } =
-      await request.json();
+    const {
+      message,
+      conversationId,
+      locale,
+      pageContext,
+      userLatitude,
+      userLongitude,
+    } = await request.json();
 
     if (
       !message ||
@@ -255,10 +261,15 @@ export async function POST(request: Request) {
 
     // Build message history for OpenAI
     const validatedPageContext = validatePageContext(pageContext);
+    const userLocation =
+      typeof userLatitude === "number" && typeof userLongitude === "number"
+        ? { latitude: userLatitude, longitude: userLongitude }
+        : null;
     const systemPrompt = getSystemPrompt(
       userLocale,
       user.name,
-      validatedPageContext
+      validatedPageContext,
+      userLocation
     );
     const chatMessages: OpenAI.ChatCompletionMessageParam[] = [
       { role: "system", content: systemPrompt },

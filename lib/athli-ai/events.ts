@@ -12,6 +12,9 @@ export interface EventSearchParams {
   fromDate?: string;
   toDate?: string;
   search?: string;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   limit?: number;
 }
 
@@ -107,6 +110,25 @@ export async function searchEvents(
     where.AND = [{ OR: cityConditions }, { OR: searchConditions }];
   } else if (orConditions.length > 0) {
     where.OR = orConditions;
+  }
+
+  // Coordinate-based proximity search
+  if (params.latitude && params.longitude) {
+    const radiusKm = params.radiusKm || 50;
+    const latDelta = radiusKm / 111;
+    const lngDelta =
+      radiusKm / (111 * Math.cos((params.latitude * Math.PI) / 180));
+
+    where.latitude = {
+      not: null,
+      gte: params.latitude - latDelta,
+      lte: params.latitude + latDelta,
+    };
+    where.longitude = {
+      not: null,
+      gte: params.longitude - lngDelta,
+      lte: params.longitude + lngDelta,
+    };
   }
 
   const events = await prisma.event.findMany({

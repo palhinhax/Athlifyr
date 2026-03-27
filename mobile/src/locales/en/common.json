@@ -21,6 +21,8 @@
     "CYCLING": "Cycling",
     "SURF": "Surf",
     "TRIATHLON": "Triathlon",
+    "DUATHLON": "Duathlon",
+    "AQUATHLON": "Aquathlon",
     "SWIMMING": "Swimming",
     "OTHER": "Other"
   },
@@ -57,6 +59,16 @@
     "notFound": "Event not found",
     "about": "About",
     "visitWebsite": "Visit Official Website",
+    "meta": {
+      "date": "Date",
+      "location": "Location",
+      "friendsGoing": "Friends Going",
+      "friend_one": "{{count}} friend",
+      "friend_other": "{{count}} friends"
+    },
+    "distances": "Distances",
+    "faq": "Frequently Asked Questions",
+    "openInMaps": "Open in Maps",
     "shareMessage": "Check out this event: {{title}}",
     "shareDate": "Date: {{date}}",
     "shareLocation": "Location: {{location}}",
@@ -115,6 +127,12 @@
       "clearFilters": "Clear Filters",
       "eventsCount": "{{count}} events"
     },
+    "locationFilter": {
+      "enable": "Enable Location",
+      "disable": "Disable Location",
+      "active": "Active",
+      "radius": "Radius"
+    },
     "featured": "Featured",
     "giveaway": {
       "badge": "Giveaway",
@@ -154,6 +172,7 @@
       "eventCard": "{{title}}, {{date}}, {{location}}",
       "eventCardParticipating": "{{title}}, {{date}}, {{location}}, participating",
       "listView": "List view",
+      "gridView": "Grid view",
       "mapView": "Map view",
       "suggestEvent": "Suggest an event",
       "searchEvents": "Search events",
@@ -601,7 +620,29 @@
     "typeMessage": "Type a message...",
     "noConversations": "No conversations",
     "noConversationsDescription": "Start a conversation with someone from the community.",
-    "newConversationButton": "New Conversation"
+    "newConversationButton": "New Conversation",
+    "searchFriends": "Search friends...",
+    "noFriends": "No friends yet. Add friends to start chatting!",
+    "noFriendsFound": "No friends found"
+  },
+  "athli": {
+    "welcome": "Hey! I'm Athli",
+    "welcomeDescription": "Your AI sports assistant. I can help you find events, discover venues, check your booked classes, create workouts and training plans.",
+    "subtitle": "Your AI sports assistant",
+    "inputPlaceholder": "Ask me anything about sports, events, training...",
+    "thinking": "Thinking...",
+    "suggestions": {
+      "events": "Find events near me",
+      "eventsMessage": "What sporting events are coming up near me?",
+      "venues": "Discover venues",
+      "venuesMessage": "What gyms and training venues are available?",
+      "training": "Create a training plan",
+      "trainingMessage": "I want a weekly training plan. Can you help me create one?",
+      "workout": "Create a workout",
+      "workoutMessage": "I want a workout for today. Can you create one for me?"
+    },
+    "history": "Previous conversations",
+    "noHistory": "You don't have any previous conversations yet."
   },
   "settings": {
     "title": "Settings",

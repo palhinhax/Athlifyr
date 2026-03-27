@@ -7,10 +7,16 @@ export interface AthliPageContext {
   slug: string;
 }
 
+export interface AthliUserLocation {
+  latitude: number;
+  longitude: number;
+}
+
 export function getSystemPrompt(
   locale: string,
   userName: string | null,
-  pageContext?: AthliPageContext | null
+  pageContext?: AthliPageContext | null,
+  userLocation?: AthliUserLocation | null
 ): string {
   const langMap: Record<string, string> = {
     pt: "European Portuguese (pt-PT)",
@@ -300,6 +306,18 @@ When the user says "this event", "this venue", "este evento", "este ginásio", "
 - ALWAYS use the tools to get real data — never guess or hallucinate details based on the slug alone.
 - If search by slug returns no results, try again with the name: search="${slugAsName}".`;
         })()
+      : ""
+  }${
+    userLocation
+      ? `
+
+## User's Current GPS Location
+The user's device reports their current coordinates: latitude=${userLocation.latitude.toFixed(5)}, longitude=${userLocation.longitude.toFixed(5)}.
+When the user asks about events or venues "near me", "perto de mim", "na minha zona", "nearby", or mentions a general area:
+- Use the latitude and longitude parameters in search_events or search_venues to search by proximity.
+- Start with a radius of 30-50km. If no results, expand to 80-100km.
+- You do NOT need to ask the user for their location — you already have it from their device GPS.
+- Combine proximity search with other filters (sport type, date range) when relevant.`
       : ""
   }`;
 }

@@ -10,6 +10,9 @@ export interface VenueSearchParams {
   city?: string;
   search?: string;
   venueType?: string;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   limit?: number;
 }
 
@@ -39,6 +42,25 @@ export async function searchVenues(
 
   if (params.venueType) {
     where.type = params.venueType;
+  }
+
+  // Coordinate-based proximity search
+  if (params.latitude && params.longitude) {
+    const radiusKm = params.radiusKm || 30;
+    const latDelta = radiusKm / 111;
+    const lngDelta =
+      radiusKm / (111 * Math.cos((params.latitude * Math.PI) / 180));
+
+    where.latitude = {
+      not: null,
+      gte: params.latitude - latDelta,
+      lte: params.latitude + latDelta,
+    };
+    where.longitude = {
+      not: null,
+      gte: params.longitude - lngDelta,
+      lte: params.longitude + lngDelta,
+    };
   }
 
   const venues = await prisma.venue.findMany({

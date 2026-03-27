@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { useAppleAuth } from "@/hooks/use-apple-auth";
+import { useFacebookAuth } from "@/hooks/use-facebook-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,6 +75,8 @@ export function SignInForm({
   const { toast } = useToast();
   const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
   const { signInWithApple, isLoading: isAppleLoading } = useAppleAuth();
+  const { signInWithFacebook, isLoading: isFacebookLoading } =
+    useFacebookAuth();
 
   const handleDemoLogin = async (userKey: keyof typeof DEMO_USERS) => {
     setDemoLoading(userKey);
@@ -172,6 +175,9 @@ export function SignInForm({
   const handleAppleSignIn = () =>
     handleSocialSignIn(signInWithApple, "appleSignIn");
 
+  const handleFacebookSignIn = () =>
+    handleSocialSignIn(signInWithFacebook, "facebookSignIn");
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -236,11 +242,14 @@ export function SignInForm({
         <SocialAuthButtons
           onGoogleClick={handleGoogleSignIn}
           onAppleClick={handleAppleSignIn}
+          onFacebookClick={handleFacebookSignIn}
           disabled={isLoading}
           isGoogleLoading={isGoogleLoading}
           isAppleLoading={isAppleLoading}
+          isFacebookLoading={isFacebookLoading}
           googleLabel={t("continueWithGoogle")}
           appleLabel={t("continueWithApple")}
+          facebookLabel={t("continueWithFacebook")}
         />
 
         <div className="relative">

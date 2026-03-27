@@ -23,6 +23,7 @@ import {
   Apple,
   Coins,
   Globe,
+  Share2,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { AdminPushDebug } from "@/components/admin/admin-push-debug";
@@ -46,6 +47,7 @@ const AdminConversationsContent = lazy(() => import("./conversations/page"));
 const AdminAppleSettingsContent = lazy(() => import("./apple-settings/page"));
 const AdminCreditsContent = lazy(() => import("./credits/page"));
 const AdminScrapingContent = lazy(() => import("./scraping/page"));
+const AdminSocialContent = lazy(() => import("./social/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -224,6 +226,13 @@ function AdminContent() {
             >
               <Globe className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.scraping")}</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="social"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Share2 className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.social")}</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -423,6 +432,18 @@ function AdminContent() {
             }
           >
             <AdminScrapingContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="social">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminSocialContent />
           </Suspense>
         </TabsContent>
       </Tabs>

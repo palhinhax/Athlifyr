@@ -3,6 +3,43 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { SportType, Prisma } from "@prisma/client";
 
+function buildLocationFilter(
+  lat: string | null,
+  lng: string | null,
+  radiusKmStr: string | null
+): Pick<Prisma.EventWhereInput, "latitude" | "longitude"> | null {
+  if (!lat || !lng || !radiusKmStr) return null;
+
+  const centerLat = Number.parseFloat(lat);
+  const centerLng = Number.parseFloat(lng);
+  const radius = Number.parseFloat(radiusKmStr);
+
+  if (
+    Number.isNaN(centerLat) ||
+    Number.isNaN(centerLng) ||
+    Number.isNaN(radius) ||
+    radius <= 0
+  ) {
+    return null;
+  }
+
+  const latDelta = radius / 111;
+  const lngDelta = radius / (111 * Math.cos((centerLat * Math.PI) / 180));
+
+  return {
+    latitude: {
+      not: null,
+      gte: centerLat - latDelta,
+      lte: centerLat + latDelta,
+    },
+    longitude: {
+      not: null,
+      gte: centerLng - lngDelta,
+      lte: centerLng + lngDelta,
+    },
+  };
+}
+
 // GET - List all events with filters and pagination
 export async function GET(request: NextRequest) {
   try {
@@ -11,8 +48,12 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "12");
     const sports = searchParams.getAll("sports");
+    const sportTypes = searchParams.get("sportTypes");
     const country = searchParams.get("country");
     const featured = searchParams.get("featured"); // "true" = only featured, "false" = exclude featured
+    const lat = searchParams.get("lat");
+    const lng = searchParams.get("lng");
+    const radiusKm = searchParams.get("radiusKm");
 
     // Build where clause
     const where: Prisma.EventWhereInput = {
@@ -183,6 +224,26 @@ export async function GET(request: NextRequest) {
       where.sportTypes = {
         hasSome: sports as SportType[],
       };
+    }
+
+    // Support comma-separated sportTypes param (used by mobile)
+    if (sportTypes) {
+      const sportTypesArray = sportTypes
+        .split(",")
+        .filter((s) =>
+          Object.values(SportType).includes(s as SportType)
+        ) as SportType[];
+      if (sportTypesArray.length > 0) {
+        where.sportTypes = {
+          hasSome: sportTypesArray,
+        };
+      }
+    }
+
+    // Location-based filtering (radius around a point)
+    const locationFilter = buildLocationFilter(lat, lng, radiusKm);
+    if (locationFilter) {
+      Object.assign(where, locationFilter);
     }
 
     const skip = (page - 1) * pageSize;

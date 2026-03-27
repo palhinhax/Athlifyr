@@ -85,6 +85,8 @@ class ScrapedVariantOut(BaseModel):
     start_time: str | None = None
     price: float | None = None
     currency: str = "EUR"
+    gpx_url: str | None = None
+    gpx_file_path: str | None = None
 
 
 # ── Scraped Pricing Phase ────────────────────────────────────────────────────
@@ -193,6 +195,7 @@ class ScrapedEventListOut(BaseModel):
     organizer_name: str | None = None
     image_url: str | None = None
     has_image: bool = False
+    has_ai_output: bool = False
     documents_count: int = 0
     review_status: str
     is_hidden: bool = False
@@ -244,3 +247,51 @@ class StatsOut(BaseModel):
     with_documents: int = 0
     sources_active: int = 0
     sources_total: int = 0
+
+
+# ── Dedup Pairs ───────────────────────────────────────────────────────────────
+
+
+class DedupEventSummary(BaseModel):
+    """Lightweight event summary used inside a dedup pair."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    title: str
+    source_name: str
+    city: str | None = None
+    country: str = "Portugal"
+    start_date: datetime | None = None
+    sport_types: str | None = None
+    image_url: str | None = None
+    review_status: str
+    external_url: str | None = None
+    created_at: datetime
+
+
+class DedupPairOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    event_a: DedupEventSummary
+    event_b: DedupEventSummary
+    primary_event_id: uuid.UUID | None = None
+    status: str
+    similarity_score: float
+    reasons: list[str] = []
+    created_at: datetime
+    updated_at: datetime
+
+
+class PaginatedDedupPairsOut(BaseModel):
+    items: list[DedupPairOut]
+    total: int
+    page: int
+    page_size: int
+    pending_count: int = 0
+
+
+class DedupDetectOut(BaseModel):
+    created: int
+    already_existed: int
+    total_events_scanned: int

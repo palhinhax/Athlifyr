@@ -21,6 +21,8 @@
     "CYCLING": "Ciclismo",
     "SURF": "Surf",
     "TRIATHLON": "Triatlo",
+    "DUATHLON": "Duatlo",
+    "AQUATHLON": "Aquatlo",
     "SWIMMING": "Natação",
     "OTHER": "Outro"
   },
@@ -57,6 +59,16 @@
     "notFound": "Evento não encontrado",
     "about": "Sobre",
     "visitWebsite": "Visitar Website Oficial",
+    "meta": {
+      "date": "Data",
+      "location": "Localização",
+      "friendsGoing": "Amigos que vão",
+      "friend_one": "{{count}} amigo",
+      "friend_other": "{{count}} amigos"
+    },
+    "distances": "Distâncias",
+    "faq": "Perguntas Frequentes",
+    "openInMaps": "Abrir no Mapa",
     "shareMessage": "Vê este evento: {{title}}",
     "shareDate": "Data: {{date}}",
     "shareLocation": "Local: {{location}}",
@@ -115,6 +127,12 @@
       "clearFilters": "Limpar Filtros",
       "eventsCount": "{{count}} eventos"
     },
+    "locationFilter": {
+      "enable": "Ativar Localização",
+      "disable": "Desativar Localização",
+      "active": "Ativa",
+      "radius": "Raio"
+    },
     "featured": "Destaque",
     "giveaway": {
       "badge": "Sorteio",
@@ -154,6 +172,7 @@
       "eventCard": "{{title}}, {{date}}, {{location}}",
       "eventCardParticipating": "{{title}}, {{date}}, {{location}}, a participar",
       "listView": "Vista de lista",
+      "gridView": "Vista em grelha",
       "mapView": "Vista de mapa",
       "suggestEvent": "Sugerir um evento",
       "searchEvents": "Pesquisar eventos",
@@ -601,7 +620,29 @@
     "typeMessage": "Escreve uma mensagem...",
     "noConversations": "Sem conversas",
     "noConversationsDescription": "Inicia uma conversa com alguém da comunidade.",
-    "newConversationButton": "Nova Conversa"
+    "newConversationButton": "Nova Conversa",
+    "searchFriends": "Procurar amigos...",
+    "noFriends": "Ainda sem amigos. Adiciona amigos para começar a conversar!",
+    "noFriendsFound": "Nenhum amigo encontrado"
+  },
+  "athli": {
+    "welcome": "Olá! Sou o Athli",
+    "welcomeDescription": "O teu assistente desportivo com IA. Posso ajudar-te a encontrar eventos, descobrir ginásios, ver as tuas aulas marcadas, criar treinos e planos de treino.",
+    "subtitle": "O teu assistente desportivo com IA",
+    "inputPlaceholder": "Pergunta-me o que quiseres sobre desporto, eventos, treinos...",
+    "thinking": "A pensar...",
+    "suggestions": {
+      "events": "Encontrar eventos perto de mim",
+      "eventsMessage": "Que eventos desportivos existem perto de mim?",
+      "venues": "Descobrir espaços",
+      "venuesMessage": "Que ginásios e espaços de treino existem disponíveis?",
+      "training": "Criar um plano de treino",
+      "trainingMessage": "Quero um plano de treino semanal. Podes ajudar-me a criar um?",
+      "workout": "Criar um treino",
+      "workoutMessage": "Quero um treino para hoje. Podes criar um para mim?"
+    },
+    "history": "Conversas anteriores",
+    "noHistory": "Ainda não tens conversas anteriores."
   },
   "settings": {
     "title": "Definições",

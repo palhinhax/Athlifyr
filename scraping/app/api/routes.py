@@ -19,6 +19,7 @@ import httpx
 from app.api.auth import require_api_key
 from app.db.session import get_db
 from app.models.models import (
+    DedupPair,
     EventChangeLog,
     EventReviewStatus,
     ScrapedDocument,
@@ -27,7 +28,10 @@ from app.models.models import (
     SourceConfig,
 )
 from app.schemas.schemas import (
+    DedupDetectOut,
+    DedupPairOut,
     EventChangeLogOut,
+    PaginatedDedupPairsOut,
     PaginatedEventsOut,
     PaginatedRunsOut,
     ScrapedEventListOut,
@@ -340,11 +344,39 @@ async def list_events(
         select(func.count(ScrapedEvent.id)).where(and_(*pending_img_conditions))
     ) or 0
 
+    # ── Dedup status per event ──
+    event_ids = [ev.id for ev in events]
+    dedup_map: dict[uuid.UUID, str] = {}
+    if event_ids:
+        dedup_rows = await db.execute(
+            select(
+                DedupPair.event_a_id,
+                DedupPair.event_b_id,
+                DedupPair.status,
+            ).where(
+                (DedupPair.event_a_id.in_(event_ids))
+                | (DedupPair.event_b_id.in_(event_ids))
+            )
+        )
+        for row in dedup_rows:
+            for eid in (row.event_a_id, row.event_b_id):
+                if eid in event_ids:
+                    existing = dedup_map.get(eid)
+                    # Priority: confirmed > pending > rejected
+                    if existing == "confirmed":
+                        continue
+                    if row.status == "confirmed" or (row.status == "pending" and existing != "confirmed"):
+                        dedup_map[eid] = row.status
+                    elif existing is None:
+                        dedup_map[eid] = row.status
+
     items = [
         {
             **{c.key: getattr(ev, c.key) for c in ev.__table__.columns},
             "has_image": bool(ev.image_url),
+            "has_ai_output": bool(ev.ai_output),
             "documents_count": len(ev.documents),
+            "dedup_status": dedup_map.get(ev.id),
         }
         for ev in events
     ]
@@ -455,6 +487,7 @@ async def rescrape_event(
 @router.post("/events/{event_id}/generate")
 async def generate_event(
     event_id: uuid.UUID,
+    submit: bool = Query(default=True, description="Whether to forward the generated JSON to Next.js after generation"),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Use AI to generate a complete event JSON from scraped data and send it to Next.js.
@@ -526,15 +559,91 @@ async def generate_event(
                 "price": v.price,
                 "currency": v.currency,
                 "start_time": v.start_time,
+                "gpx_url": v.gpx_file_path or v.gpx_url,
             }
             for v in event.variants
         ],
         "raw_pricing_text": event.raw_pricing_text,
     }
 
+    # Build lookup: variant name (lowercase) → bucket GPX URL for post-AI injection
+    gpx_url_by_name: dict[str, str] = {
+        v.name.lower(): (v.gpx_file_path or v.gpx_url)
+        for v in event.variants
+        if (v.gpx_file_path or v.gpx_url)
+    }
+
     # Include admin notes as extra context for AI (if provided)
     if event.admin_notes:
         event_data["admin_notes"] = event.admin_notes
+
+    # ── Merge data from confirmed duplicate pairs ──────────────────────────────
+    # If this event is the primary in any confirmed dedup pairs, include the
+    # secondary event's data so AI can produce a richer, merged result.
+    merged_pairs_result = await db.execute(
+        select(DedupPair)
+        .options(
+            selectinload(DedupPair.event_a).selectinload(ScrapedEvent.variants),
+            selectinload(DedupPair.event_a).selectinload(ScrapedEvent.pricing_phases),
+            selectinload(DedupPair.event_b).selectinload(ScrapedEvent.variants),
+            selectinload(DedupPair.event_b).selectinload(ScrapedEvent.pricing_phases),
+        )
+        .where(DedupPair.primary_event_id == event.id, DedupPair.status == "confirmed")
+    )
+    merged_pairs = list(merged_pairs_result.scalars().all())
+    if merged_pairs:
+        merged_sources = []
+        for mp in merged_pairs:
+            # Secondary is whichever event is NOT the primary
+            secondary = mp.event_b if mp.event_a_id == event.id else mp.event_a
+            if not secondary:
+                continue
+            merged_sources.append({
+                "source_name": secondary.source_name,
+                "source_url": secondary.source_url,
+                "title": secondary.title,
+                "description": secondary.description,
+                "raw_pricing_text": secondary.raw_pricing_text,
+                "organizer_name": secondary.organizer_name,
+                "external_url": secondary.external_url,
+                "variants": [
+                    {
+                        "name": v.name,
+                        "distance_km": v.distance_km,
+                        "elevation_gain_m": v.elevation_gain_m,
+                        "elevation_loss_m": v.elevation_loss_m,
+                        "price": v.price,
+                        "currency": v.currency,
+                        "start_time": v.start_time,
+                    }
+                    for v in secondary.variants
+                ],
+                "pricing_phases": [
+                    {
+                        "variant_name": pp.variant_name,
+                        "phase_name": pp.phase_name,
+                        "start_date": str(pp.start_date) if pp.start_date else None,
+                        "end_date": str(pp.end_date) if pp.end_date else None,
+                        "price": pp.price,
+                        "currency": pp.currency,
+                        "note": pp.note,
+                    }
+                    for pp in secondary.pricing_phases
+                ],
+            })
+            # Also collect GPX urls from secondary for injection
+            for v in secondary.variants:
+                gpx = v.gpx_file_path or v.gpx_url
+                if gpx:
+                    gpx_url_by_name.setdefault(v.name.lower(), gpx)
+
+        if merged_sources:
+            event_data["merged_sources"] = merged_sources
+            logger.info(
+                "  Merged data from %d secondary event(s): %s",
+                len(merged_sources),
+                [s["source_name"] for s in merged_sources],
+            )
 
     # Log what we're sending to AI
     logger.info(
@@ -589,7 +698,38 @@ async def generate_event(
     event.ai_input = json.dumps(ai_input_data, ensure_ascii=False, default=str)
     event.ai_output = json.dumps(generated, ensure_ascii=False, default=str)
 
-    # Log key fields from AI output for debugging
+    # If submit=False, stop here — just save the AI output for review
+    if not submit:
+        event.ai_pending = False
+        await db.commit()
+        return {"status": "analyzed", "ai_output": generated}
+
+    # ── Run dedup detection against all other events ──────────────────────────
+    # Use AI-returned coordinates (more accurate than scraped) if available
+    ai_lat = generated.get("latitude")
+    ai_lng = generated.get("longitude")
+    if ai_lat and ai_lng:
+        event.latitude = ai_lat
+        event.longitude = ai_lng
+
+    new_pairs = await _run_dedup_for_event(event, db)
+    await db.flush()  # persist pairs before checking
+
+    if new_pairs > 0:
+        # Suspected duplicates found — save AI output but block submission
+        event.ai_pending = False
+        await db.commit()
+        logger.warning(
+            "Dedup: %d pending pair(s) found for '%s' — submission blocked pending admin review",
+            new_pairs, event.title,
+        )
+        return {
+            "status": "dedup_pending",
+            "message": f"{new_pairs} possible duplicate(s) detected. Review in the Deduplication tab before submitting.",
+            "dedup_pairs": new_pairs,
+        }
+
+    # No dedup conflicts — proceed to submit
     logger.info(
         "AI generated event: title=%s, variants=%d, faqs=%d, lat=%s, lng=%s, googleMapsUrl=%s",
         generated.get("title"),
@@ -609,6 +749,20 @@ async def generate_event(
     # Always inject image_url from the scraped event (bucket URL)
     # The AI does NOT control this field — we set it from our stored data
     generated["imageUrl"] = event.image_url
+
+    # Inject gpxUrl per variant by matching AI-generated variant names to scraped variants
+    for v in generated.get("variants", []):
+        name_key = (v.get("name") or "").lower()
+        gpx_url = gpx_url_by_name.get(name_key)
+        if not gpx_url:
+            # Fuzzy fallback: find the first scraped variant whose name contains
+            # the AI-generated name or vice versa
+            for scraped_name, url in gpx_url_by_name.items():
+                if scraped_name in name_key or name_key in scraped_name:
+                    gpx_url = url
+                    break
+        if gpx_url:
+            v["gpxUrl"] = gpx_url
 
     # Ensure externalUrl is set (fallback to source_url)
     if not generated.get("externalUrl"):
@@ -638,6 +792,65 @@ async def generate_event(
         )
 
     # Mark scraped event as approved
+    event.review_status = EventReviewStatus.APPROVED
+    event.athlifyr_event_id = resp.json().get("id")
+    event.reviewed_at = datetime.now(timezone.utc)
+    event.ai_pending = False
+    await db.commit()
+
+    return resp.json()
+
+
+@router.post("/events/{event_id}/submit")
+async def submit_event(
+    event_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Forward the previously AI-generated output (ai_output) to Next.js without re-running the AI.
+
+    Requires that the event already has ai_output saved (i.e. /generate?submit=false was called first).
+    """
+    from app.core.config import settings as cfg
+
+    result = await db.execute(
+        select(ScrapedEvent).where(ScrapedEvent.id == event_id)
+    )
+    event = result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if not event.ai_output:
+        raise HTTPException(
+            status_code=422,
+            detail="No AI output found for this event. Run 'Analisar' first to generate the AI output.",
+        )
+
+    # Block submission if pending dedup pairs still exist
+    if await _has_pending_dedup(event_id, db):
+        raise HTTPException(
+            status_code=409,
+            detail="This event has pending duplicate(s) awaiting review. Confirm or reject them in the Deduplication tab before submitting.",
+        )
+
+    try:
+        generated = json.loads(event.ai_output)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail="Stored AI output is not valid JSON") from exc
+
+    nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"
+    headers: dict[str, str] = {"Content-Type": "application/json"}
+    if cfg.nextjs_import_secret:
+        headers["X-Import-Secret"] = cfg.nextjs_import_secret
+
+    async with httpx.AsyncClient(timeout=180) as client:
+        resp = await client.post(nextjs_url, json=generated, headers=headers)
+
+    if resp.status_code not in (200, 201):
+        raise HTTPException(
+            status_code=502,
+            detail=f"Next.js import failed ({resp.status_code}): {resp.text[:500]}",
+        )
+
     event.review_status = EventReviewStatus.APPROVED
     event.athlifyr_event_id = resp.json().get("id")
     event.reviewed_at = datetime.now(timezone.utc)
@@ -912,6 +1125,28 @@ async def process_ai_queue(
                 generated["scrapedEventId"] = str(event.id)
                 generated["sourceName"] = event.source_name
 
+                # Check for pending dedup pairs — block submission if found
+                # Use AI-returned coordinates to improve future dedup accuracy
+                ai_lat = generated.get("latitude")
+                ai_lng = generated.get("longitude")
+                if ai_lat and ai_lng:
+                    event.latitude = ai_lat
+                    event.longitude = ai_lng
+
+                new_pairs = await _run_dedup_for_event(event, db)
+                await db.flush()
+
+                if new_pairs > 0:
+                    event.ai_pending = False
+                    event_result["status"] = "dedup_pending"
+                    event_result["reason"] = f"{new_pairs} possible duplicate(s) — review in Deduplication tab"
+                    logger.warning(
+                        "AI queue: dedup pending for '%s' (%d pair(s)) — submission blocked",
+                        event.title, new_pairs,
+                    )
+                    results.append(event_result)
+                    continue
+
                 # Forward to Next.js
                 nextjs_url = f"{cfg.nextjs_url}/api/admin/events/import"
                 headers: dict[str, str] = {"Content-Type": "application/json"}
@@ -952,3 +1187,562 @@ async def process_ai_queue(
         "results": results,
     }
     return summary
+
+
+# ── Dedup helpers ─────────────────────────────────────────────────────────────
+
+
+async def _has_pending_dedup(event_id: uuid.UUID, db: AsyncSession) -> bool:
+    """Return True if this event is part of any pending dedup pair."""
+    result = await db.execute(
+        select(DedupPair.id).where(
+            DedupPair.status == "pending",
+            (DedupPair.event_a_id == event_id) | (DedupPair.event_b_id == event_id),
+        ).limit(1)
+    )
+    return result.scalar_one_or_none() is not None
+
+
+async def _run_dedup_for_event(event: ScrapedEvent, db: AsyncSession) -> int:
+    """Run dedup detection for a single newly-processed event against all existing events.
+
+    Returns the number of new pending pairs created.
+    """
+    import difflib
+    import math
+    import re as _re
+
+    def _norm(title: str) -> str:
+        t = title.lower()
+        t = _re.sub(r"\b20\d{2}\b", "", t)
+        t = _re.sub(r"[^a-z0-9\s]", " ", t)
+        return _re.sub(r"\s+", " ", t).strip()
+
+    def _similarity(a: str, b: str) -> float:
+        return difflib.SequenceMatcher(None, _norm(a), _norm(b)).ratio()
+
+    def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        r = 6371.0
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1))
+            * math.cos(math.radians(lat2))
+            * math.sin(dlon / 2) ** 2
+        )
+        return r * 2 * math.asin(math.sqrt(a))
+
+    LOCATION_RADIUS_KM = 30.0
+
+    # Load all other non-hidden events from different sources
+    result = await db.execute(
+        select(ScrapedEvent)
+        .where(
+            ScrapedEvent.is_hidden == False,  # noqa: E712
+            ScrapedEvent.id != event.id,
+            ScrapedEvent.source_name != event.source_name,
+        )
+    )
+    others = list(result.scalars().all())
+
+    # Load existing pairs for this event to avoid duplicates
+    existing_result = await db.execute(
+        select(DedupPair).where(
+            (DedupPair.event_a_id == event.id) | (DedupPair.event_b_id == event.id)
+        )
+    )
+    existing_set: set[tuple[str, str]] = set()
+    for p in existing_result.scalars().all():
+        a, b = str(p.event_a_id), str(p.event_b_id)
+        existing_set.add((min(a, b), max(a, b)))
+
+    created = 0
+    for other in others:
+        # Location proximity (required)
+        both_have_coords = (
+            event.latitude is not None
+            and event.longitude is not None
+            and other.latitude is not None
+            and other.longitude is not None
+        )
+        if both_have_coords:
+            dist_km = _haversine_km(
+                event.latitude, event.longitude, other.latitude, other.longitude  # type: ignore[arg-type]
+            )
+            location_close = dist_km <= LOCATION_RADIUS_KM
+        else:
+            location_close = bool(
+                event.city and other.city and event.city.lower() == other.city.lower()
+            )
+
+        if not location_close:
+            continue
+
+        name_sim = _similarity(event.title, other.title)
+        reasons: list[str] = []
+        score = 0.0
+
+        reasons.append("same_location")
+        score += 0.2
+
+        if name_sim >= 0.85:
+            reasons.append("near_identical_name")
+            score += 0.5
+        elif name_sim >= 0.6:
+            reasons.append("similar_name")
+            score += 0.3
+
+        if event.start_date and other.start_date:
+            delta = abs((event.start_date.date() - other.start_date.date()).days)
+            if delta <= 3:
+                reasons.append("close_dates")
+                score += 0.3
+
+        if score < 0.5 or len(reasons) < 2:
+            continue
+
+        id_a = min(str(event.id), str(other.id))
+        id_b = max(str(event.id), str(other.id))
+        if (id_a, id_b) in existing_set:
+            continue
+
+        pair = DedupPair(
+            event_a_id=uuid.UUID(id_a),
+            event_b_id=uuid.UUID(id_b),
+            status="pending",
+            similarity_score=min(score, 1.0),
+            reasons=json.dumps(reasons),
+        )
+        db.add(pair)
+        existing_set.add((id_a, id_b))
+        created += 1
+
+    return created
+
+
+# ── Dedup ─────────────────────────────────────────────────────────────────────
+
+
+@router.post("/dedup/detect", response_model=DedupDetectOut)
+async def detect_duplicates(
+    db: AsyncSession = Depends(get_db),
+) -> DedupDetectOut:
+    """Scan all scraped events and create pending dedup pairs for suspected duplicates."""
+    import difflib
+    import math
+    import re as _re
+
+    def _norm(title: str) -> str:
+        t = title.lower()
+        t = _re.sub(r"\b20\d{2}\b", "", t)
+        t = _re.sub(r"[^a-z0-9\s]", " ", t)
+        return _re.sub(r"\s+", " ", t).strip()
+
+    def _similarity(a: str, b: str) -> float:
+        return difflib.SequenceMatcher(None, _norm(a), _norm(b)).ratio()
+
+    def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """Great-circle distance in kilometres between two GPS points."""
+        r = 6371.0
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1))
+            * math.cos(math.radians(lat2))
+            * math.sin(dlon / 2) ** 2
+        )
+        return r * 2 * math.asin(math.sqrt(a))
+
+    # Within this radius events are considered "same location"
+    LOCATION_RADIUS_KM = 30.0
+
+    # Load all non-hidden events (includes pending, approved, rejected)
+    result = await db.execute(
+        select(ScrapedEvent)
+        .where(ScrapedEvent.is_hidden == False)  # noqa: E712
+        .order_by(ScrapedEvent.created_at)
+    )
+    events = list(result.scalars().all())
+
+    # Load existing pairs to skip already-detected combinations
+    existing_result = await db.execute(select(DedupPair))
+    existing_set: set[tuple[str, str]] = {
+        (str(p.event_a_id), str(p.event_b_id))
+        for p in existing_result.scalars().all()
+    }
+
+    created = 0
+    already_existed = 0
+
+    for i, ea in enumerate(events):
+        for eb in events[i + 1 :]:
+            # Only cross-source comparisons — same-source updates are handled by upsert
+            if ea.source_name == eb.source_name:
+                continue
+
+            # Canonical ordering so (a_id, b_id) is always consistent
+            id_a, id_b = str(ea.id), str(eb.id)
+            ev_a, ev_b = ea, eb
+            if id_a > id_b:
+                id_a, id_b = id_b, id_a
+                ev_a, ev_b = eb, ea
+
+            if (id_a, id_b) in existing_set:
+                already_existed += 1
+                continue
+
+            # ── Location proximity check (REQUIRED) ───────────────────────
+            # Use GPS coordinates when both events have them (most accurate).
+            # Fall back to city name match when coordinates are missing —
+            # coordinates are sometimes only available after AI generation.
+            both_have_coords = (
+                ea.latitude is not None
+                and ea.longitude is not None
+                and eb.latitude is not None
+                and eb.longitude is not None
+            )
+            if both_have_coords:
+                dist_km = _haversine_km(
+                    ea.latitude, ea.longitude, eb.latitude, eb.longitude  # type: ignore[arg-type]
+                )
+                location_close = dist_km <= LOCATION_RADIUS_KM
+            else:
+                # Fallback: city name equality
+                location_close = bool(
+                    ea.city and eb.city and ea.city.lower() == eb.city.lower()
+                )
+
+            if not location_close:
+                continue
+
+            # ── Name + date similarity ─────────────────────────────────────
+            name_sim = _similarity(ea.title, eb.title)
+            reasons: list[str] = []
+            score = 0.0
+
+            # Location always counts since it's now mandatory
+            reasons.append("same_location")
+            score += 0.2
+
+            if name_sim >= 0.85:
+                reasons.append("near_identical_name")
+                score += 0.5
+            elif name_sim >= 0.6:
+                reasons.append("similar_name")
+                score += 0.3
+
+            if ea.start_date and eb.start_date:
+                delta = abs((ea.start_date.date() - eb.start_date.date()).days)
+                if delta <= 3:
+                    reasons.append("close_dates")
+                    score += 0.3
+
+            if score < 0.5 or len(reasons) < 2:
+                continue
+
+            pair = DedupPair(
+                event_a_id=uuid.UUID(id_a),
+                event_b_id=uuid.UUID(id_b),
+                status="pending",
+                similarity_score=min(score, 1.0),
+                reasons=json.dumps(reasons),
+            )
+            db.add(pair)
+            existing_set.add((id_a, id_b))
+            created += 1
+
+    await db.commit()
+    return DedupDetectOut(
+        created=created,
+        already_existed=already_existed,
+        total_events_scanned=len(events),
+    )
+
+
+@router.post("/dedup/cleanup")
+async def cleanup_false_positives(
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Re-validate all pending dedup pairs using the current Haversine algorithm.
+
+    Any pending pair whose events are farther than LOCATION_RADIUS_KM apart
+    (or in different cities when coordinates are missing) is auto-rejected.
+    Returns the number of pairs rejected.
+    """
+    import math
+
+    LOCATION_RADIUS_KM = 30.0
+
+    def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        r = 6371.0
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1))
+            * math.cos(math.radians(lat2))
+            * math.sin(dlon / 2) ** 2
+        )
+        return r * 2 * math.asin(math.sqrt(a))
+
+    result = await db.execute(
+        select(DedupPair)
+        .options(selectinload(DedupPair.event_a), selectinload(DedupPair.event_b))
+        .where(DedupPair.status == "pending")
+    )
+    pending_pairs = list(result.scalars().all())
+
+    rejected = 0
+    for pair in pending_pairs:
+        ea, eb = pair.event_a, pair.event_b
+
+        both_have_coords = (
+            ea.latitude is not None
+            and ea.longitude is not None
+            and eb.latitude is not None
+            and eb.longitude is not None
+        )
+        if both_have_coords:
+            dist_km = _haversine_km(
+                ea.latitude, ea.longitude, eb.latitude, eb.longitude  # type: ignore[arg-type]
+            )
+            location_close = dist_km <= LOCATION_RADIUS_KM
+        else:
+            location_close = bool(
+                ea.city and eb.city and ea.city.lower() == eb.city.lower()
+            )
+
+        if not location_close:
+            pair.status = "rejected"
+            rejected += 1
+
+    await db.commit()
+    return {"rejected": rejected, "checked": len(pending_pairs)}
+
+
+@router.get("/dedup/pairs", response_model=PaginatedDedupPairsOut)
+async def list_dedup_pairs(
+    status: str | None = Query(None, description="pending | confirmed | rejected"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+) -> PaginatedDedupPairsOut:
+    """List dedup pairs with optional status filter."""
+    base = select(DedupPair).options(
+        selectinload(DedupPair.event_a),
+        selectinload(DedupPair.event_b),
+    )
+    if status:
+        base = base.where(DedupPair.status == status)
+
+    # Count
+    count_q = select(func.count()).select_from(base.subquery())
+    total = (await db.execute(count_q)).scalar_one()
+
+    # Pending count for badge
+    pending_count_q = select(func.count()).where(DedupPair.status == "pending")
+    pending_count = (await db.execute(pending_count_q)).scalar_one()
+
+    # Paginate, newest first
+    pairs_result = await db.execute(
+        base.order_by(DedupPair.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    pairs = list(pairs_result.scalars().all())
+
+    items: list[DedupPairOut] = []
+    for p in pairs:
+        reasons_list: list[str] = []
+        if p.reasons:
+            try:
+                reasons_list = json.loads(p.reasons)
+            except (json.JSONDecodeError, ValueError):
+                reasons_list = [r.strip() for r in p.reasons.split(",") if r.strip()]
+
+        items.append(
+            DedupPairOut(
+                id=p.id,
+                event_a=p.event_a,
+                event_b=p.event_b,
+                primary_event_id=p.primary_event_id,
+                status=p.status,
+                similarity_score=p.similarity_score,
+                reasons=reasons_list,
+                created_at=p.created_at,
+                updated_at=p.updated_at,
+            )
+        )
+
+    return PaginatedDedupPairsOut(
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        pending_count=pending_count,
+    )
+
+
+@router.post("/dedup/pairs/{pair_id}/confirm", response_model=DedupPairOut)
+async def confirm_dedup_pair(
+    pair_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> DedupPairOut:
+    """Confirm two events are duplicates. Older event becomes the primary; secondary hidden."""
+    result = await db.execute(
+        select(DedupPair)
+        .options(selectinload(DedupPair.event_a), selectinload(DedupPair.event_b))
+        .where(DedupPair.id == pair_id)
+    )
+    pair = result.scalar_one_or_none()
+    if not pair:
+        raise HTTPException(status_code=404, detail="Dedup pair not found")
+    if pair.status != "pending":
+        raise HTTPException(status_code=409, detail=f"Pair is already '{pair.status}'")
+
+    ev_a, ev_b = pair.event_a, pair.event_b
+
+    # Primary = the older event (earliest created_at)
+    if ev_a.created_at <= ev_b.created_at:
+        primary, secondary = ev_a, ev_b
+    else:
+        primary, secondary = ev_b, ev_a
+
+    pair.status = "confirmed"
+    pair.primary_event_id = primary.id
+
+    # Hide secondary — it will not be independently submitted to Next.js
+    secondary.is_hidden = True
+    secondary.review_notes = (
+        (secondary.review_notes or "")
+        + f"\n[dedup] Merged into primary event {primary.id} ({primary.source_name}: {primary.title})"
+    ).strip()
+
+    await db.commit()
+    await db.refresh(pair)
+
+    reasons_list: list[str] = []
+    if pair.reasons:
+        try:
+            reasons_list = json.loads(pair.reasons)
+        except (json.JSONDecodeError, ValueError):
+            reasons_list = [r.strip() for r in pair.reasons.split(",") if r.strip()]
+
+    return DedupPairOut(
+        id=pair.id,
+        event_a=pair.event_a,
+        event_b=pair.event_b,
+        primary_event_id=pair.primary_event_id,
+        status=pair.status,
+        similarity_score=pair.similarity_score,
+        reasons=reasons_list,
+        created_at=pair.created_at,
+        updated_at=pair.updated_at,
+    )
+
+
+@router.post("/dedup/pairs/{pair_id}/reject", response_model=DedupPairOut)
+async def reject_dedup_pair(
+    pair_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> DedupPairOut:
+    """Reject a suspected duplicate pair — mark as not duplicates."""
+    result = await db.execute(
+        select(DedupPair)
+        .options(selectinload(DedupPair.event_a), selectinload(DedupPair.event_b))
+        .where(DedupPair.id == pair_id)
+    )
+    pair = result.scalar_one_or_none()
+    if not pair:
+        raise HTTPException(status_code=404, detail="Dedup pair not found")
+    if pair.status != "pending":
+        raise HTTPException(status_code=409, detail=f"Pair is already '{pair.status}'")
+
+    pair.status = "rejected"
+    await db.commit()
+    await db.refresh(pair)
+
+    reasons_list: list[str] = []
+    if pair.reasons:
+        try:
+            reasons_list = json.loads(pair.reasons)
+        except (json.JSONDecodeError, ValueError):
+            reasons_list = [r.strip() for r in pair.reasons.split(",") if r.strip()]
+
+    return DedupPairOut(
+        id=pair.id,
+        event_a=pair.event_a,
+        event_b=pair.event_b,
+        primary_event_id=pair.primary_event_id,
+        status=pair.status,
+        similarity_score=pair.similarity_score,
+        reasons=reasons_list,
+        created_at=pair.created_at,
+        updated_at=pair.updated_at,
+    )
+
+
+@router.post("/dedup/pairs", response_model=DedupPairOut, status_code=201)
+async def create_dedup_pair(
+    event_a_id: uuid.UUID = Query(..., description="First event ID"),
+    event_b_id: uuid.UUID = Query(..., description="Second event ID"),
+    db: AsyncSession = Depends(get_db),
+) -> DedupPairOut:
+    """Manually create a pending dedup pair between two events."""
+    if event_a_id == event_b_id:
+        raise HTTPException(status_code=400, detail="Cannot pair an event with itself")
+
+    # Canonical ordering: str(a) < str(b)
+    a_id, b_id = (
+        (event_a_id, event_b_id)
+        if str(event_a_id) < str(event_b_id)
+        else (event_b_id, event_a_id)
+    )
+
+    # Check both events exist
+    for eid in (a_id, b_id):
+        ev = await db.get(ScrapedEvent, eid)
+        if not ev:
+            raise HTTPException(status_code=404, detail=f"Event {eid} not found")
+
+    # Check if pair already exists
+    existing = await db.execute(
+        select(DedupPair).where(
+            DedupPair.event_a_id == a_id, DedupPair.event_b_id == b_id
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Dedup pair already exists for these events")
+
+    pair = DedupPair(
+        event_a_id=a_id,
+        event_b_id=b_id,
+        status="pending",
+        similarity_score=1.0,
+        reasons=json.dumps(["manual"]),
+    )
+    db.add(pair)
+    await db.commit()
+    await db.refresh(pair)
+
+    # Reload with relationships
+    result = await db.execute(
+        select(DedupPair)
+        .options(selectinload(DedupPair.event_a), selectinload(DedupPair.event_b))
+        .where(DedupPair.id == pair.id)
+    )
+    pair = result.scalar_one()
+
+    return DedupPairOut(
+        id=pair.id,
+        event_a=pair.event_a,
+        event_b=pair.event_b,
+        primary_event_id=pair.primary_event_id,
+        status=pair.status,
+        similarity_score=pair.similarity_score,
+        reasons=["manual"],
+        created_at=pair.created_at,
+        updated_at=pair.updated_at,
+    )

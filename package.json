@@ -37,7 +37,11 @@
     "live:dev": "cd live && pnpm dev",
     "live:build": "cd live && pnpm build",
     "live:start": "cd live && pnpm start",
-    "live:typecheck": "cd live && pnpm typecheck"
+    "live:typecheck": "cd live && pnpm typecheck",
+    "social:dev": "cd social && pnpm dev",
+    "social:build": "cd social && pnpm build",
+    "social:start": "cd social && pnpm start",
+    "social:typecheck": "cd social && pnpm typecheck"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -78,6 +82,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@sentry/nextjs": "10",
     "@sentry/profiling-node": "^10.40.0",
     "@stripe/react-stripe-js": "^5.4.1",
@@ -118,6 +123,7 @@
     "recharts": "^3.7.0",
     "remark-gfm": "^4.0.1",
     "resend": "^6.7.0",
+    "satori": "^0.26.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "stripe": "^20.2.0",

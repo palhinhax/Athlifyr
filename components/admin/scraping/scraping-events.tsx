@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -45,13 +46,21 @@ import {
   Trash2,
   RefreshCw,
   Sparkles,
+  Send,
   Loader2,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
   Upload,
+  GitMerge,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
 
 interface ScrapedEventListItem {
@@ -67,9 +76,11 @@ interface ScrapedEventListItem {
   organizer_name: string | null;
   image_url: string | null;
   has_image: boolean;
+  has_ai_output: boolean;
   documents_count: number;
   review_status: string;
   is_hidden: boolean;
+  dedup_status: string | null;
   last_seen_at: string | null;
   created_at: string;
   updated_at: string;
@@ -189,6 +200,10 @@ export function ScrapingEvents({
     running: boolean;
   } | null>(null);
 
+  // ── Manual dedup selection ──
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [markingDedup, setMarkingDedup] = useState(false);
+
   // ── Debounce search ──
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -197,6 +212,54 @@ export function ScrapingEvents({
     }, 400);
     return () => clearTimeout(timer);
   }, [search]);
+
+  // Clear selection on page/filter change
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page, pageSize, debouncedSearch, filterSource, filterStatus]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleManualDedup = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length !== 2) return;
+    setMarkingDedup(true);
+    try {
+      const res = await fetch(
+        `${apiUrl}/dedup/pairs?event_a_id=${ids[0]}&event_b_id=${ids[1]}`,
+        { method: "POST" }
+      );
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as {
+          detail?: string;
+        };
+        if (res.status === 409) {
+          toast({ title: t("events.manualDedupAlreadyExists") });
+          setSelectedIds(new Set());
+          return;
+        }
+        throw new Error(err.detail ?? `HTTP ${res.status}`);
+      }
+      toast({ title: t("events.manualDedupSuccess") });
+      setSelectedIds(new Set());
+      fetchEvents();
+    } catch (err) {
+      toast({
+        title: t("events.manualDedupError"),
+        description: err instanceof Error ? err.message : String(err),
+        variant: "destructive",
+      });
+    } finally {
+      setMarkingDedup(false);
+    }
+  };
 
   // ── Fetch events ──
   const fetchEvents = useCallback(async () => {
@@ -211,9 +274,79 @@ export function ScrapingEvents({
       if (filterSource !== "all") params.set("source_name", filterSource);
       if (filterStatus !== "all") params.set("review_status", filterStatus);
 
-      const res = await fetch(`${apiUrl}/events?${params.toString()}`);
-      if (res.ok) {
-        const json: PaginatedResponse = await res.json();
+      const [eventsRes, dedupRes] = await Promise.all([
+        fetch(`${apiUrl}/events?${params.toString()}`),
+        fetch(`${apiUrl}/dedup/pairs?page_size=100`),
+      ]);
+
+      if (eventsRes.ok) {
+        const json: PaginatedResponse = await eventsRes.json();
+
+        // Build dedup status map from pairs (fetch all pages)
+        if (dedupRes.ok) {
+          const dedupMap = new Map<string, string>();
+          const priority: Record<string, number> = {
+            confirmed: 3,
+            pending: 2,
+            rejected: 1,
+          };
+
+          const addPairs = (
+            items: {
+              event_a: { id: string };
+              event_b: { id: string };
+              status: string;
+            }[]
+          ) => {
+            for (const pair of items) {
+              for (const eid of [pair.event_a.id, pair.event_b.id]) {
+                const existing = dedupMap.get(eid);
+                if (
+                  !existing ||
+                  (priority[pair.status] ?? 0) > (priority[existing] ?? 0)
+                ) {
+                  dedupMap.set(eid, pair.status);
+                }
+              }
+            }
+          };
+
+          const firstPage = (await dedupRes.json()) as {
+            items: {
+              event_a: { id: string };
+              event_b: { id: string };
+              status: string;
+            }[];
+            total: number;
+            page_size: number;
+          };
+          addPairs(firstPage.items);
+
+          // Fetch remaining pages if needed
+          const totalPages = Math.ceil(firstPage.total / firstPage.page_size);
+          if (totalPages > 1) {
+            const remainingPages = Array.from(
+              { length: totalPages - 1 },
+              (_, i) => i + 2
+            );
+            const results = await Promise.all(
+              remainingPages.map((pg) =>
+                fetch(`${apiUrl}/dedup/pairs?page_size=100&page=${pg}`).then(
+                  (r) => (r.ok ? r.json() : null)
+                )
+              )
+            );
+            for (const res of results) {
+              if (res?.items) addPairs(res.items);
+            }
+          }
+
+          // Enrich events with dedup_status
+          for (const ev of json.items) {
+            ev.dedup_status = dedupMap.get(ev.id) ?? null;
+          }
+        }
+
         setData(json);
       }
     } catch (error) {
@@ -269,27 +402,49 @@ export function ScrapingEvents({
   // ── Actions ──
   const handleAction = async (
     eventId: string,
-    action: "delete" | "rescrape" | "generate"
+    action: "delete" | "rescrape" | "generate" | "analyze" | "submit"
   ) => {
     setActionLoading((prev) => ({ ...prev, [eventId]: action }));
     try {
-      const url =
-        action === "delete"
-          ? `${apiUrl}/events/${eventId}`
-          : `${apiUrl}/events/${eventId}/${action}`;
-      const method = action === "delete" ? "DELETE" : "POST";
+      let url: string;
+      let method = "POST";
+      if (action === "delete") {
+        url = `${apiUrl}/events/${eventId}`;
+        method = "DELETE";
+      } else if (action === "analyze") {
+        url = `${apiUrl}/events/${eventId}/generate?submit=false`;
+      } else if (action === "submit") {
+        url = `${apiUrl}/events/${eventId}/submit`;
+      } else {
+        url = `${apiUrl}/events/${eventId}/${action}`;
+      }
       const res = await fetch(url, { method });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: "Failed" }));
         console.error(`${action} failed:`, err.detail);
+        toast({
+          title: t(`events.${action}Error` as Parameters<typeof t>[0], {
+            defaultValue: "Erro",
+          }),
+          description: err.detail,
+          variant: "destructive",
+        });
         return;
       }
-      if (action === "generate") {
-        await fetch(`${apiUrl}/events/${eventId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ review_status: "approved" }),
+      // Check for dedup_pending — successful response but blocked submission
+      const body = (await res.json().catch(() => null)) as {
+        status?: string;
+        message?: string;
+        dedup_pairs?: number;
+      } | null;
+      if (body?.status === "dedup_pending") {
+        toast({
+          title: t("events.dedupPendingTitle"),
+          description: body.message ?? t("events.dedupPendingDesc"),
+          variant: "destructive",
         });
+      } else if (action === "generate" || action === "analyze") {
+        toast({ title: t("events.generateSuccess") });
       }
       fetchEvents();
       onEventsChanged();
@@ -572,6 +727,7 @@ export function ScrapingEvents({
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10" />
                   <TableHead>
                     <button
                       className="flex items-center font-medium"
@@ -634,7 +790,7 @@ export function ScrapingEvents({
                 {events.length === 0 && !loading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="py-12 text-center text-muted-foreground"
                     >
                       {t("events.empty")}
@@ -642,7 +798,19 @@ export function ScrapingEvents({
                   </TableRow>
                 ) : (
                   events.map((event) => (
-                    <TableRow key={event.id}>
+                    <TableRow
+                      key={event.id}
+                      className={
+                        selectedIds.has(event.id) ? "bg-primary/5" : undefined
+                      }
+                    >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(event.id)}
+                          onCheckedChange={() => toggleSelect(event.id)}
+                          aria-label={t("events.selectEvent")}
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="max-w-[250px]">
                           <div className="truncate font-medium">
@@ -710,9 +878,39 @@ export function ScrapingEvents({
                         {formatDate(event.start_date)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getReviewVariant(event.review_status)}>
-                          {getReviewLabel(event.review_status, t)}
-                        </Badge>
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            variant={getReviewVariant(event.review_status)}
+                          >
+                            {getReviewLabel(event.review_status, t)}
+                          </Badge>
+                          {event.dedup_status && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span
+                                    className={`inline-flex cursor-default ${
+                                      event.dedup_status === "confirmed"
+                                        ? "text-red-500"
+                                        : event.dedup_status === "pending"
+                                          ? "text-yellow-500"
+                                          : "text-muted-foreground/60"
+                                    }`}
+                                  >
+                                    <GitMerge className="h-3.5 w-3.5" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {t(
+                                    `events.dedup.${event.dedup_status}` as Parameters<
+                                      typeof t
+                                    >[0]
+                                  )}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {event.is_hidden ? (
@@ -730,11 +928,12 @@ export function ScrapingEvents({
                           >
                             {t("events.view")}
                           </Button>
+                          {/* Analisar + Submeter */}
                           <Button
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8"
-                            title={t("events.generate")}
+                            title={t("events.generateAndSubmit")}
                             disabled={
                               !event.has_image || !!actionLoading[event.id]
                             }
@@ -744,6 +943,40 @@ export function ScrapingEvents({
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <Sparkles className="h-4 w-4" />
+                            )}
+                          </Button>
+                          {/* Só Analisar */}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.analyzeOnly")}
+                            disabled={
+                              !event.has_image || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "analyze")}
+                          >
+                            {actionLoading[event.id] === "analyze" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                          {/* Só Submeter */}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.submitOnly")}
+                            disabled={
+                              !event.has_ai_output || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "submit")}
+                          >
+                            {actionLoading[event.id] === "submit" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
                             )}
                           </Button>
                           <Button
@@ -876,6 +1109,48 @@ export function ScrapingEvents({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Manual dedup floating bar ── */}
+      {selectedIds.size >= 2 && (
+        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center">
+          <div className="flex items-center gap-3 rounded-lg border bg-background px-4 py-3 shadow-lg">
+            <GitMerge className="h-4 w-4 text-yellow-500" />
+            <span className="text-sm font-medium">
+              {t("events.manualDedupSelected", {
+                count: selectedIds.size,
+              })}
+            </span>
+            {selectedIds.size === 2 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                className="gap-1.5"
+                onClick={handleManualDedup}
+                disabled={markingDedup}
+              >
+                {markingDedup ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <GitMerge className="h-3.5 w-3.5" />
+                )}
+                {t("events.manualDedupAction")}
+              </Button>
+            )}
+            {selectedIds.size > 2 && (
+              <span className="text-xs text-muted-foreground">
+                {t("events.manualDedupMax2")}
+              </span>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              {t("events.manualDedupClear")}
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

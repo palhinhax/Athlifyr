@@ -91,7 +91,7 @@ export default async function Home({
 
   const t = await getTranslations({ locale, namespace: "home" });
   const tNav = await getTranslations({ locale, namespace: "nav" });
-  const tCommon = await getTranslations({ locale, namespace: "common" });
+  const tSports = await getTranslations({ locale, namespace: "sports" });
 
   // Get user's country from headers
   const headersList = await headers();
@@ -125,27 +125,6 @@ export default async function Home({
 
       {/* App Download Section */}
       <AppDownloadSection />
-
-      {/* Browse by Sport */}
-      <section className="container py-6 md:py-12">
-        <h2 className="mb-6 text-xl font-bold sm:text-2xl md:text-3xl">
-          {t("browseBySport")}
-        </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {SPORT_LINKS.map(({ slug, type }) => (
-            <Link
-              key={slug}
-              href={`/sports/${slug}`}
-              className="flex items-center gap-2.5 rounded-lg border bg-card p-3 transition-colors hover:border-accent hover:bg-accent/5"
-            >
-              <span className="text-xl">{sportIcons[type]}</span>
-              <span className="text-sm font-medium">
-                {tCommon(`sports.${type}`)}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* Upcoming Events */}
       <section className="container py-6 md:py-12">
@@ -183,6 +162,24 @@ export default async function Home({
         )}
       </section>
 
+      {/* Browse by Sport */}
+      <section className="container py-4 md:py-8">
+        <h2 className="mb-3 text-lg font-bold sm:text-xl">
+          {t("browseBySport")}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {SPORT_LINKS.map(({ slug, type }) => (
+            <Link
+              key={slug}
+              href={`/sports/${slug}`}
+              className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm transition-colors hover:border-accent hover:bg-accent/5"
+            >
+              <span>{sportIcons[type]}</span>
+              <span>{tSports(`${type}`)}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
       {/* CTA Section */}
       <HomeCtaSection
         locale={locale}

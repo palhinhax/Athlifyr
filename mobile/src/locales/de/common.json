@@ -59,6 +59,16 @@
     "notFound": "Event nicht gefunden",
     "about": "Über",
     "visitWebsite": "Offizielle Website besuchen",
+    "meta": {
+      "date": "Datum",
+      "location": "Ort",
+      "friendsGoing": "Freunde dabei",
+      "friend_one": "{{count}} Freund",
+      "friend_other": "{{count}} Freunde"
+    },
+    "distances": "Distanzen",
+    "faq": "Häufig gestellte Fragen",
+    "openInMaps": "In Karten öffnen",
     "shareMessage": "Schau dir dieses Event an: {{title}}",
     "shareDate": "Datum: {{date}}",
     "shareLocation": "Ort: {{location}}",
@@ -610,7 +620,29 @@
     "typeMessage": "Schreibe eine Nachricht...",
     "noConversations": "Keine Konversationen",
     "noConversationsDescription": "Starte eine Konversation mit jemandem aus der Community.",
-    "newConversationButton": "Neue Konversation"
+    "newConversationButton": "Neue Konversation",
+    "searchFriends": "Freunde suchen...",
+    "noFriends": "Noch keine Freunde. Füge Freunde hinzu, um zu chatten!",
+    "noFriendsFound": "Kein Freund gefunden"
+  },
+  "athli": {
+    "welcome": "Hey! Ich bin Athli",
+    "welcomeDescription": "Dein KI-Sportassistent. Ich kann dir helfen, Events zu finden, Studios zu entdecken, deine gebuchten Kurse zu prüfen, Workouts und Trainingspläne zu erstellen.",
+    "subtitle": "Dein KI-Sportassistent",
+    "inputPlaceholder": "Frag mich alles über Sport, Events, Training...",
+    "thinking": "Denke nach...",
+    "suggestions": {
+      "events": "Events in der Nähe finden",
+      "eventsMessage": "Welche Sportevents gibt es in meiner Nähe?",
+      "venues": "Studios entdecken",
+      "venuesMessage": "Welche Fitnessstudios und Trainingsräume sind verfügbar?",
+      "training": "Trainingsplan erstellen",
+      "trainingMessage": "Ich möchte einen wöchentlichen Trainingsplan. Kannst du mir helfen, einen zu erstellen?",
+      "workout": "Workout erstellen",
+      "workoutMessage": "Ich möchte ein Workout für heute. Kannst du eins für mich erstellen?"
+    },
+    "history": "Frühere Gespräche",
+    "noHistory": "Du hast noch keine früheren Gespräche."
   },
   "settings": {
     "title": "Einstellungen",

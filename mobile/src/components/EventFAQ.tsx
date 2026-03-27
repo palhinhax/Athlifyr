@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { HelpCircle, ChevronDown, ChevronUp } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 
 interface FAQItem {
@@ -14,6 +15,7 @@ interface EventFAQProps {
 }
 
 export function EventFAQ({ items }: EventFAQProps) {
+  const { t } = useTranslation();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (!items || items.length === 0) return null;
@@ -26,7 +28,7 @@ export function EventFAQ({ items }: EventFAQProps) {
     <View style={styles.container}>
       <View style={styles.header}>
         <HelpCircle size={20} color={theme.colors.primary} />
-        <Text style={styles.title}>Frequently Asked Questions</Text>
+        <Text style={styles.title}>{t("events.faq")}</Text>
       </View>
 
       <View style={styles.faqList}>

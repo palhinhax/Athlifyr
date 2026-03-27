@@ -21,6 +21,7 @@ import {
   LocateOff,
   MapPin,
 } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/src/constants/theme";
 import {
   getSportIcon,
@@ -61,6 +62,7 @@ export function MapSportFilter({
   onLocationObtained,
 }: MapSportFilterProps) {
   const { t } = useTranslation();
+  const { bottom } = useSafeAreaInsets();
   const [isOpen, setIsOpen] = useState(false);
   const [localSports, setLocalSports] = useState<string[]>(selectedSports);
 
@@ -193,8 +195,10 @@ export function MapSportFilter({
         onRequestClose={() => setIsOpen(false)}
       >
         <Pressable style={styles.overlay} onPress={() => setIsOpen(false)}>
-          <Pressable style={styles.modal} onPress={() => {}}>
-            {/* Header */}
+          <Pressable
+            style={[styles.modal, { paddingBottom: Math.max(bottom, 16) }]}
+            onPress={() => {}}
+          >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
                 {t("events.mapFilters.title")}
@@ -436,7 +440,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "70%",
-    paddingBottom: 16,
   },
   modalHeader: {
     flexDirection: "row",

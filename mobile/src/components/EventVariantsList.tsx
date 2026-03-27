@@ -10,7 +10,7 @@ interface EventVariantsListProps {
 }
 
 export function EventVariantsList({ variants }: EventVariantsListProps) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (!variants || variants.length === 0) return null;
 
@@ -18,7 +18,7 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Route size={20} color={theme.colors.primary} />
-        <Text style={styles.title}>Distances</Text>
+        <Text style={styles.title}>{t("events.distances")}</Text>
       </View>
 
       <View style={styles.variantsList}>

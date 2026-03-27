@@ -70,7 +70,7 @@ export function EventsMap({
 }: EventsMapProps) {
   const { t } = useTranslation();
   const [events, setEvents] = useState<MapEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
   const cameraRef = useRef<InstanceType<
     typeof import("@rnmapbox/maps").default.Camera
@@ -78,8 +78,6 @@ export function EventsMap({
 
   const fetchMapEvents = useCallback(async () => {
     try {
-      setLoading(true);
-
       const params = new URLSearchParams();
       const now = new Date();
       now.setHours(0, 0, 0, 0);
@@ -113,7 +111,7 @@ export function EventsMap({
     } catch (error) {
       console.error("Error fetching map events:", error);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
   }, [searchQuery, selectedSports, startDays, endDays]);
 
@@ -149,7 +147,7 @@ export function EventsMap({
 
   const canShowMap = mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN;
 
-  if (loading) {
+  if (initialLoading && events.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -186,13 +184,13 @@ export function EventsMap({
           ref={(ref) => {
             cameraRef.current = ref;
           }}
-          centerCoordinate={
-            userLatitude != null && userLongitude != null
-              ? [userLongitude, userLatitude]
-              : [-8.0, 39.5]
-          }
-          zoomLevel={userLatitude == null ? 6 : 8}
-          animationMode="flyTo"
+          defaultSettings={{
+            centerCoordinate:
+              userLatitude != null && userLongitude != null
+                ? [userLongitude, userLatitude]
+                : [-8.0, 39.5],
+            zoomLevel: userLatitude == null ? 6 : 8,
+          }}
         />
         <Mapbox.UserLocation visible animated />
         {events.map((event) => {

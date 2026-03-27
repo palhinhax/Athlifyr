@@ -19,7 +19,7 @@ export function EventMetaInfo({
   country,
   friendsGoingCount = 0,
 }: EventMetaInfoProps) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -29,7 +29,7 @@ export function EventMetaInfo({
           <Calendar size={20} color={theme.colors.primary} />
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.label}>Date</Text>
+          <Text style={styles.label}>{t("events.meta.date")}</Text>
           <Text style={styles.value}>
             {formatDateRange(startDate, endDate, i18n.language)}
           </Text>
@@ -42,7 +42,7 @@ export function EventMetaInfo({
           <MapPin size={20} color={theme.colors.primary} />
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.label}>Location</Text>
+          <Text style={styles.label}>{t("events.meta.location")}</Text>
           <Text style={styles.value}>
             {city}, {country}
           </Text>
@@ -56,10 +56,9 @@ export function EventMetaInfo({
             <Users size={20} color={theme.colors.primary} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.label}>Friends Going</Text>
+            <Text style={styles.label}>{t("events.meta.friendsGoing")}</Text>
             <Text style={styles.value}>
-              {friendsGoingCount}{" "}
-              {friendsGoingCount === 1 ? "friend" : "friends"}
+              {t("events.meta.friend", { count: friendsGoingCount })}
             </Text>
           </View>
         </View>

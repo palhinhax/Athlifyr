@@ -26,6 +26,7 @@ import {
   Edit,
   ChevronLeft,
   ChevronRight,
+  Globe,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -315,7 +316,13 @@ function PostCard({
   const [showSchedule, setShowSchedule] = useState(false);
 
   const handleAction = async (
-    action: "publish" | "cancel" | "retry" | "duplicate" | "delete",
+    action:
+      | "publish"
+      | "cancel"
+      | "retry"
+      | "duplicate"
+      | "delete"
+      | "publish-feed",
     method = "POST"
   ) => {
     try {
@@ -340,7 +347,9 @@ function PostCard({
 
       toast({
         title: t("success"),
-        description: t(`actions.${action}Success`),
+        description: t(
+          `actions.${action === "publish-feed" ? "publishFeed" : action}Success`
+        ),
       });
       onAction();
     } catch (error) {
@@ -445,6 +454,22 @@ function PostCard({
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Send className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+
+          {post.imageUrl && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleAction("publish-feed")}
+              disabled={actionLoading !== null}
+              title={t("actions.publishFeed")}
+            >
+              {actionLoading === "publish-feed" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Globe className="h-4 w-4" />
               )}
             </Button>
           )}

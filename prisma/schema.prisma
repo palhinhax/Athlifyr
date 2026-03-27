@@ -690,6 +690,7 @@ model Post {
   eventId    String?
   content    String
   imageUrl   String?
+  mediaUrls  String[]      // Additional media URLs (carousel)
   mediaType  String?       @default("image") // "image" or "video"
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt

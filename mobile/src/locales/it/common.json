@@ -162,6 +162,7 @@
       "eventCard": "{{title}}, {{date}}, {{location}}",
       "eventCardParticipating": "{{title}}, {{date}}, {{location}}, partecipando",
       "listView": "Vista elenco",
+      "gridView": "Vista griglia",
       "mapView": "Vista mappa",
       "suggestEvent": "Suggerisci un evento",
       "searchEvents": "Cerca eventi",

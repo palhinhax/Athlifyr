@@ -2,6 +2,7 @@ import {
   View,
   Text,
   SectionList,
+  FlatList,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
@@ -13,13 +14,21 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { EventCard } from "@/src/components/EventCard";
+import { EventCardGrid } from "@/src/components/EventCardGrid";
 import { EventsMap } from "@/src/components/EventsMap";
 import { MapSportFilter } from "@/src/components/MapSportFilter";
 import { DateRangeSlider } from "@/src/components/DateRangeSlider";
 
 import { useEventSportFilter } from "@/src/hooks/useEventSportFilter";
 import { useLocationFilter } from "@/src/hooks/useLocationFilter";
-import { Search, LayoutGrid, Map, Star, Calendar } from "lucide-react-native";
+import {
+  Search,
+  List,
+  LayoutGrid,
+  Map,
+  Star,
+  Calendar,
+} from "lucide-react-native";
 import type { Event } from "@/src/types";
 
 interface EventsResponse {
@@ -35,7 +44,7 @@ interface EventsResponse {
 
 export default function EventsScreen() {
   const { t, i18n } = useTranslation();
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
   const [events, setEvents] = useState<Event[]>([]);
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -265,6 +274,41 @@ export default function EventsScreen() {
     return groups;
   }, [events, i18n.language]);
 
+  // Flatten sections into rows of 2 for grid view
+  type GridHeader = { type: "header"; title: string; count: number };
+  type GridRow = { type: "row"; left: Event; right: Event | null };
+  type GridItem = GridHeader | GridRow;
+
+  const gridData = useMemo<GridItem[]>(() => {
+    const items: GridItem[] = [];
+    for (const section of sections) {
+      items.push({
+        type: "header",
+        title: section.title,
+        count: section.data.length,
+      });
+      for (let i = 0; i < section.data.length; i += 2) {
+        items.push({
+          type: "row",
+          left: section.data[i],
+          right: section.data[i + 1] ?? null,
+        });
+      }
+    }
+    return items;
+  }, [sections]);
+
+  const featuredPairs = useMemo(() => {
+    const pairs: { left: Event; right: Event | null }[] = [];
+    for (let i = 0; i < filteredFeatured.length; i += 2) {
+      pairs.push({
+        left: filteredFeatured[i],
+        right: filteredFeatured[i + 1] ?? null,
+      });
+    }
+    return pairs;
+  }, [filteredFeatured]);
+
   return (
     <View style={styles.container}>
       {/* Search Bar + View Toggle */}
@@ -301,10 +345,30 @@ export default function EventsScreen() {
               accessibilityLabel={t("events.a11y.listView")}
               accessibilityState={{ selected: viewMode === "list" }}
             >
-              <LayoutGrid
+              <List
                 size={18}
                 color={
                   viewMode === "list"
+                    ? theme.colors.white
+                    : theme.colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.viewToggleButton,
+                viewMode === "grid" && styles.viewToggleButtonActive,
+              ]}
+              onPress={() => setViewMode("grid")}
+              activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityLabel={t("events.a11y.gridView")}
+              accessibilityState={{ selected: viewMode === "grid" }}
+            >
+              <LayoutGrid
+                size={18}
+                color={
+                  viewMode === "grid"
                     ? theme.colors.white
                     : theme.colors.textSecondary
                 }
@@ -340,7 +404,7 @@ export default function EventsScreen() {
           selectedSports={selectedSports}
           onSportsChange={onSportsChange}
           inline
-          showLocationFilter={viewMode === "list"}
+          showLocationFilter={viewMode !== "map"}
           locationEnabled={locationEnabled}
           latitude={userLat}
           longitude={userLng}
@@ -375,6 +439,83 @@ export default function EventsScreen() {
             size="large"
             color={theme.colors.primary}
             accessibilityLabel={t("events.a11y.loadingEvents")}
+          />
+        </View>
+      ) : viewMode === "grid" ? (
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={gridData}
+            renderItem={({ item }) => {
+              if (item.type === "header") {
+                return (
+                  <View style={styles.gridSectionHeader}>
+                    <Calendar size={16} color={theme.colors.primary} />
+                    <Text style={styles.gridSectionTitle}>{item.title}</Text>
+                    <View style={styles.sectionLine} />
+                    <Text style={styles.sectionCount}>{item.count}</Text>
+                  </View>
+                );
+              }
+              return (
+                <View style={styles.gridRow}>
+                  <View style={styles.gridItem}>
+                    <EventCardGrid event={item.left} />
+                  </View>
+                  {item.right ? (
+                    <View style={styles.gridItem}>
+                      <EventCardGrid event={item.right} />
+                    </View>
+                  ) : (
+                    <View style={styles.gridItem} />
+                  )}
+                </View>
+              );
+            }}
+            keyExtractor={(item) =>
+              item.type === "header"
+                ? `header-${item.title}`
+                : `row-${item.left.id}`
+            }
+            contentContainerStyle={styles.gridContent}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListHeaderComponent={
+              filteredFeatured.length > 0 && !debouncedSearch ? (
+                <View style={styles.featuredSection}>
+                  <View style={styles.gridSectionHeader}>
+                    <Star size={16} color="#facc15" fill="#facc15" />
+                    <Text style={styles.gridSectionTitle}>
+                      {t("events.featured")}
+                    </Text>
+                    <View style={styles.sectionLine} />
+                  </View>
+                  {featuredPairs.map((pair) => (
+                    <View key={pair.left.id} style={styles.gridRow}>
+                      <View style={styles.gridItem}>
+                        <EventCardGrid event={pair.left} />
+                      </View>
+                      {pair.right ? (
+                        <View style={styles.gridItem}>
+                          <EventCardGrid event={pair.right} />
+                        </View>
+                      ) : (
+                        <View style={styles.gridItem} />
+                      )}
+                    </View>
+                  ))}
+                </View>
+              ) : null
+            }
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmpty}
+            accessibilityLabel={t("events.a11y.eventsList")}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.colors.primary}
+              />
+            }
           />
         </View>
       ) : (
@@ -473,8 +614,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   viewToggleButton: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colors.backgroundSecondary,
@@ -535,5 +676,31 @@ const styles = StyleSheet.create({
   },
   featuredSection: {
     marginBottom: theme.spacing.sm,
+  },
+  gridContent: {
+    padding: theme.spacing.sm,
+  },
+  gridRow: {
+    flexDirection: "row",
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  gridItem: {
+    flex: 1,
+  },
+  gridSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: theme.spacing.xs,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+    paddingHorizontal: 4,
+  },
+  gridSectionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.text,
+    textTransform: "capitalize",
   },
 });

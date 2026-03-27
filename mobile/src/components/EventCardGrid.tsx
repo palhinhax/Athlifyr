@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { Calendar, MapPin } from "lucide-react-native";
+import { Calendar, MapPin, Gift } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
@@ -67,6 +67,16 @@ export function EventCardGrid({ event }: EventCardGridProps) {
         {Array.isArray(event.sportTypes) && event.sportTypes.length > 0 && (
           <View style={styles.sportBadgeContainer}>
             <SportBadge sportType={event.sportTypes[0]} size="sm" />
+          </View>
+        )}
+
+        {/* Giveaway Badge */}
+        {event._count && (event._count.giveaways ?? 0) > 0 && (
+          <View style={styles.giveawayBadge}>
+            <Gift size={10} color={theme.colors.white} />
+            <Text style={styles.giveawayBadgeText}>
+              {t("events.giveaway.badge")}
+            </Text>
           </View>
         )}
       </View>
@@ -155,6 +165,23 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 4,
     right: 4,
+  },
+  giveawayBadge: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: theme.borderRadius.full,
+  },
+  giveawayBadgeText: {
+    color: theme.colors.white,
+    fontSize: 9,
+    fontWeight: "700",
   },
   content: {
     padding: 8,

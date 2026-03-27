@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const STORAGE_KEY = "@athlifyr/location-filter";
@@ -23,6 +23,7 @@ export function useLocationFilter() {
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const stateRef = useRef<LocationFilterState>({ ...DEFAULTS });
 
   // Load saved state on mount
   useEffect(() => {
@@ -31,10 +32,17 @@ export function useLocationFilter() {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed: LocationFilterState = JSON.parse(raw);
-          setLocationEnabled(parsed.enabled ?? DEFAULTS.enabled);
-          setRadiusKm(parsed.radiusKm ?? DEFAULTS.radiusKm);
-          setUserLat(parsed.lat ?? DEFAULTS.lat);
-          setUserLng(parsed.lng ?? DEFAULTS.lng);
+          const restored = {
+            enabled: parsed.enabled ?? DEFAULTS.enabled,
+            radiusKm: parsed.radiusKm ?? DEFAULTS.radiusKm,
+            lat: parsed.lat ?? DEFAULTS.lat,
+            lng: parsed.lng ?? DEFAULTS.lng,
+          };
+          stateRef.current = restored;
+          setLocationEnabled(restored.enabled);
+          setRadiusKm(restored.radiusKm);
+          setUserLat(restored.lat);
+          setUserLng(restored.lng);
         }
       } catch {
         // ignore read errors
@@ -44,16 +52,10 @@ export function useLocationFilter() {
     })();
   }, []);
 
-  const persist = useCallback((state: Partial<LocationFilterState>) => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        const current: LocationFilterState = raw
-          ? JSON.parse(raw)
-          : { ...DEFAULTS };
-        const updated = { ...current, ...state };
-        return AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      })
-      .catch(() => {});
+  const persist = useCallback((patch: Partial<LocationFilterState>) => {
+    const updated = { ...stateRef.current, ...patch };
+    stateRef.current = updated;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated)).catch(() => {});
   }, []);
 
   const handleToggle = useCallback(() => {

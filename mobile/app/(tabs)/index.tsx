@@ -44,7 +44,7 @@ interface EventsResponse {
 
 export default function EventsScreen() {
   const { t, i18n } = useTranslation();
-  const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("grid");
   const [events, setEvents] = useState<Event[]>([]);
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -337,26 +337,6 @@ export default function EventsScreen() {
             <TouchableOpacity
               style={[
                 styles.viewToggleButton,
-                viewMode === "list" && styles.viewToggleButtonActive,
-              ]}
-              onPress={() => setViewMode("list")}
-              activeOpacity={0.7}
-              accessibilityRole="tab"
-              accessibilityLabel={t("events.a11y.listView")}
-              accessibilityState={{ selected: viewMode === "list" }}
-            >
-              <List
-                size={18}
-                color={
-                  viewMode === "list"
-                    ? theme.colors.white
-                    : theme.colors.textSecondary
-                }
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.viewToggleButton,
                 viewMode === "grid" && styles.viewToggleButtonActive,
               ]}
               onPress={() => setViewMode("grid")}
@@ -369,6 +349,26 @@ export default function EventsScreen() {
                 size={18}
                 color={
                   viewMode === "grid"
+                    ? theme.colors.white
+                    : theme.colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.viewToggleButton,
+                viewMode === "list" && styles.viewToggleButtonActive,
+              ]}
+              onPress={() => setViewMode("list")}
+              activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityLabel={t("events.a11y.listView")}
+              accessibilityState={{ selected: viewMode === "list" }}
+            >
+              <List
+                size={18}
+                color={
+                  viewMode === "list"
                     ? theme.colors.white
                     : theme.colors.textSecondary
                 }

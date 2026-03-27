@@ -14,7 +14,7 @@ interface EventCardGridProps {
 
 export function EventCardGrid({ event }: EventCardGridProps) {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handlePress = () => {
     router.push(`/events/${event.slug}` as const);

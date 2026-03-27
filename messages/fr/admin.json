@@ -19,7 +19,8 @@
         "conversations": "Conversations IA",
         "appleSettings": "Apple",
         "credits": "Crédits",
-        "scraping": "Scraping"
+        "scraping": "Scraping",
+        "social": "Social"
       }
     },
     "contacts": {
@@ -800,6 +801,101 @@
           "scraping": "Scraping",
           "manual": "Manuel"
         }
+      }
+    },
+    "social": {
+      "title": "Réseaux Sociaux",
+      "description": "Gérer les publications Instagram et la génération automatique de contenu",
+      "refresh": "Actualiser",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "close": "Fermer",
+      "success": "Succès",
+      "error": "Erreur",
+      "createPost": "Nouvelle Publication",
+      "createPostDescription": "Créez une nouvelle publication Instagram. Elle sera enregistrée comme brouillon pour révision.",
+      "posts": {
+        "title": "Publications",
+        "all": "Toutes",
+        "allTypes": "Tous les Types",
+        "deleteTitle": "Supprimer la Publication ?",
+        "deleteDescription": "Cette action est irréversible. La publication sera définitivement supprimée.",
+        "empty": "Aucune publication",
+        "emptyDescription": "Générez des brouillons à partir d'événements ou créez une publication personnalisée.",
+        "status": {
+          "DRAFT": "Brouillon",
+          "SCHEDULED": "Programmée",
+          "PUBLISHING": "En cours",
+          "PUBLISHED": "Publiée",
+          "FAILED": "Échouée",
+          "CANCELLED": "Annulée"
+        },
+        "type": {
+          "EVENT": "Événement",
+          "WEEKLY_ROUNDUP": "Résumé Hebdomadaire",
+          "LAST_CALL": "Dernier Appel",
+          "RESULTS": "Résultats",
+          "CUSTOM": "Personnalisée"
+        }
+      },
+      "actions": {
+        "view": "Voir les Détails",
+        "publish": "Publier",
+        "cancel": "Annuler",
+        "retry": "Réessayer",
+        "duplicate": "Dupliquer",
+        "edit": "Modifier",
+        "save": "Enregistrer",
+        "publishFeed": "Publier dans le Fil",
+        "publishSuccess": "Publication envoyée pour publication",
+        "publishFeedSuccess": "Publié dans le fil avec succès",
+        "cancelSuccess": "Publication annulée",
+        "retrySuccess": "Publication remise en brouillon pour révision",
+        "duplicateSuccess": "Publication dupliquée",
+        "deleteSuccess": "Publication supprimée",
+        "editSuccess": "Publication mise à jour",
+        "createSuccess": "Publication créée"
+      },
+      "form": {
+        "type": "Type de Publication",
+        "title": "Titre",
+        "titlePlaceholder": "Titre interne pour référence...",
+        "caption": "Légende",
+        "captionPlaceholder": "Écrivez la légende pour Instagram...",
+        "hashtags": "Hashtags",
+        "hashtagsHint": "Séparés par des virgules, sans #",
+        "imageUrl": "URL de l'Image"
+      },
+      "detail": {
+        "created": "Créée",
+        "scheduled": "Programmée pour",
+        "published": "Publiée le",
+        "error": "Erreur",
+        "createdBy": "Créée par",
+        "retries": "Tentatives",
+        "logs": "Journal d'Activité"
+      },
+      "generate": {
+        "title": "Générer des Brouillons Automatiques",
+        "description": "Créez automatiquement des brouillons de publications à partir des événements à venir. Tous les posts sont enregistrés comme brouillons pour révision avant publication.",
+        "days": "Période",
+        "daysLabel": "jours",
+        "sport": "Sport",
+        "allSports": "Tous les Sports",
+        "events": "Posts d'Événements",
+        "weekly": "Résumé Hebdomadaire",
+        "lastCall": "Dernier Appel",
+        "compilation": "Compilation Hebdomadaire"
+      },
+      "schedule": {
+        "title": "Planifier la Publication",
+        "dateTime": "Date et Heure",
+        "hint": "Laissez vide pour créer comme brouillon",
+        "confirm": "Planifier",
+        "success": "Publication planifiée avec succès",
+        "futureRequired": "La date doit être dans le futur",
+        "selectDate": "Veuillez sélectionner une date d'abord",
+        "generateAndSchedule": "Générer et planifier pour la date sélectionnée :"
       }
     }
   }

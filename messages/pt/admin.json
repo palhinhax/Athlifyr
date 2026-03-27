@@ -19,7 +19,8 @@
         "conversations": "Conversas IA",
         "appleSettings": "Apple",
         "credits": "Créditos",
-        "scraping": "Scraping"
+        "scraping": "Scraping",
+        "social": "Social"
       }
     },
     "contacts": {
@@ -799,6 +800,101 @@
           "scraping": "Scraping",
           "manual": "Manual"
         }
+      }
+    },
+    "social": {
+      "title": "Redes Sociais",
+      "description": "Gerir publicações Instagram e geração automática de conteúdo",
+      "refresh": "Atualizar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "close": "Fechar",
+      "success": "Sucesso",
+      "error": "Erro",
+      "createPost": "Nova Publicação",
+      "createPostDescription": "Cria uma nova publicação Instagram. Será guardada como rascunho para revisão.",
+      "posts": {
+        "title": "Publicações",
+        "all": "Todas",
+        "allTypes": "Todos os Tipos",
+        "deleteTitle": "Eliminar Publicação?",
+        "deleteDescription": "Esta ação não pode ser desfeita. A publicação será eliminada permanentemente.",
+        "empty": "Sem publicações",
+        "emptyDescription": "Gera rascunhos a partir de eventos ou cria uma publicação personalizada.",
+        "status": {
+          "DRAFT": "Rascunho",
+          "SCHEDULED": "Agendada",
+          "PUBLISHING": "A Publicar",
+          "PUBLISHED": "Publicada",
+          "FAILED": "Falhada",
+          "CANCELLED": "Cancelada"
+        },
+        "type": {
+          "EVENT": "Evento",
+          "WEEKLY_ROUNDUP": "Resumo Semanal",
+          "LAST_CALL": "Última Chamada",
+          "RESULTS": "Resultados",
+          "CUSTOM": "Personalizada"
+        }
+      },
+      "actions": {
+        "view": "Ver Detalhes",
+        "publish": "Publicar",
+        "cancel": "Cancelar",
+        "retry": "Tentar Novamente",
+        "duplicate": "Duplicar",
+        "edit": "Editar",
+        "save": "Guardar",
+        "publishFeed": "Publicar no Feed",
+        "publishSuccess": "Publicação enviada para publicação",
+        "publishFeedSuccess": "Publicado no feed com sucesso",
+        "cancelSuccess": "Publicação cancelada",
+        "retrySuccess": "Publicação reposta como rascunho para revisão",
+        "duplicateSuccess": "Publicação duplicada",
+        "deleteSuccess": "Publicação eliminada",
+        "editSuccess": "Publicação atualizada",
+        "createSuccess": "Publicação criada"
+      },
+      "form": {
+        "type": "Tipo de Publicação",
+        "title": "Título",
+        "titlePlaceholder": "Título interno para referência...",
+        "caption": "Legenda",
+        "captionPlaceholder": "Escreve a legenda para Instagram...",
+        "hashtags": "Hashtags",
+        "hashtagsHint": "Separadas por vírgulas, sem #",
+        "imageUrl": "URL da Imagem"
+      },
+      "detail": {
+        "created": "Criada",
+        "scheduled": "Agendada para",
+        "published": "Publicada em",
+        "error": "Erro",
+        "createdBy": "Criada por",
+        "retries": "Tentativas",
+        "logs": "Registo de Atividade"
+      },
+      "generate": {
+        "title": "Gerar Rascunhos Automáticos",
+        "description": "Cria automaticamente rascunhos de publicações a partir dos próximos eventos. Todos os posts são guardados como rascunhos para revisão antes de publicar.",
+        "days": "Período",
+        "daysLabel": "dias",
+        "sport": "Desporto",
+        "allSports": "Todos os Desportos",
+        "events": "Posts de Eventos",
+        "weekly": "Resumo Semanal",
+        "lastCall": "Última Chamada",
+        "compilation": "Compilação Semanal"
+      },
+      "schedule": {
+        "title": "Agendar Publicação",
+        "dateTime": "Data e Hora",
+        "hint": "Deixa vazio para criar como rascunho",
+        "confirm": "Agendar",
+        "success": "Publicação agendada com sucesso",
+        "futureRequired": "A data tem de ser no futuro",
+        "selectDate": "Seleciona uma data primeiro",
+        "generateAndSchedule": "Gerar e agendar para a data selecionada:"
       }
     }
   }

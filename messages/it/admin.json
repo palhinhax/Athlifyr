@@ -19,7 +19,8 @@
         "conversations": "Conversazioni IA",
         "appleSettings": "Apple",
         "credits": "Crediti",
-        "scraping": "Scraping"
+        "scraping": "Scraping",
+        "social": "Social"
       }
     },
     "contacts": {
@@ -795,6 +796,101 @@
           "scraping": "Scraping",
           "manual": "Manuale"
         }
+      }
+    },
+    "social": {
+      "title": "Social Media",
+      "description": "Gestisci pubblicazioni Instagram e generazione automatica di contenuti",
+      "refresh": "Aggiorna",
+      "cancel": "Annulla",
+      "delete": "Elimina",
+      "close": "Chiudi",
+      "success": "Successo",
+      "error": "Errore",
+      "createPost": "Nuova Pubblicazione",
+      "createPostDescription": "Crea una nuova pubblicazione Instagram. Verrà salvata come bozza per la revisione.",
+      "posts": {
+        "title": "Pubblicazioni",
+        "all": "Tutte",
+        "allTypes": "Tutti i Tipi",
+        "deleteTitle": "Eliminare la Pubblicazione?",
+        "deleteDescription": "Questa azione non può essere annullata. La pubblicazione verrà eliminata definitivamente.",
+        "empty": "Nessuna pubblicazione",
+        "emptyDescription": "Genera bozze dagli eventi o crea una pubblicazione personalizzata.",
+        "status": {
+          "DRAFT": "Bozza",
+          "SCHEDULED": "Programmata",
+          "PUBLISHING": "Pubblicazione...",
+          "PUBLISHED": "Pubblicata",
+          "FAILED": "Fallita",
+          "CANCELLED": "Annullata"
+        },
+        "type": {
+          "EVENT": "Evento",
+          "WEEKLY_ROUNDUP": "Riepilogo Settimanale",
+          "LAST_CALL": "Ultima Chiamata",
+          "RESULTS": "Risultati",
+          "CUSTOM": "Personalizzata"
+        }
+      },
+      "actions": {
+        "view": "Vedi Dettagli",
+        "publish": "Pubblica",
+        "cancel": "Annulla",
+        "retry": "Riprova",
+        "duplicate": "Duplica",
+        "edit": "Modifica",
+        "save": "Salva",
+        "publishFeed": "Pubblica nel Feed",
+        "publishSuccess": "Pubblicazione inviata per la pubblicazione",
+        "publishFeedSuccess": "Pubblicato nel feed con successo",
+        "cancelSuccess": "Pubblicazione annullata",
+        "retrySuccess": "Pubblicazione reimpostata come bozza per la revisione",
+        "duplicateSuccess": "Pubblicazione duplicata",
+        "deleteSuccess": "Pubblicazione eliminata",
+        "editSuccess": "Pubblicazione aggiornata",
+        "createSuccess": "Pubblicazione creata"
+      },
+      "form": {
+        "type": "Tipo di Pubblicazione",
+        "title": "Titolo",
+        "titlePlaceholder": "Titolo interno per riferimento...",
+        "caption": "Didascalia",
+        "captionPlaceholder": "Scrivi la didascalia per Instagram...",
+        "hashtags": "Hashtag",
+        "hashtagsHint": "Separati da virgole, senza #",
+        "imageUrl": "URL dell'Immagine"
+      },
+      "detail": {
+        "created": "Creata",
+        "scheduled": "Programmata per",
+        "published": "Pubblicata il",
+        "error": "Errore",
+        "createdBy": "Creata da",
+        "retries": "Tentativi",
+        "logs": "Registro Attività"
+      },
+      "generate": {
+        "title": "Genera Bozze Automatiche",
+        "description": "Crea automaticamente bozze di pubblicazioni dai prossimi eventi. Tutti i post vengono salvati come bozze per la revisione prima della pubblicazione.",
+        "days": "Periodo",
+        "daysLabel": "giorni",
+        "sport": "Sport",
+        "allSports": "Tutti gli Sport",
+        "events": "Post di Eventi",
+        "weekly": "Riepilogo Settimanale",
+        "lastCall": "Ultima Chiamata",
+        "compilation": "Compilazione Settimanale"
+      },
+      "schedule": {
+        "title": "Programma Pubblicazione",
+        "dateTime": "Data e Ora",
+        "hint": "Lascia vuoto per creare come bozza",
+        "confirm": "Programma",
+        "success": "Pubblicazione programmata con successo",
+        "futureRequired": "La data deve essere nel futuro",
+        "selectDate": "Seleziona prima una data",
+        "generateAndSchedule": "Genera e programma per la data selezionata:"
       }
     }
   }

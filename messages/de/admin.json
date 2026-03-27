@@ -19,7 +19,8 @@
         "conversations": "KI-Gespräche",
         "appleSettings": "Apple",
         "credits": "Guthaben",
-        "scraping": "Scraping"
+        "scraping": "Scraping",
+        "social": "Social"
       }
     },
     "contacts": {
@@ -799,6 +800,101 @@
           "scraping": "Scraping",
           "manual": "Manuell"
         }
+      }
+    },
+    "social": {
+      "title": "Soziale Medien",
+      "description": "Instagram-Beiträge und automatische Inhaltserstellung verwalten",
+      "refresh": "Aktualisieren",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "close": "Schließen",
+      "success": "Erfolg",
+      "error": "Fehler",
+      "createPost": "Neuer Beitrag",
+      "createPostDescription": "Erstelle einen neuen Instagram-Beitrag. Er wird als Entwurf zur Überprüfung gespeichert.",
+      "posts": {
+        "title": "Beiträge",
+        "all": "Alle",
+        "allTypes": "Alle Typen",
+        "deleteTitle": "Beitrag löschen?",
+        "deleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Der Beitrag wird dauerhaft gelöscht.",
+        "empty": "Keine Beiträge",
+        "emptyDescription": "Generiere Entwürfe aus Veranstaltungen oder erstelle einen benutzerdefinierten Beitrag.",
+        "status": {
+          "DRAFT": "Entwurf",
+          "SCHEDULED": "Geplant",
+          "PUBLISHING": "Veröffentlichen...",
+          "PUBLISHED": "Veröffentlicht",
+          "FAILED": "Fehlgeschlagen",
+          "CANCELLED": "Abgebrochen"
+        },
+        "type": {
+          "EVENT": "Veranstaltung",
+          "WEEKLY_ROUNDUP": "Wöchentliche Zusammenfassung",
+          "LAST_CALL": "Letzter Aufruf",
+          "RESULTS": "Ergebnisse",
+          "CUSTOM": "Benutzerdefiniert"
+        }
+      },
+      "actions": {
+        "view": "Details anzeigen",
+        "publish": "Veröffentlichen",
+        "cancel": "Abbrechen",
+        "retry": "Erneut versuchen",
+        "duplicate": "Duplizieren",
+        "edit": "Bearbeiten",
+        "save": "Speichern",
+        "publishFeed": "Im Feed veröffentlichen",
+        "publishSuccess": "Beitrag zur Veröffentlichung gesendet",
+        "publishFeedSuccess": "Erfolgreich im Feed veröffentlicht",
+        "cancelSuccess": "Beitrag abgebrochen",
+        "retrySuccess": "Beitrag als Entwurf zur Überprüfung zurückgesetzt",
+        "duplicateSuccess": "Beitrag dupliziert",
+        "deleteSuccess": "Beitrag gelöscht",
+        "editSuccess": "Beitrag aktualisiert",
+        "createSuccess": "Beitrag erstellt"
+      },
+      "form": {
+        "type": "Beitragstyp",
+        "title": "Titel",
+        "titlePlaceholder": "Interner Titel zur Referenz...",
+        "caption": "Bildunterschrift",
+        "captionPlaceholder": "Schreibe die Instagram-Bildunterschrift...",
+        "hashtags": "Hashtags",
+        "hashtagsHint": "Durch Kommas getrennt, ohne #",
+        "imageUrl": "Bild-URL"
+      },
+      "detail": {
+        "created": "Erstellt",
+        "scheduled": "Geplant für",
+        "published": "Veröffentlicht am",
+        "error": "Fehler",
+        "createdBy": "Erstellt von",
+        "retries": "Versuche",
+        "logs": "Aktivitätsprotokoll"
+      },
+      "generate": {
+        "title": "Entwürfe automatisch generieren",
+        "description": "Erstelle automatisch Entwürfe aus kommenden Veranstaltungen. Alle Beiträge werden als Entwürfe zur Überprüfung vor der Veröffentlichung gespeichert.",
+        "days": "Zeitraum",
+        "daysLabel": "Tage",
+        "sport": "Sportart",
+        "allSports": "Alle Sportarten",
+        "events": "Event-Posts",
+        "weekly": "Wöchentliche Zusammenfassung",
+        "lastCall": "Letzter Aufruf",
+        "compilation": "Wöchentliche Zusammenstellung"
+      },
+      "schedule": {
+        "title": "Beitrag planen",
+        "dateTime": "Datum und Uhrzeit",
+        "hint": "Leer lassen, um als Entwurf zu erstellen",
+        "confirm": "Planen",
+        "success": "Beitrag erfolgreich geplant",
+        "futureRequired": "Das Datum muss in der Zukunft liegen",
+        "selectDate": "Bitte wähle zuerst ein Datum aus",
+        "generateAndSchedule": "Erstellen und für das gewählte Datum planen:"
       }
     }
   }

@@ -16,6 +16,8 @@ import {
   Pencil,
   Save,
   X as XIcon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,6 +71,7 @@ interface PostCardProps {
     id: string;
     content: string;
     imageUrl?: string | null;
+    mediaUrls?: string[];
     mediaType?: string | null;
     createdAt: string | Date;
     userId: string;
@@ -213,6 +216,16 @@ export function PostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [carouselIdx, setCarouselIdx] = useState(0);
+
+  // Build carousel image list
+  const carouselImages =
+    (post.mediaUrls?.length ?? 0) >= 2
+      ? post.mediaUrls!
+      : post.imageUrl
+        ? [post.imageUrl]
+        : [];
+  const hasCarousel = carouselImages.length > 1;
 
   const createdAt =
     typeof post.createdAt === "string"
@@ -523,7 +536,7 @@ export function PostCard({
           )}
         </div>
 
-        {/* Media (Image or Video) */}
+        {/* Media (Image, Video or Carousel) */}
         {post.imageUrl && (
           <div
             className={`relative w-full overflow-hidden ${
@@ -550,6 +563,51 @@ export function PostCard({
                   }
                 }}
               />
+            ) : hasCarousel ? (
+              <div className="relative">
+                <PostImage
+                  imageUrl={carouselImages[carouselIdx]}
+                  imageError={imageError}
+                  onImageError={() => {
+                    console.error(
+                      "Failed to load image:",
+                      carouselImages[carouselIdx]
+                    );
+                    setImageError(true);
+                  }}
+                />
+                <button
+                  onClick={() =>
+                    setCarouselIdx((i) =>
+                      i === 0 ? carouselImages.length - 1 : i - 1
+                    )
+                  }
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() =>
+                    setCarouselIdx((i) =>
+                      i === carouselImages.length - 1 ? 0 : i + 1
+                    )
+                  }
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                  {carouselImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCarouselIdx(idx)}
+                      className={`h-2 w-2 rounded-full transition-colors ${
+                        idx === carouselIdx ? "bg-white" : "bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
             ) : (
               <PostImage
                 imageUrl={post.imageUrl}

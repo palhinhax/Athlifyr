@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { MessageCircle } from "lucide-react-native";
+import { MessageCircle, Plus } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { useConversations } from "@/src/hooks/useChat";
+import { useConversations, useCreateConversation } from "@/src/hooks/useChat";
 import { useAthliConversations } from "@/src/hooks/useAthliChat";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { ConversationListItem } from "@/src/components/chat/ConversationListItem";
 import { AthliConversationItem } from "@/src/components/chat/AthliConversationItem";
+import { NewConversationModal } from "@/src/components/chat/NewConversationModal";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { theme } from "@/src/constants/theme";
 import { useSocket } from "@/src/hooks/useSocket";
@@ -26,8 +27,10 @@ export default function MessagesScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [showNewConversation, setShowNewConversation] = useState(false);
   const { socket, isConnected } = useSocket();
   const queryClient = useQueryClient();
+  const createConversation = useCreateConversation();
 
   const {
     data: conversations = [],
@@ -39,6 +42,24 @@ export default function MessagesScreen() {
   const { data: athliConversations = [] } =
     useAthliConversations(isAuthenticated);
   const lastAthliConversation = athliConversations[0] ?? null;
+
+  // Extract user IDs that already have a conversation with the current user
+  const existingUserIds = useMemo(() => {
+    if (!user) return [];
+    return conversations.flatMap((c) =>
+      c.participants.filter((p) => p.userId !== user.id).map((p) => p.userId)
+    );
+  }, [conversations, user]);
+
+  const handleSelectFriend = async (friendId: string) => {
+    try {
+      const result = await createConversation.mutateAsync(friendId);
+      setShowNewConversation(false);
+      router.push(`/chat/${result.conversation.id}`);
+    } catch (err) {
+      console.error("[Messages] Failed to create conversation:", err);
+    }
+  };
 
   // Listen for incoming messages to refresh conversations list in real-time
   useEffect(() => {
@@ -135,6 +156,18 @@ export default function MessagesScreen() {
             {t("chat.noConversationsDescription")}
           </Text>
         </View>
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => setShowNewConversation(true)}
+        >
+          <Plus size={24} color={theme.colors.white} />
+        </TouchableOpacity>
+        <NewConversationModal
+          visible={showNewConversation}
+          onClose={() => setShowNewConversation(false)}
+          onSelectFriend={handleSelectFriend}
+          existingUserIds={existingUserIds}
+        />
       </View>
     );
   }
@@ -169,6 +202,18 @@ export default function MessagesScreen() {
         contentContainerStyle={
           conversations.length === 0 ? styles.emptyList : undefined
         }
+      />
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setShowNewConversation(true)}
+      >
+        <Plus size={24} color={theme.colors.white} />
+      </TouchableOpacity>
+      <NewConversationModal
+        visible={showNewConversation}
+        onClose={() => setShowNewConversation(false)}
+        onSelectFriend={handleSelectFriend}
+        existingUserIds={existingUserIds}
       />
     </View>
   );
@@ -239,5 +284,21 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: theme.typography.fontSize.sm,
     fontWeight: "600",
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
 });

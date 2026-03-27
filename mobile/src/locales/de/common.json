@@ -59,6 +59,16 @@
     "notFound": "Event nicht gefunden",
     "about": "Über",
     "visitWebsite": "Offizielle Website besuchen",
+    "meta": {
+      "date": "Datum",
+      "location": "Ort",
+      "friendsGoing": "Freunde dabei",
+      "friend_one": "{{count}} Freund",
+      "friend_other": "{{count}} Freunde"
+    },
+    "distances": "Distanzen",
+    "faq": "Häufig gestellte Fragen",
+    "openInMaps": "In Karten öffnen",
     "shareMessage": "Schau dir dieses Event an: {{title}}",
     "shareDate": "Datum: {{date}}",
     "shareLocation": "Ort: {{location}}",
@@ -610,7 +620,10 @@
     "typeMessage": "Schreibe eine Nachricht...",
     "noConversations": "Keine Konversationen",
     "noConversationsDescription": "Starte eine Konversation mit jemandem aus der Community.",
-    "newConversationButton": "Neue Konversation"
+    "newConversationButton": "Neue Konversation",
+    "searchFriends": "Freunde suchen...",
+    "noFriends": "Noch keine Freunde. Füge Freunde hinzu, um zu chatten!",
+    "noFriendsFound": "Kein Freund gefunden"
   },
   "athli": {
     "welcome": "Hey! Ich bin Athli",

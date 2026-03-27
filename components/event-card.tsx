@@ -156,24 +156,26 @@ export function EventCard({
               event.variants.length > 0 &&
               !event.sportTypes.includes("HYROX") && (
                 <div className="mt-2 flex items-start gap-2">
-                  <Route className="mt-0.5 h-4 w-4" />
-                  <div className="flex flex-wrap gap-1">
+                  <Route className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <div className="flex flex-wrap gap-1.5">
                     {event.variants.slice(0, 3).map((variant) => {
                       const currentPrice = getCurrentPrice(variant);
                       return (
-                        <span
+                        <div
                           key={variant.id}
-                          className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                          className="inline-flex items-center gap-1.5"
                         >
-                          {variant.distanceKm
-                            ? `${variant.distanceKm} km`
-                            : variant.name}
+                          <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                            {variant.distanceKm
+                              ? `${variant.distanceKm} km`
+                              : variant.name}
+                          </span>
                           {currentPrice && (
-                            <span className="font-semibold text-primary">
+                            <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary">
                               {currentPrice.price}€
                             </span>
                           )}
-                        </span>
+                        </div>
                       );
                     })}
                     {event.variants.length > 3 && (

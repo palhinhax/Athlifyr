@@ -98,9 +98,10 @@ const nextConfig = {
     "ffmpeg-static",
     "@ffprobe-installer/ffprobe",
     "sharp",
+    "@resvg/resvg-js",
   ],
   images: {
-    qualities: [75, 90],
+    qualities: [30, 75, 90],
     // Cache optimized images for 30 days (TTL in seconds)
     minimumCacheTTL: 2592000,
     // Common device sizes for responsive images

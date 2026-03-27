@@ -243,7 +243,7 @@ for (const lang of ["pt", "en", "es", "fr", "de", "it"] as const) {
 
 ## SportTypes
 
-RUNNING, TRAIL, HYROX, CROSSFIT, OCR, BTT, CYCLING, SURF, TRIATHLON, SWIMMING, OTHER
+RUNNING, TRAIL, HYROX, CROSSFIT, OCR, BTT, CYCLING, SURF, TRIATHLON, DUATHLON, AQUATHLON, SWIMMING, OTHER
 
 ## Quick Rules
 

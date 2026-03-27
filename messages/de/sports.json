@@ -21,6 +21,8 @@
     "CYCLING": "Radfahren",
     "SURF": "Surfen",
     "TRIATHLON": "Triathlon",
+    "DUATHLON": "Duathlon",
+    "AQUATHLON": "Aquathlon",
     "SWIMMING": "Schwimmen",
     "OTHER": "Sonstiges"
   }

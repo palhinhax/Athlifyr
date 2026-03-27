@@ -6,6 +6,7 @@ import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { useAppleAuth } from "@/hooks/use-apple-auth";
+import { useFacebookAuth } from "@/hooks/use-facebook-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ const calculatePasswordStrength = (password: string): number => {
 export function SignUpForm() {
   const locale = useLocale();
   const t = useTranslations("signUp");
+  const tCommon = useTranslations("common");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,6 +49,8 @@ export function SignUpForm() {
   const { toast } = useToast();
   const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
   const { signInWithApple, isLoading: isAppleLoading } = useAppleAuth();
+  const { signInWithFacebook, isLoading: isFacebookLoading } =
+    useFacebookAuth();
 
   const passwordStrength = calculatePasswordStrength(password);
 
@@ -153,6 +157,9 @@ export function SignUpForm() {
   const handleAppleSignIn = () =>
     handleSocialSignIn(signInWithApple, "apple", "appleSignIn");
 
+  const handleFacebookSignIn = () =>
+    handleSocialSignIn(signInWithFacebook, "facebook", "facebookSignIn");
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -163,11 +170,14 @@ export function SignUpForm() {
         <SocialAuthButtons
           onGoogleClick={handleGoogleSignIn}
           onAppleClick={handleAppleSignIn}
+          onFacebookClick={handleFacebookSignIn}
           disabled={isLoading}
           isGoogleLoading={isGoogleLoading}
           isAppleLoading={isAppleLoading}
+          isFacebookLoading={isFacebookLoading}
           googleLabel={t("continueWithGoogle")}
           appleLabel={t("continueWithApple")}
+          facebookLabel={t("continueWithFacebook")}
         />
 
         <div className="relative">
@@ -183,7 +193,9 @@ export function SignUpForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">{t("name")}</Label>
+            <Label htmlFor="name">
+              {t("name")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="name"
               name="name"
@@ -193,11 +205,14 @@ export function SignUpForm() {
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
               required
+              aria-required="true"
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">{t("email")}</Label>
+            <Label htmlFor="email">
+              {t("email")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="email"
               name="email"
@@ -207,11 +222,14 @@ export function SignUpForm() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
+              aria-required="true"
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">{t("password")}</Label>
+            <Label htmlFor="password">
+              {t("password")} <span className="text-destructive">*</span>
+            </Label>
             <div className="relative">
               <Input
                 id="password"
@@ -222,6 +240,7 @@ export function SignUpForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
                 required
+                aria-required="true"
                 minLength={6}
                 disabled={isLoading}
                 className="pr-10"
@@ -233,6 +252,11 @@ export function SignUpForm() {
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isLoading}
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                aria-label={
+                  showPassword
+                    ? tCommon("hidePassword")
+                    : tCommon("showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4 text-muted-foreground" />

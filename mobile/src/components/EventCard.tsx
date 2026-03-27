@@ -69,6 +69,18 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           </View>
         )}
 
+        {/* Date Badge Overlay */}
+        <View style={styles.dateBadge}>
+          <Text style={styles.dateBadgeDay}>
+            {new Date(event.startDate).getDate()}
+          </Text>
+          <Text style={styles.dateBadgeMonth}>
+            {new Intl.DateTimeFormat(i18n.language, { month: "short" })
+              .format(new Date(event.startDate))
+              .toUpperCase()}
+          </Text>
+        </View>
+
         {/* Sport Badges */}
         <View style={styles.badgesContainer}>
           {Array.isArray(event.sportTypes) &&
@@ -119,14 +131,14 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
         <View style={styles.infoContainer}>
           {/* Date */}
           <View style={styles.infoRow}>
-            <Calendar size={16} color={theme.colors.mutedForeground} />
-            <Text style={styles.infoText}>{dateStr}</Text>
+            <Calendar size={16} color={theme.colors.primary} />
+            <Text style={styles.infoTextBold}>{dateStr}</Text>
           </View>
 
           {/* Location */}
           <View style={styles.infoRow}>
-            <MapPin size={16} color={theme.colors.mutedForeground} />
-            <Text style={styles.infoText} numberOfLines={1}>
+            <MapPin size={16} color={theme.colors.primary} />
+            <Text style={styles.infoTextBold} numberOfLines={1}>
               {locationStr}
             </Text>
           </View>
@@ -212,7 +224,7 @@ const styles = StyleSheet.create({
   },
   participatingBadge: {
     position: "absolute",
-    top: theme.spacing.sm,
+    top: 44,
     left: theme.spacing.sm,
     flexDirection: "row",
     alignItems: "center",
@@ -284,6 +296,12 @@ const styles = StyleSheet.create({
     color: theme.colors.mutedForeground,
     flex: 1,
   },
+  infoTextBold: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.colors.text,
+    flex: 1,
+  },
   variantsRow: {
     alignItems: "flex-start",
     marginTop: theme.spacing.sm,
@@ -319,5 +337,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     color: theme.colors.mutedForeground,
+  },
+  dateBadge: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignItems: "center",
+  },
+  dateBadgeDay: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: theme.colors.white,
+    lineHeight: 26,
+  },
+  dateBadgeMonth: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: theme.colors.white,
+    lineHeight: 12,
   },
 });

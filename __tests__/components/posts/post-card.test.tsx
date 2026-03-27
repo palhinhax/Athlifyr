@@ -248,7 +248,7 @@ describe("PostCard", () => {
 
     render(<PostCard post={postWithImage} currentUserId="user-2" />);
 
-    const img = screen.getByAltText("Post image");
+    const img = screen.getByRole("img");
     expect(img).toBeInTheDocument();
   });
 

@@ -24,6 +24,8 @@ const sportSlugToType: Record<string, SportType> = {
   cycling: SportType.CYCLING,
   surf: SportType.SURF,
   triathlon: SportType.TRIATHLON,
+  duathlon: SportType.DUATHLON,
+  aquathlon: SportType.AQUATHLON,
   swimming: SportType.SWIMMING,
 };
 

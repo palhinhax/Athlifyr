@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { useAppleAuth } from "@/hooks/use-apple-auth";
+import { useFacebookAuth } from "@/hooks/use-facebook-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,7 @@ export function SignInForm({
   showDemoUsers = false,
 }: Readonly<SignInFormProps>) {
   const t = useTranslations("signIn");
+  const tCommon = useTranslations("common");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -73,6 +75,8 @@ export function SignInForm({
   const { toast } = useToast();
   const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
   const { signInWithApple, isLoading: isAppleLoading } = useAppleAuth();
+  const { signInWithFacebook, isLoading: isFacebookLoading } =
+    useFacebookAuth();
 
   const handleDemoLogin = async (userKey: keyof typeof DEMO_USERS) => {
     setDemoLoading(userKey);
@@ -171,6 +175,9 @@ export function SignInForm({
   const handleAppleSignIn = () =>
     handleSocialSignIn(signInWithApple, "appleSignIn");
 
+  const handleFacebookSignIn = () =>
+    handleSocialSignIn(signInWithFacebook, "facebookSignIn");
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -235,11 +242,14 @@ export function SignInForm({
         <SocialAuthButtons
           onGoogleClick={handleGoogleSignIn}
           onAppleClick={handleAppleSignIn}
+          onFacebookClick={handleFacebookSignIn}
           disabled={isLoading}
           isGoogleLoading={isGoogleLoading}
           isAppleLoading={isAppleLoading}
+          isFacebookLoading={isFacebookLoading}
           googleLabel={t("continueWithGoogle")}
           appleLabel={t("continueWithApple")}
+          facebookLabel={t("continueWithFacebook")}
         />
 
         <div className="relative">
@@ -255,7 +265,9 @@ export function SignInForm({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">{t("email")}</Label>
+            <Label htmlFor="email">
+              {t("email")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="email"
               name="email"
@@ -265,12 +277,15 @@ export function SignInForm({
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
+              aria-required="true"
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">{t("password")}</Label>
+              <Label htmlFor="password">
+                {t("password")} <span className="text-destructive">*</span>
+              </Label>
               <Link
                 href="/auth/forgot-password"
                 className="text-sm text-primary hover:underline"
@@ -288,6 +303,7 @@ export function SignInForm({
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
                 required
+                aria-required="true"
                 disabled={isLoading}
                 className="pr-10"
               />
@@ -298,6 +314,11 @@ export function SignInForm({
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isLoading}
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                aria-label={
+                  showPassword
+                    ? tCommon("hidePassword")
+                    : tCommon("showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4 text-muted-foreground" />

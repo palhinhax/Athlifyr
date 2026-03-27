@@ -52,6 +52,7 @@ import {
   type VenuePromoPayload,
   type GiveawayPromoPayload,
   type AppDownloadPayload,
+  type AppDownloadPlatform,
   type AthliChatPromoPayload,
   type GiveawayWinnerPayload,
   type Background,
@@ -247,9 +248,8 @@ export default function InstagramGeneratorPage() {
     "Inscreve-te diretamente",
     "Acompanha os resultados",
   ]);
-  const [t13BadgeUrl, setT13BadgeUrl] = useState(
-    "/images/badges/google-play-pt.png"
-  );
+  const [t13Platform, setT13Platform] =
+    useState<AppDownloadPlatform>("google-play");
   const [t13LegalText, setT13LegalText] = useState("");
   const [t13Cta, setT13Cta] = useState("Disponível no Google Play");
 
@@ -677,7 +677,8 @@ export default function InstagramGeneratorPage() {
           headline: t13Headline,
           subheadline: t13Subheadline,
           features: t13Features.filter((s) => s.trim()),
-          badgeUrl: t13BadgeUrl,
+          platform: t13Platform,
+          badgeUrl: `/badges/${t13Platform}/pt.svg`,
           legalText: t13LegalText || undefined,
           cta: t13Cta || undefined,
           background,
@@ -1143,13 +1144,13 @@ export default function InstagramGeneratorPage() {
                 headline={t13Headline}
                 subheadline={t13Subheadline}
                 features={t13Features}
-                badgeUrl={t13BadgeUrl}
+                platform={t13Platform}
                 legalText={t13LegalText}
                 cta={t13Cta}
                 onHeadlineChange={setT13Headline}
                 onSubheadlineChange={setT13Subheadline}
                 onFeaturesChange={setT13Features}
-                onBadgeUrlChange={setT13BadgeUrl}
+                onPlatformChange={setT13Platform}
                 onLegalTextChange={setT13LegalText}
                 onCtaChange={setT13Cta}
               />

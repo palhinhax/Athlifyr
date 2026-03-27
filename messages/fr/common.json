@@ -2,6 +2,8 @@
   "common": {
     "appName": "Athlifyr",
     "skipToMainContent": "Aller au contenu principal",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",
@@ -127,6 +129,8 @@
     "CYCLING": "Cyclisme",
     "SURF": "Surf",
     "TRIATHLON": "Triathlon",
+    "DUATHLON": "Duathlon",
+    "AQUATHLON": "Aquathlon",
     "SWIMMING": "Natation",
     "OTHER": "Autres"
   },

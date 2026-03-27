@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Mail } from "lucide-react";
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("forgotPassword");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -36,20 +38,19 @@ export function ForgotPasswordForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erro ao enviar email");
+        throw new Error(data.error || t("errors.sendFailed"));
       }
 
       setIsSubmitted(true);
       toast({
-        title: "Email enviado",
-        description:
-          "Verifica a tua caixa de entrada para recuperar a password",
+        title: t("toast.sent"),
+        description: t("toast.sentDesc"),
       });
     } catch (error) {
       toast({
-        title: "Erro",
+        title: t("errors.error"),
         description:
-          error instanceof Error ? error.message : "Erro ao enviar email",
+          error instanceof Error ? error.message : t("errors.sendFailed"),
         variant: "destructive",
       });
     } finally {
@@ -64,24 +65,26 @@ export function ForgotPasswordForm() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Mail className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle>Verifica o teu email</CardTitle>
+          <CardTitle>{t("submitted.title")}</CardTitle>
           <CardDescription>
-            Enviámos instruções de recuperação para <strong>{email}</strong>
+            {t.rich("submitted.description", {
+              email,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-center text-sm text-muted-foreground">
-            Não recebeste o email? Verifica a pasta de spam ou tenta novamente
-            em alguns minutos.
+            {t("submitted.noEmail")}
           </p>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Link href="/auth/signin">
-            <Button variant="ghost">
+          <Button asChild variant="ghost">
+            <Link href="/auth/signin">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar ao login
-            </Button>
-          </Link>
+              {t("backToLogin")}
+            </Link>
+          </Button>
         </CardFooter>
       </Card>
     );
@@ -90,39 +93,39 @@ export function ForgotPasswordForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Esqueceste a password?</CardTitle>
-        <CardDescription>
-          Introduz o teu email e enviaremos instruções para recuperar a tua
-          conta
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">
+              {t("email")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="teu@email.com"
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
+              aria-required="true"
               disabled={isLoading}
             />
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "A enviar..." : "Enviar instruções"}
+            {isLoading ? t("sending") : t("sendInstructions")}
           </Button>
-          <Link href="/auth/signin" className="w-full">
-            <Button variant="ghost" className="w-full">
+          <Button asChild variant="ghost" className="w-full">
+            <Link href="/auth/signin">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar ao login
-            </Button>
-          </Link>
+              {t("backToLogin")}
+            </Link>
+          </Button>
         </CardFooter>
       </form>
     </Card>

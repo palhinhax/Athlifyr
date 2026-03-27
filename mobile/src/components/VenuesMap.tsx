@@ -1,7 +1,14 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { MapPin } from "lucide-react-native";
+import { MapPin, LocateFixed } from "lucide-react-native";
+import * as Location from "expo-location";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import {
@@ -54,6 +61,28 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
   const [loading, setLoading] = useState(true);
   const [selectedVenue, setSelectedVenue] = useState<MapVenue | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  const cameraRef = useRef<InstanceType<
+    typeof import("@rnmapbox/maps").default.Camera
+  > | null>(null);
+
+  // Request user location on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") return;
+        const loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        setUserLat(loc.coords.latitude);
+        setUserLng(loc.coords.longitude);
+      } catch (error) {
+        console.error("Error getting location for venues map:", error);
+      }
+    })();
+  }, []);
 
   const fetchMapVenues = useCallback(async () => {
     try {
@@ -121,6 +150,16 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
     setSelectedVenue(null);
   }, []);
 
+  const handleCenterOnUser = useCallback(() => {
+    if (userLat != null && userLng != null && cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [userLng, userLat],
+        zoomLevel: 8,
+        animationDuration: 1000,
+      });
+    }
+  }, [userLat, userLng]);
+
   const canShowMap = mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN;
 
   if (loading) {
@@ -157,10 +196,18 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
         onPress={handleClosePreview}
       >
         <Mapbox.Camera
-          centerCoordinate={[-8.0, 39.5]}
-          zoomLevel={6}
+          ref={(ref) => {
+            cameraRef.current = ref;
+          }}
+          centerCoordinate={
+            userLat != null && userLng != null
+              ? [userLng, userLat]
+              : [-8.0, 39.5]
+          }
+          zoomLevel={userLat == null ? 6 : 8}
           animationMode="flyTo"
         />
+        <Mapbox.UserLocation visible animated />
         {venues
           .filter(
             (venue) => venue.latitude !== null && venue.longitude !== null
@@ -198,6 +245,17 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
             );
           })}
       </Mapbox.MapView>
+
+      {/* Center on user button */}
+      {userLat != null && userLng != null && (
+        <TouchableOpacity
+          style={styles.centerButton}
+          onPress={handleCenterOnUser}
+          activeOpacity={0.8}
+        >
+          <LocateFixed size={20} color={theme.colors.primary} />
+        </TouchableOpacity>
+      )}
 
       {/* Service filters */}
       <MapVenueServiceFilter
@@ -287,5 +345,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: theme.colors.text,
+  },
+  centerButton: {
+    position: "absolute",
+    bottom: 16,
+    right: 12,
+    zIndex: 999,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    ...theme.shadows.md,
   },
 });

@@ -21,6 +21,8 @@
     "CYCLING": "Ciclismo",
     "SURF": "Surf",
     "TRIATHLON": "Triatlón",
+    "DUATHLON": "Duatlón",
+    "AQUATHLON": "Acuatlón",
     "SWIMMING": "Natación",
     "OTHER": "Otro"
   },
@@ -115,6 +117,12 @@
       "clearFilters": "Borrar Filtros",
       "eventsCount": "{{count}} eventos"
     },
+    "locationFilter": {
+      "enable": "Activar Ubicación",
+      "disable": "Desactivar Ubicación",
+      "active": "Activa",
+      "radius": "Radio"
+    },
     "featured": "Destacado",
     "giveaway": {
       "badge": "Sorteo",
@@ -154,6 +162,7 @@
       "eventCard": "{{title}}, {{date}}, {{location}}",
       "eventCardParticipating": "{{title}}, {{date}}, {{location}}, participando",
       "listView": "Vista de lista",
+      "gridView": "Vista en cuadrícula",
       "mapView": "Vista de mapa",
       "suggestEvent": "Sugerir un evento",
       "searchEvents": "Buscar eventos",

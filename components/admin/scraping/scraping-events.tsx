@@ -1,0 +1,1156 @@
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Progress } from "@/components/ui/progress";
+import {
+  Search,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ImageIcon,
+  FileText,
+  Trash2,
+  RefreshCw,
+  Sparkles,
+  Send,
+  Loader2,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Upload,
+  GitMerge,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "@/components/ui/use-toast";
+
+interface ScrapedEventListItem {
+  id: string;
+  source_name: string;
+  source_url: string;
+  title: string;
+  city: string | null;
+  country: string;
+  sport_types: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  organizer_name: string | null;
+  image_url: string | null;
+  has_image: boolean;
+  has_ai_output: boolean;
+  documents_count: number;
+  review_status: string;
+  is_hidden: boolean;
+  dedup_status: string | null;
+  last_seen_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface PaginatedResponse {
+  items: ScrapedEventListItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  pending_with_image_total: number;
+}
+
+interface SourceOption {
+  source_name: string;
+  display_name: string;
+}
+
+interface ScrapingEventsProps {
+  sources: SourceOption[];
+  apiUrl: string;
+  onEventSelect: (eventId: string) => void;
+  onEventsChanged: () => void | Promise<void>;
+}
+
+type SortField =
+  | "start_date"
+  | "title"
+  | "source_name"
+  | "created_at"
+  | "review_status";
+type SortDir = "asc" | "desc";
+
+function getReviewVariant(
+  status: string
+): "default" | "secondary" | "destructive" | "outline" {
+  switch (status) {
+    case "approved":
+      return "default";
+    case "pending":
+      return "secondary";
+    case "rejected":
+      return "destructive";
+    default:
+      return "outline";
+  }
+}
+
+function getReviewLabel(status: string, t: (key: string) => string): string {
+  switch (status) {
+    case "pending":
+      return t("events.statusPending");
+    case "approved":
+      return t("events.statusApproved");
+    case "rejected":
+      return t("events.statusRejected");
+    default:
+      return status;
+  }
+}
+
+interface SortIconProps {
+  readonly field: SortField;
+  readonly sortBy: SortField;
+  readonly sortDir: SortDir;
+}
+
+function SortIcon({ field, sortBy, sortDir }: SortIconProps) {
+  if (sortBy !== field)
+    return <ArrowUpDown className="ml-1 h-3 w-3 opacity-40" />;
+  return sortDir === "asc" ? (
+    <ArrowUp className="ml-1 h-3 w-3" />
+  ) : (
+    <ArrowDown className="ml-1 h-3 w-3" />
+  );
+}
+
+export function ScrapingEvents({
+  sources,
+  apiUrl,
+  onEventSelect,
+  onEventsChanged,
+}: Readonly<ScrapingEventsProps>) {
+  const t = useTranslations("admin.scraping");
+
+  // ── Filters ──
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filterSource, setFilterSource] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+
+  // ── Pagination ──
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  // ── Sorting ──
+  const [sortBy, setSortBy] = useState<SortField>("start_date");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  // ── Data ──
+  const [data, setData] = useState<PaginatedResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // ── Action states ──
+  const [actionLoading, setActionLoading] = useState<Record<string, string>>(
+    {}
+  );
+  const [uploadingImageFor, setUploadingImageFor] = useState<string | null>(
+    null
+  );
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const pendingUploadEventId = useRef<string | null>(null);
+  const [showGenerateAll, setShowGenerateAll] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{
+    current: number;
+    total: number;
+    running: boolean;
+  } | null>(null);
+
+  // ── Manual dedup selection ──
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [markingDedup, setMarkingDedup] = useState(false);
+
+  // ── Debounce search ──
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Clear selection on page/filter change
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page, pageSize, debouncedSearch, filterSource, filterStatus]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleManualDedup = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length !== 2) return;
+    setMarkingDedup(true);
+    try {
+      const res = await fetch(
+        `${apiUrl}/dedup/pairs?event_a_id=${ids[0]}&event_b_id=${ids[1]}`,
+        { method: "POST" }
+      );
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as {
+          detail?: string;
+        };
+        if (res.status === 409) {
+          toast({ title: t("events.manualDedupAlreadyExists") });
+          setSelectedIds(new Set());
+          return;
+        }
+        throw new Error(err.detail ?? `HTTP ${res.status}`);
+      }
+      toast({ title: t("events.manualDedupSuccess") });
+      setSelectedIds(new Set());
+      fetchEvents();
+    } catch (err) {
+      toast({
+        title: t("events.manualDedupError"),
+        description: err instanceof Error ? err.message : String(err),
+        variant: "destructive",
+      });
+    } finally {
+      setMarkingDedup(false);
+    }
+  };
+
+  // ── Fetch events ──
+  const fetchEvents = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.set("page", page.toString());
+      params.set("page_size", pageSize.toString());
+      params.set("sort_by", sortBy);
+      params.set("sort_dir", sortDir);
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (filterSource !== "all") params.set("source_name", filterSource);
+      if (filterStatus !== "all") params.set("review_status", filterStatus);
+
+      const [eventsRes, dedupRes] = await Promise.all([
+        fetch(`${apiUrl}/events?${params.toString()}`),
+        fetch(`${apiUrl}/dedup/pairs?page_size=100`),
+      ]);
+
+      if (eventsRes.ok) {
+        const json: PaginatedResponse = await eventsRes.json();
+
+        // Build dedup status map from pairs (fetch all pages)
+        if (dedupRes.ok) {
+          const dedupMap = new Map<string, string>();
+          const priority: Record<string, number> = {
+            confirmed: 3,
+            pending: 2,
+            rejected: 1,
+          };
+
+          const addPairs = (
+            items: {
+              event_a: { id: string };
+              event_b: { id: string };
+              status: string;
+            }[]
+          ) => {
+            for (const pair of items) {
+              for (const eid of [pair.event_a.id, pair.event_b.id]) {
+                const existing = dedupMap.get(eid);
+                if (
+                  !existing ||
+                  (priority[pair.status] ?? 0) > (priority[existing] ?? 0)
+                ) {
+                  dedupMap.set(eid, pair.status);
+                }
+              }
+            }
+          };
+
+          const firstPage = (await dedupRes.json()) as {
+            items: {
+              event_a: { id: string };
+              event_b: { id: string };
+              status: string;
+            }[];
+            total: number;
+            page_size: number;
+          };
+          addPairs(firstPage.items);
+
+          // Fetch remaining pages if needed
+          const totalPages = Math.ceil(firstPage.total / firstPage.page_size);
+          if (totalPages > 1) {
+            const remainingPages = Array.from(
+              { length: totalPages - 1 },
+              (_, i) => i + 2
+            );
+            const results = await Promise.all(
+              remainingPages.map((pg) =>
+                fetch(`${apiUrl}/dedup/pairs?page_size=100&page=${pg}`).then(
+                  (r) => (r.ok ? r.json() : null)
+                )
+              )
+            );
+            for (const res of results) {
+              if (res?.items) addPairs(res.items);
+            }
+          }
+
+          // Enrich events with dedup_status
+          for (const ev of json.items) {
+            ev.dedup_status = dedupMap.get(ev.id) ?? null;
+          }
+        }
+
+        setData(json);
+      }
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    apiUrl,
+    page,
+    pageSize,
+    sortBy,
+    sortDir,
+    debouncedSearch,
+    filterSource,
+    filterStatus,
+  ]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  // ── Helpers ──
+  const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : 1;
+  const events = data?.items ?? [];
+  const pendingWithImageTotal = data?.pending_with_image_total ?? 0;
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "—";
+    return new Date(dateStr).toLocaleDateString();
+  };
+
+  const handleFilterChange = (setter: (v: string) => void, value: string) => {
+    setter(value);
+    setPage(1);
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(Number(value));
+    setPage(1);
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortBy === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortDir("asc");
+    }
+    setPage(1);
+  };
+
+  // ── Actions ──
+  const handleAction = async (
+    eventId: string,
+    action: "delete" | "rescrape" | "generate" | "analyze" | "submit"
+  ) => {
+    setActionLoading((prev) => ({ ...prev, [eventId]: action }));
+    try {
+      let url: string;
+      let method = "POST";
+      if (action === "delete") {
+        url = `${apiUrl}/events/${eventId}`;
+        method = "DELETE";
+      } else if (action === "analyze") {
+        url = `${apiUrl}/events/${eventId}/generate?submit=false`;
+      } else if (action === "submit") {
+        url = `${apiUrl}/events/${eventId}/submit`;
+      } else {
+        url = `${apiUrl}/events/${eventId}/${action}`;
+      }
+      const res = await fetch(url, { method });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Failed" }));
+        console.error(`${action} failed:`, err.detail);
+        toast({
+          title: t(`events.${action}Error` as Parameters<typeof t>[0], {
+            defaultValue: "Erro",
+          }),
+          description: err.detail,
+          variant: "destructive",
+        });
+        return;
+      }
+      // Check for dedup_pending — successful response but blocked submission
+      const body = (await res.json().catch(() => null)) as {
+        status?: string;
+        message?: string;
+        dedup_pairs?: number;
+      } | null;
+      if (body?.status === "dedup_pending") {
+        toast({
+          title: t("events.dedupPendingTitle"),
+          description: body.message ?? t("events.dedupPendingDesc"),
+          variant: "destructive",
+        });
+      } else if (action === "generate" || action === "analyze") {
+        toast({ title: t("events.generateSuccess") });
+      }
+      fetchEvents();
+      onEventsChanged();
+    } catch (error) {
+      console.error(`Error ${action}:`, error);
+    } finally {
+      setActionLoading((prev) => {
+        const next = { ...prev };
+        delete next[eventId];
+        return next;
+      });
+    }
+  };
+
+  const handleGenerateAll = async () => {
+    setShowGenerateAll(false);
+
+    // Fetch all pending events with images
+    const params = new URLSearchParams();
+    params.set("review_status", "pending");
+    params.set("has_image", "true");
+    params.set("page_size", "100");
+    params.set("page", "1");
+    params.set("sort_by", "start_date");
+    params.set("sort_dir", "asc");
+
+    let eligible: ScrapedEventListItem[] = [];
+    try {
+      const res = await fetch(`${apiUrl}/events?${params.toString()}`);
+      if (res.ok) {
+        const json: PaginatedResponse = await res.json();
+        eligible = json.items;
+      }
+    } catch {
+      console.error("Failed to fetch eligible events for bulk generate");
+      return;
+    }
+
+    if (eligible.length === 0) return;
+
+    setBulkProgress({ current: 0, total: eligible.length, running: true });
+
+    for (let i = 0; i < eligible.length; i++) {
+      setBulkProgress({ current: i, total: eligible.length, running: true });
+      try {
+        const res = await fetch(`${apiUrl}/events/${eligible[i].id}/generate`, {
+          method: "POST",
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: "Failed" }));
+          console.error(
+            `Generate failed for ${eligible[i].title}:`,
+            err.detail
+          );
+        } else {
+          await fetch(`${apiUrl}/events/${eligible[i].id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ review_status: "approved" }),
+          });
+        }
+      } catch (error) {
+        console.error(`Error generating ${eligible[i].title}:`, error);
+      }
+    }
+
+    setBulkProgress({
+      current: eligible.length,
+      total: eligible.length,
+      running: false,
+    });
+    fetchEvents();
+    onEventsChanged();
+    setTimeout(() => setBulkProgress(null), 3000);
+  };
+
+  const handleImageClick = (eventId: string) => {
+    pendingUploadEventId.current = eventId;
+    imageInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const eventId = pendingUploadEventId.current;
+    if (!file || !eventId) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        variant: "destructive",
+        title: t("events.uploadInvalidFile"),
+      });
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: t("events.uploadFileTooLarge"),
+      });
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingImageFor(eventId);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "events");
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      const uploadData = await uploadRes.json();
+      const imageUrl: string = uploadData.file.url;
+
+      const patchRes = await fetch(`${apiUrl}/events/${eventId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_url: imageUrl }),
+      });
+
+      if (!patchRes.ok) throw new Error("Patch failed");
+
+      toast({ title: t("events.uploadSuccess") });
+      fetchEvents();
+      onEventsChanged();
+    } catch {
+      toast({
+        variant: "destructive",
+        title: t("events.uploadError"),
+      });
+    } finally {
+      setUploadingImageFor(null);
+      pendingUploadEventId.current = null;
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  };
+
+  return (
+    <>
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
+      <Card>
+        {/* ── Header ── */}
+        <div className="border-b p-4">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">{t("events.title")}</h3>
+              {data && (
+                <p className="text-sm text-muted-foreground">
+                  {t("events.totalCount", { count: data.total })}
+                </p>
+              )}
+            </div>
+            {pendingWithImageTotal > 0 && (
+              <Button
+                size="sm"
+                onClick={() => setShowGenerateAll(true)}
+                disabled={bulkProgress?.running}
+              >
+                {bulkProgress?.running ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                {t("events.generateAll", { count: pendingWithImageTotal })}
+              </Button>
+            )}
+          </div>
+
+          {/* Bulk progress */}
+          {bulkProgress && (
+            <div className="mb-4 space-y-2">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>
+                  {bulkProgress.running
+                    ? t("events.generatingProgress", {
+                        current: bulkProgress.current + 1,
+                        total: bulkProgress.total,
+                      })
+                    : t("events.generatingDone", {
+                        total: bulkProgress.total,
+                      })}
+                </span>
+                <span>
+                  {Math.round(
+                    (bulkProgress.current / bulkProgress.total) * 100
+                  )}
+                  %
+                </span>
+              </div>
+              <Progress
+                value={(bulkProgress.current / bulkProgress.total) * 100}
+              />
+            </div>
+          )}
+
+          {/* ── Filters ── */}
+          <div className="flex flex-wrap gap-3">
+            <div className="relative w-full sm:min-w-[200px] sm:flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t("events.searchPlaceholder")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select
+              value={filterSource}
+              onValueChange={(v) => handleFilterChange(setFilterSource, v)}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder={t("events.allSources")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("events.allSources")}</SelectItem>
+                {sources.map((s) => (
+                  <SelectItem key={s.source_name} value={s.source_name}>
+                    {s.display_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filterStatus}
+              onValueChange={(v) => handleFilterChange(setFilterStatus, v)}
+            >
+              <SelectTrigger className="w-[calc(50%-6px)] sm:w-[160px]">
+                <SelectValue placeholder={t("events.allStatuses")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("events.allStatuses")}</SelectItem>
+                <SelectItem value="pending">
+                  {t("events.statusPending")}
+                </SelectItem>
+                <SelectItem value="approved">
+                  {t("events.statusApproved")}
+                </SelectItem>
+                <SelectItem value="rejected">
+                  {t("events.statusRejected")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={handlePageSizeChange}
+            >
+              <SelectTrigger className="w-[calc(50%-6px)] sm:w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* ── Table ── */}
+        <div className="relative">
+          {loading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          )}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10" />
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("title")}
+                    >
+                      {t("events.name")}
+                      <SortIcon
+                        field="title"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("source_name")}
+                    >
+                      {t("events.source")}
+                      <SortIcon
+                        field="source_name"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>{t("events.media")}</TableHead>
+                  <TableHead>{t("events.location")}</TableHead>
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("start_date")}
+                    >
+                      {t("events.date")}
+                      <SortIcon
+                        field="start_date"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>
+                    <button
+                      className="flex items-center font-medium"
+                      onClick={() => handleSort("review_status")}
+                    >
+                      {t("events.status")}
+                      <SortIcon
+                        field="review_status"
+                        sortBy={sortBy}
+                        sortDir={sortDir}
+                      />
+                    </button>
+                  </TableHead>
+                  <TableHead>{t("events.visibility")}</TableHead>
+                  <TableHead>{t("events.actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {events.length === 0 && !loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={9}
+                      className="py-12 text-center text-muted-foreground"
+                    >
+                      {t("events.empty")}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  events.map((event) => (
+                    <TableRow
+                      key={event.id}
+                      className={
+                        selectedIds.has(event.id) ? "bg-primary/5" : undefined
+                      }
+                    >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(event.id)}
+                          onCheckedChange={() => toggleSelect(event.id)}
+                          aria-label={t("events.selectEvent")}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[250px]">
+                          <div className="truncate font-medium">
+                            {event.title}
+                          </div>
+                          {event.organizer_name && (
+                            <div className="text-xs text-muted-foreground">
+                              {event.organizer_name}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{event.source_name}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            className="group relative cursor-pointer rounded p-0.5 transition-colors hover:bg-muted"
+                            title={
+                              event.has_image
+                                ? t("events.replaceImage")
+                                : t("events.addImage")
+                            }
+                            disabled={uploadingImageFor === event.id}
+                            onClick={() => handleImageClick(event.id)}
+                          >
+                            {uploadingImageFor === event.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            ) : (
+                              <>
+                                <ImageIcon
+                                  className={`h-4 w-4 transition-opacity group-hover:opacity-0 ${event.has_image ? "text-green-500" : "text-muted-foreground/30"}`}
+                                />
+                                <Upload className="absolute inset-0 m-auto h-4 w-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
+                              </>
+                            )}
+                          </button>
+                          <div className="flex items-center gap-0.5">
+                            <FileText
+                              className={`h-4 w-4 ${event.documents_count > 0 ? "text-blue-500" : "text-muted-foreground/30"}`}
+                              aria-label={
+                                event.documents_count > 0
+                                  ? t("events.documentsCount", {
+                                      count: event.documents_count,
+                                    })
+                                  : t("events.noDocs")
+                              }
+                            />
+                            {event.documents_count > 0 && (
+                              <span className="text-xs text-blue-500">
+                                {event.documents_count}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {event.city || "—"}, {event.country}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {formatDate(event.start_date)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            variant={getReviewVariant(event.review_status)}
+                          >
+                            {getReviewLabel(event.review_status, t)}
+                          </Badge>
+                          {event.dedup_status && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span
+                                    className={`inline-flex cursor-default ${
+                                      event.dedup_status === "confirmed"
+                                        ? "text-red-500"
+                                        : event.dedup_status === "pending"
+                                          ? "text-yellow-500"
+                                          : "text-muted-foreground/60"
+                                    }`}
+                                  >
+                                    <GitMerge className="h-3.5 w-3.5" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {t(
+                                    `events.dedup.${event.dedup_status}` as Parameters<
+                                      typeof t
+                                    >[0]
+                                  )}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {event.is_hidden ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-green-500" />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onEventSelect(event.id)}
+                          >
+                            {t("events.view")}
+                          </Button>
+                          {/* Analisar + Submeter */}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.generateAndSubmit")}
+                            disabled={
+                              !event.has_image || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "generate")}
+                          >
+                            {actionLoading[event.id] === "generate" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-4 w-4" />
+                            )}
+                          </Button>
+                          {/* Só Analisar */}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.analyzeOnly")}
+                            disabled={
+                              !event.has_image || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "analyze")}
+                          >
+                            {actionLoading[event.id] === "analyze" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                          {/* Só Submeter */}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.submitOnly")}
+                            disabled={
+                              !event.has_ai_output || !!actionLoading[event.id]
+                            }
+                            onClick={() => handleAction(event.id, "submit")}
+                          >
+                            {actionLoading[event.id] === "submit" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            title={t("events.rescrape")}
+                            disabled={!!actionLoading[event.id]}
+                            onClick={() => handleAction(event.id, "rescrape")}
+                          >
+                            {actionLoading[event.id] === "rescrape" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            title={t("events.delete")}
+                            disabled={!!actionLoading[event.id]}
+                            onClick={() => handleAction(event.id, "delete")}
+                          >
+                            {actionLoading[event.id] === "delete" ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <a
+                            href={event.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              title={t("events.openSource")}
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                          </a>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* ── Pagination ── */}
+        <div className="flex flex-col items-center gap-2 border-t px-4 py-3 sm:flex-row sm:justify-between">
+          <span className="text-sm text-muted-foreground">
+            {data && data.total > 0
+              ? t("events.pagination", {
+                  from: (page - 1) * pageSize + 1,
+                  to: Math.min(page * pageSize, data.total),
+                  total: data.total,
+                })
+              : t("events.empty")}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              onClick={() => setPage(1)}
+              disabled={page <= 1}
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="px-2 text-sm text-muted-foreground">
+              {t("events.pageOf", { page, totalPages })}
+            </span>
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              onClick={() => setPage(totalPages)}
+              disabled={page >= totalPages}
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      <AlertDialog open={showGenerateAll} onOpenChange={setShowGenerateAll}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("events.generateAllTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("events.generateAllDescription", {
+                count: pendingWithImageTotal,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t("events.generateAllCancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleGenerateAll}>
+              <Sparkles className="mr-2 h-4 w-4" />
+              {t("events.generateAllConfirm", {
+                count: pendingWithImageTotal,
+              })}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Manual dedup floating bar ── */}
+      {selectedIds.size >= 2 && (
+        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center">
+          <div className="flex items-center gap-3 rounded-lg border bg-background px-4 py-3 shadow-lg">
+            <GitMerge className="h-4 w-4 text-yellow-500" />
+            <span className="text-sm font-medium">
+              {t("events.manualDedupSelected", {
+                count: selectedIds.size,
+              })}
+            </span>
+            {selectedIds.size === 2 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                className="gap-1.5"
+                onClick={handleManualDedup}
+                disabled={markingDedup}
+              >
+                {markingDedup ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <GitMerge className="h-3.5 w-3.5" />
+                )}
+                {t("events.manualDedupAction")}
+              </Button>
+            )}
+            {selectedIds.size > 2 && (
+              <span className="text-xs text-muted-foreground">
+                {t("events.manualDedupMax2")}
+              </span>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              {t("events.manualDedupClear")}
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

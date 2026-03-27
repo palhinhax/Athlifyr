@@ -69,7 +69,10 @@ export function EventHeader({
   locale = "en",
 }: EventHeaderProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const hasImage = Boolean(imageUrl && imageUrl !== "/placeholder-event.jpg");
+  const safeImageUrl = imageUrl && imageUrl !== "null" ? imageUrl : null;
+  const hasImage = Boolean(
+    safeImageUrl && safeImageUrl !== "/placeholder-event.jpg"
+  );
 
   const t = useTranslations("events");
   const tCommon = useTranslations("common");
@@ -82,7 +85,7 @@ export function EventHeader({
   return (
     <>
       <HeroBackground
-        image={imageUrl || "/placeholder-event.jpg"}
+        image={safeImageUrl || "/placeholder-event.jpg"}
         height="custom"
         customHeight="280px"
         clickable={hasImage}
@@ -93,29 +96,31 @@ export function EventHeader({
         {/* Top Navigation Buttons */}
         <div className="z-30 py-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <Link href="/events">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white"
-              >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white"
+              asChild
+            >
+              <Link href="/events">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">{t("backToEvents")}</span>
                 <span className="sm:hidden">{tCommon("back")}</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <div className="flex flex-wrap items-center gap-2">
               {(isAdmin || isOrganizer) && event && (
-                <Link href={`/events/${event.slug}/manage`}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white"
-                  >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white"
+                  asChild
+                >
+                  <Link href={`/events/${event.slug}/manage`}>
                     <Settings2 className="mr-2 h-4 w-4" />
                     Gerir evento
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               )}
               {event && (
                 <ShareButton
@@ -170,7 +175,7 @@ export function EventHeader({
       {/* Lightbox */}
       {hasImage && isLightboxOpen && (
         <EventImageLightbox
-          imageUrl={imageUrl!}
+          imageUrl={safeImageUrl!}
           title={title}
           onClose={() => setIsLightboxOpen(false)}
         />

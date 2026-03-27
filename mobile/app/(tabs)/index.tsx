@@ -1,6 +1,7 @@
 import {
   View,
   Text,
+  SectionList,
   FlatList,
   StyleSheet,
   ActivityIndicator,
@@ -8,15 +9,26 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { EventCard } from "@/src/components/EventCard";
+import { EventCardGrid } from "@/src/components/EventCardGrid";
 import { EventsMap } from "@/src/components/EventsMap";
-import { SuggestEventModal } from "@/src/components/SuggestEventModal";
-import { useAuthStore } from "@/src/lib/auth-store";
-import { Search, LayoutGrid, Map, Plus } from "lucide-react-native";
+import { MapSportFilter } from "@/src/components/MapSportFilter";
+import { DateRangeSlider } from "@/src/components/DateRangeSlider";
+
+import { useEventSportFilter } from "@/src/hooks/useEventSportFilter";
+import { useLocationFilter } from "@/src/hooks/useLocationFilter";
+import {
+  Search,
+  List,
+  LayoutGrid,
+  Map,
+  Star,
+  Calendar,
+} from "lucide-react-native";
 import type { Event } from "@/src/types";
 
 interface EventsResponse {
@@ -31,17 +43,64 @@ interface EventsResponse {
 }
 
 export default function EventsScreen() {
-  const { t } = useTranslation();
-  const { isAuthenticated } = useAuthStore();
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [suggestModalVisible, setSuggestModalVisible] = useState(false);
+  const { t, i18n } = useTranslation();
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "map">("grid");
   const [events, setEvents] = useState<Event[]>([]);
+  const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const {
+    selectedSports,
+    onSportsChange,
+    loaded: filterLoaded,
+  } = useEventSportFilter();
+  const {
+    locationEnabled,
+    radiusKm,
+    userLat,
+    userLng,
+    loaded: locationLoaded,
+    onLocationToggle: handleLocationToggle,
+    onRadiusChange: handleRadiusChange,
+    onLocationObtained: handleLocationObtained,
+  } = useLocationFilter();
+  const [startDays, setStartDays] = useState(0);
+  const [endDays, setEndDays] = useState(60);
+  const [debouncedRadius, setDebouncedRadius] = useState(100);
+  const [debouncedStartDays, setDebouncedStartDays] = useState(0);
+  const [debouncedEndDays, setDebouncedEndDays] = useState(60);
+
+  // Sync debounced radius with persisted value once loaded
+  useEffect(() => {
+    setDebouncedRadius(radiusKm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationLoaded]);
+
+  // Debounce radius changes so the API isn't called on every drag pixel
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRadius(radiusKm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [radiusKm]);
+
+  // Debounce date range changes for the map API
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedStartDays(startDays);
+      setDebouncedEndDays(endDays);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [startDays, endDays]);
+
+  const handleDateRangeChange = useCallback((start: number, end: number) => {
+    setStartDays(start);
+    setEndDays(end);
+  }, []);
 
   // Debounce search
   useEffect(() => {
@@ -59,9 +118,20 @@ export default function EventsScreen() {
         const params = new URLSearchParams();
         params.append("page", pageNum.toString());
         params.append("pageSize", "20");
+        params.append("featured", "false");
 
         if (debouncedSearch) {
           params.append("search", debouncedSearch);
+        }
+
+        if (selectedSports.length > 0) {
+          params.append("sportTypes", selectedSports.join(","));
+        }
+
+        if (locationEnabled && userLat !== null && userLng !== null) {
+          params.append("lat", userLat.toString());
+          params.append("lng", userLng.toString());
+          params.append("radiusKm", debouncedRadius.toString());
         }
 
         const response = await api.get<EventsResponse>(
@@ -85,12 +155,49 @@ export default function EventsScreen() {
         setRefreshing(false);
       }
     },
-    [debouncedSearch]
+    [
+      debouncedSearch,
+      selectedSports,
+      locationEnabled,
+      userLat,
+      userLng,
+      debouncedRadius,
+    ]
   );
 
   useEffect(() => {
-    fetchEvents(1, false);
-  }, [debouncedSearch, fetchEvents]);
+    if (filterLoaded && locationLoaded) {
+      fetchEvents(1, false);
+    }
+  }, [
+    debouncedSearch,
+    selectedSports,
+    filterLoaded,
+    locationLoaded,
+    fetchEvents,
+    locationEnabled,
+    userLat,
+    userLng,
+    debouncedRadius,
+  ]);
+
+  // Fetch featured events
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append("featured", "true");
+        params.append("pageSize", "50");
+        const response = await api.get<EventsResponse>(
+          `/events?${params.toString()}`
+        );
+        setFeaturedEvents(response.data.events);
+      } catch {
+        // Featured section is non-critical
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -128,6 +235,80 @@ export default function EventsScreen() {
     );
   };
 
+  // Filter featured events to match active filters
+  const filteredFeatured = useMemo(() => {
+    let filtered = featuredEvents;
+
+    if (selectedSports.length > 0) {
+      filtered = filtered.filter((e) =>
+        e.sportTypes?.some((s: string) => selectedSports.includes(s))
+      );
+    }
+
+    // Hide featured section when location filter is active
+    if (locationEnabled && userLat !== null && userLng !== null) {
+      return [];
+    }
+
+    return filtered;
+  }, [featuredEvents, selectedSports, locationEnabled, userLat, userLng]);
+
+  // Group events by month/year for section headers
+  const sections = useMemo(() => {
+    const groups: { key: string; title: string; data: Event[] }[] = [];
+    for (const event of events) {
+      const date = new Date(event.startDate);
+      const key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, "0")}`;
+      const title = new Intl.DateTimeFormat(i18n.language, {
+        month: "long",
+        year: "numeric",
+      }).format(date);
+
+      const existing = groups.find((g) => g.key === key);
+      if (existing) {
+        existing.data.push(event);
+      } else {
+        groups.push({ key, title, data: [event] });
+      }
+    }
+    return groups;
+  }, [events, i18n.language]);
+
+  // Flatten sections into rows of 2 for grid view
+  type GridHeader = { type: "header"; title: string; count: number };
+  type GridRow = { type: "row"; left: Event; right: Event | null };
+  type GridItem = GridHeader | GridRow;
+
+  const gridData = useMemo<GridItem[]>(() => {
+    const items: GridItem[] = [];
+    for (const section of sections) {
+      items.push({
+        type: "header",
+        title: section.title,
+        count: section.data.length,
+      });
+      for (let i = 0; i < section.data.length; i += 2) {
+        items.push({
+          type: "row",
+          left: section.data[i],
+          right: section.data[i + 1] ?? null,
+        });
+      }
+    }
+    return items;
+  }, [sections]);
+
+  const featuredPairs = useMemo(() => {
+    const pairs: { left: Event; right: Event | null }[] = [];
+    for (let i = 0; i < filteredFeatured.length; i += 2) {
+      pairs.push({
+        left: filteredFeatured[i],
+        right: filteredFeatured[i + 1] ?? null,
+      });
+    }
+    return pairs;
+  }, [filteredFeatured]);
+
   return (
     <View style={styles.container}>
       {/* Search Bar + View Toggle */}
@@ -156,6 +337,26 @@ export default function EventsScreen() {
             <TouchableOpacity
               style={[
                 styles.viewToggleButton,
+                viewMode === "grid" && styles.viewToggleButtonActive,
+              ]}
+              onPress={() => setViewMode("grid")}
+              activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityLabel={t("events.a11y.gridView")}
+              accessibilityState={{ selected: viewMode === "grid" }}
+            >
+              <LayoutGrid
+                size={18}
+                color={
+                  viewMode === "grid"
+                    ? theme.colors.white
+                    : theme.colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.viewToggleButton,
                 viewMode === "list" && styles.viewToggleButtonActive,
               ]}
               onPress={() => setViewMode("list")}
@@ -164,7 +365,7 @@ export default function EventsScreen() {
               accessibilityLabel={t("events.a11y.listView")}
               accessibilityState={{ selected: viewMode === "list" }}
             >
-              <LayoutGrid
+              <List
                 size={18}
                 color={
                   viewMode === "list"
@@ -197,9 +398,41 @@ export default function EventsScreen() {
         </View>
       </View>
 
+      {/* Sport filter - always visible below search */}
+      <View style={styles.filterWrapper}>
+        <MapSportFilter
+          selectedSports={selectedSports}
+          onSportsChange={onSportsChange}
+          inline
+          showLocationFilter={viewMode !== "map"}
+          locationEnabled={locationEnabled}
+          latitude={userLat}
+          longitude={userLng}
+          radiusKm={radiusKm}
+          onLocationToggle={handleLocationToggle}
+          onRadiusChange={handleRadiusChange}
+          onLocationObtained={handleLocationObtained}
+        />
+      </View>
+
       {/* Content */}
       {viewMode === "map" ? (
-        <EventsMap searchQuery={debouncedSearch} />
+        <>
+          <DateRangeSlider
+            startDays={startDays}
+            endDays={endDays}
+            onRangeChange={handleDateRangeChange}
+          />
+          <EventsMap
+            searchQuery={debouncedSearch}
+            selectedSports={selectedSports}
+            onSportsChange={onSportsChange}
+            startDays={debouncedStartDays}
+            endDays={debouncedEndDays}
+            userLatitude={userLat}
+            userLongitude={userLng}
+          />
+        </>
       ) : loading && events.length === 0 ? (
         <View style={styles.loadingContainer} accessibilityRole="none">
           <ActivityIndicator
@@ -208,44 +441,130 @@ export default function EventsScreen() {
             accessibilityLabel={t("events.a11y.loadingEvents")}
           />
         </View>
+      ) : viewMode === "grid" ? (
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={gridData}
+            renderItem={({ item }) => {
+              if (item.type === "header") {
+                return (
+                  <View style={styles.gridSectionHeader}>
+                    <Calendar size={16} color={theme.colors.primary} />
+                    <Text style={styles.gridSectionTitle}>{item.title}</Text>
+                    <View style={styles.sectionLine} />
+                    <Text style={styles.sectionCount}>{item.count}</Text>
+                  </View>
+                );
+              }
+              return (
+                <View style={styles.gridRow}>
+                  <View style={styles.gridItem}>
+                    <EventCardGrid event={item.left} />
+                  </View>
+                  {item.right ? (
+                    <View style={styles.gridItem}>
+                      <EventCardGrid event={item.right} />
+                    </View>
+                  ) : (
+                    <View style={styles.gridItem} />
+                  )}
+                </View>
+              );
+            }}
+            keyExtractor={(item) =>
+              item.type === "header"
+                ? `header-${item.title}`
+                : `row-${item.left.id}`
+            }
+            contentContainerStyle={styles.gridContent}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListHeaderComponent={
+              filteredFeatured.length > 0 && !debouncedSearch ? (
+                <View style={styles.featuredSection}>
+                  <View style={styles.gridSectionHeader}>
+                    <Star size={16} color="#facc15" fill="#facc15" />
+                    <Text style={styles.gridSectionTitle}>
+                      {t("events.featured")}
+                    </Text>
+                    <View style={styles.sectionLine} />
+                  </View>
+                  {featuredPairs.map((pair) => (
+                    <View key={pair.left.id} style={styles.gridRow}>
+                      <View style={styles.gridItem}>
+                        <EventCardGrid event={pair.left} />
+                      </View>
+                      {pair.right ? (
+                        <View style={styles.gridItem}>
+                          <EventCardGrid event={pair.right} />
+                        </View>
+                      ) : (
+                        <View style={styles.gridItem} />
+                      )}
+                    </View>
+                  ))}
+                </View>
+              ) : null
+            }
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmpty}
+            accessibilityLabel={t("events.a11y.eventsList")}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.colors.primary}
+              />
+            }
+          />
+        </View>
       ) : (
-        <FlatList
-          data={events}
-          renderItem={({ item }) => <EventCard event={item} />}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={renderEmpty}
-          accessibilityLabel={t("events.a11y.eventsList")}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={theme.colors.primary}
-            />
-          }
-        />
+        <View style={{ flex: 1 }}>
+          <SectionList
+            sections={sections}
+            renderItem={({ item }) => <EventCard event={item} />}
+            renderSectionHeader={({ section }) => (
+              <View style={styles.sectionHeader}>
+                <Calendar size={18} color={theme.colors.primary} />
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+                <View style={styles.sectionLine} />
+                <Text style={styles.sectionCount}>{section.data.length}</Text>
+              </View>
+            )}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListHeaderComponent={
+              filteredFeatured.length > 0 && !debouncedSearch ? (
+                <View style={styles.featuredSection}>
+                  <View style={styles.sectionHeader}>
+                    <Star size={18} color="#facc15" fill="#facc15" />
+                    <Text style={styles.sectionTitle}>
+                      {t("events.featured")}
+                    </Text>
+                    <View style={styles.sectionLine} />
+                  </View>
+                  {filteredFeatured.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </View>
+              ) : null
+            }
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmpty}
+            accessibilityLabel={t("events.a11y.eventsList")}
+            stickySectionHeadersEnabled={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.colors.primary}
+              />
+            }
+          />
+        </View>
       )}
-
-      {/* FAB - Suggest Event */}
-      {isAuthenticated && (
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => setSuggestModalVisible(true)}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel={t("events.a11y.suggestEvent")}
-        >
-          <Plus size={24} color={theme.colors.white} strokeWidth={2.5} />
-        </TouchableOpacity>
-      )}
-
-      <SuggestEventModal
-        visible={suggestModalVisible}
-        onClose={() => setSuggestModalVisible(false)}
-      />
     </View>
   );
 }
@@ -260,6 +579,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+  },
+  filterWrapper: {
+    position: "relative",
+    zIndex: 10,
   },
   searchRow: {
     flexDirection: "row",
@@ -291,8 +614,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   viewToggleButton: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colors.backgroundSecondary,
@@ -328,16 +651,56 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: theme.spacing.xl,
   },
-  fab: {
-    position: "absolute",
-    bottom: theme.spacing.lg,
-    right: theme.spacing.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: theme.colors.primary,
-    justifyContent: "center",
+  sectionHeader: {
+    flexDirection: "row",
     alignItems: "center",
-    ...theme.shadows.lg,
+    gap: 8,
+    paddingVertical: theme.spacing.sm,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.xs,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: theme.colors.text,
+    textTransform: "capitalize",
+  },
+  sectionLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+  sectionCount: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+  },
+  featuredSection: {
+    marginBottom: theme.spacing.sm,
+  },
+  gridContent: {
+    padding: theme.spacing.sm,
+  },
+  gridRow: {
+    flexDirection: "row",
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  gridItem: {
+    flex: 1,
+  },
+  gridSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: theme.spacing.xs,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+    paddingHorizontal: 4,
+  },
+  gridSectionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.text,
+    textTransform: "capitalize",
   },
 });

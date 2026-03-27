@@ -32,8 +32,10 @@ describe("SocialAuthButtons", () => {
   const defaultProps = {
     onGoogleClick: jest.fn(),
     onAppleClick: jest.fn(),
+    onFacebookClick: jest.fn(),
     googleLabel: "Continue with Google",
     appleLabel: "Continue with Apple",
+    facebookLabel: "Continue with Facebook",
   };
 
   it("renders Google and Apple buttons with labels", () => {

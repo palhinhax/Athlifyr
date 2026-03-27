@@ -29,8 +29,12 @@ function getPerformanceType(
     return PerformanceEntryType.RUN;
   }
 
-  // Triathlon - consider as RUN for now (mainly running focused)
-  if (sportTypes.includes(SportType.TRIATHLON)) {
+  // Triathlon/Duathlon/Aquathlon - consider as RUN for now (mainly running focused)
+  if (
+    sportTypes.includes(SportType.TRIATHLON) ||
+    sportTypes.includes(SportType.DUATHLON) ||
+    sportTypes.includes(SportType.AQUATHLON)
+  ) {
     return PerformanceEntryType.RUN;
   }
 

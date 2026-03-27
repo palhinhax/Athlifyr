@@ -3,17 +3,21 @@
 import { useTranslations, useLocale } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Loader2, Map, LayoutGrid, Search, Plus } from "lucide-react";
-import { calculateDistance } from "@/lib/geolocation";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+  Fragment,
+} from "react";
+import { Loader2, Map, LayoutGrid, Search, Calendar, Star } from "lucide-react";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { HeroBackground } from "@/components/hero-background";
 import { DateRangeSlider } from "@/components/date-range-slider";
-import { SuggestEventDialog } from "@/components/suggest-event-dialog";
-import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
 // Event hero images
@@ -52,37 +56,10 @@ interface PaginationInfo {
   hasMore: boolean;
 }
 
-function filterByDistance(
-  events: EventWithVariants[],
-  filters: EventsFiltersType
-): EventWithVariants[] {
-  if (
-    !filters.locationEnabled ||
-    !filters.userLat ||
-    !filters.userLng ||
-    !filters.distanceRadius ||
-    filters.searchQuery
-  ) {
-    return events;
-  }
-  return events.filter((event) => {
-    if (!event.latitude || !event.longitude) return false;
-    const distance = calculateDistance(
-      filters.userLat!,
-      filters.userLng!,
-      event.latitude,
-      event.longitude
-    );
-    return distance <= filters.distanceRadius!;
-  });
-}
-
 export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
   const locale = useLocale();
-  const { data: session } = useSession();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [isSuggestOpen, setIsSuggestOpen] = useState(false);
   const [filters, setFilters] = useState<EventsFiltersType>({
     sports: [],
     distanceRadius: null,
@@ -93,6 +70,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
   });
   const [localSearchQuery, setLocalSearchQuery] = useState<string>("");
   const [events, setEvents] = useState<EventWithVariants[]>([]);
+  const [featuredEvents, setFeaturedEvents] = useState<EventWithVariants[]>([]);
   const [participatingEventIds, setParticipatingEventIds] = useState<
     Set<string>
   >(new Set());
@@ -173,6 +151,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         // Add pagination parameters
         params.append("page", page.toString());
         params.append("pageSize", "12");
+        params.append("featured", "false"); // Exclude featured from paginated list
 
         // Add sport filters
         if (filters.sports && filters.sports.length > 0) {
@@ -182,6 +161,19 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         // Add search query
         if (filters.searchQuery) {
           params.append("search", filters.searchQuery);
+        }
+
+        // Add location-based filtering (server-side)
+        if (
+          filters.locationEnabled &&
+          filters.userLat &&
+          filters.userLng &&
+          filters.distanceRadius &&
+          !filters.searchQuery
+        ) {
+          params.append("lat", filters.userLat.toString());
+          params.append("lng", filters.userLng.toString());
+          params.append("radiusKm", filters.distanceRadius.toString());
         }
 
         // Fetch events
@@ -195,12 +187,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           pagination: PaginationInfo;
         } = await response.json();
 
-        let fetchedEvents = data.events;
-
-        // Filter by distance if location is enabled (but not when searching or in map mode)
-        if (viewMode === "list") {
-          fetchedEvents = filterByDistance(fetchedEvents, filters);
-        }
+        const fetchedEvents = data.events;
 
         // Append or replace events
         if (append) {
@@ -241,11 +228,35 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         setLoadingMore(false);
       }
     },
-    [filters, userId, viewMode]
+    [filters, userId]
   );
+
+  // Fetch featured events once on mount and when sport filters change
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append("featured", "true");
+        params.append("pageSize", "50");
+        if (filters.sports && filters.sports.length > 0) {
+          filters.sports.forEach((sport) => params.append("sports", sport));
+        }
+        const res = await fetch(`/api/events?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFeaturedEvents(data.events);
+        }
+      } catch {
+        // Featured section is non-critical
+      }
+    };
+    fetchFeatured();
+  }, [filters.sports]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
+    // Clear the dedup guard so a fresh fetch with new filters is not skipped
+    fetchingPageRef.current = null;
     setPagination((prev) => ({ ...prev, page: 1 }));
     fetchEvents(1, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -340,20 +351,83 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
       );
     }
 
+    // Group events by month/year for visual separation
+    const eventsByMonth = events.reduce<
+      { key: string; label: string; events: EventWithVariants[] }[]
+    >((groups, event) => {
+      const date = new Date(event.startDate);
+      const key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, "0")}`;
+      const label = new Intl.DateTimeFormat(locale, {
+        month: "long",
+        year: "numeric",
+      }).format(date);
+
+      const existing = groups.find((g) => g.key === key);
+      if (existing) {
+        existing.events.push(event);
+      } else {
+        groups.push({ key, label, events: [event] });
+      }
+      return groups;
+    }, []);
+
     return (
       <>
         <div className="mb-4 text-sm text-muted-foreground">
           {t("filters.resultsCount", { count: pagination.totalCount })}
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              isParticipating={participatingEventIds.has(event.id)}
-            />
+
+        {/* Featured Events Section - only shown when not searching */}
+        {featuredEvents.length > 0 && !filters.searchQuery && (
+          <section className="mb-8">
+            <div className="mb-4 flex items-center gap-3">
+              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <h3 className="text-lg font-semibold text-foreground">
+                {t("featured")}
+              </h3>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {featuredEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  isParticipating={participatingEventIds.has(event.id)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <nav
+          aria-label={t("filters.resultsCount", {
+            count: pagination.totalCount,
+          })}
+        >
+          {eventsByMonth.map((group) => (
+            <Fragment key={group.key}>
+              <div className="mb-4 mt-8 flex items-center gap-3 first:mt-0">
+                <Calendar className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold capitalize text-foreground">
+                  {group.label}
+                </h3>
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-sm text-muted-foreground">
+                  {group.events.length}
+                </span>
+              </div>
+              <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {group.events.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    isParticipating={participatingEventIds.has(event.id)}
+                  />
+                ))}
+              </div>
+            </Fragment>
           ))}
-        </div>
+        </nav>
 
         {pagination.hasMore && (
           <div
@@ -433,18 +507,6 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               <Map className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">{t("viewMap")}</span>
             </Button>
-            {session?.user && (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setIsSuggestOpen(true)}
-                className="px-3 md:px-4"
-                title={t("suggest.title")}
-              >
-                <Plus className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">{t("suggest.button")}</span>
-              </Button>
-            )}
           </div>
         </div>
 
@@ -453,11 +515,6 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           {renderMainContent()}
         </div>
       </section>
-
-      <SuggestEventDialog
-        open={isSuggestOpen}
-        onOpenChange={setIsSuggestOpen}
-      />
     </div>
   );
 }

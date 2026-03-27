@@ -61,12 +61,27 @@ export function EventCard({
       >
         <div className="relative h-48 w-full">
           <Image
-            src={event.imageUrl || "/placeholder-event.jpg"}
+            src={
+              event.imageUrl && event.imageUrl !== "null"
+                ? event.imageUrl
+                : "/placeholder-event.jpg"
+            }
             alt={event.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover"
           />
+          {/* Date badge overlay */}
+          <div className="absolute left-0 top-0 flex flex-col items-center bg-primary px-3 py-1.5 text-primary-foreground shadow-md">
+            <span className="text-2xl font-bold leading-tight">
+              {new Date(event.startDate).getDate()}
+            </span>
+            <span className="text-[10px] font-medium uppercase leading-tight">
+              {new Intl.DateTimeFormat(locale, { month: "short" }).format(
+                new Date(event.startDate)
+              )}
+            </span>
+          </div>
           <div className="absolute right-2 top-2 flex flex-wrap justify-end gap-1">
             {Array.isArray(event.sportTypes) &&
               event.sportTypes.map((sportType) => (
@@ -108,14 +123,14 @@ export function EventCard({
           <h3 className="mb-2 line-clamp-2 text-lg font-bold">{event.title}</h3>
           <div className="space-y-1 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>
+              <Calendar className="h-4 w-4 shrink-0 text-primary" />
+              <span className="font-medium text-foreground">
                 {formatDateRange(event.startDate, event.endDate, locale)}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span>
+              <MapPin className="h-4 w-4 shrink-0 text-primary" />
+              <span className="font-medium text-foreground">
                 {event.city}, {event.country}
               </span>
             </div>

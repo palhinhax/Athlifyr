@@ -18,7 +18,8 @@
     "analysisLiftTitle": "Analyse de Soulevé",
     "analysisLiftDescription": "Suivi de barre avec analyse de trajectoire, vitesse et détection de répétitions.",
     "appStoreAlt": "Télécharger dans l'App Store",
-    "googlePlayAlt": "Disponible sur Google Play"
+    "googlePlayAlt": "Disponible sur Google Play",
+    "browseBySport": "Explorer par Sport"
   },
   "promo": {
     "intro": "Athlifyr",

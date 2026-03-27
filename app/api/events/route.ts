@@ -258,6 +258,14 @@ export async function GET(request: NextRequest) {
             triathlonSegments: {
               orderBy: { order: "asc" },
             },
+            pricingPhases: {
+              select: {
+                startDate: true,
+                endDate: true,
+                price: true,
+                currency: true,
+              },
+            },
           },
           orderBy: {
             startDate: "asc",

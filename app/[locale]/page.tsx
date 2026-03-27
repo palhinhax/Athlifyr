@@ -23,7 +23,18 @@ async function getUpcomingEvents(country: string) {
       country: country,
     },
     include: {
-      variants: true,
+      variants: {
+        include: {
+          pricingPhases: {
+            select: {
+              startDate: true,
+              endDate: true,
+              price: true,
+              currency: true,
+            },
+          },
+        },
+      },
       _count: {
         select: {
           comments: true,

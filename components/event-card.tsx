@@ -13,14 +13,32 @@ import {
   Gift,
 } from "lucide-react";
 import { formatDateRange } from "@/lib/event-utils";
-import type { Event, EventVariant } from "@prisma/client";
+import type { Event, EventVariant, PricingPhase } from "@prisma/client";
 import { useLocale, useTranslations } from "next-intl";
 import { SportBadge } from "@/components/sport-badge";
 import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
+type VariantWithPricing = EventVariant & {
+  pricingPhases?: Pick<
+    PricingPhase,
+    "startDate" | "endDate" | "price" | "currency"
+  >[];
+};
+
+function getCurrentPrice(
+  variant: VariantWithPricing
+): { price: number; currency: string } | null {
+  if (!variant.pricingPhases || variant.pricingPhases.length === 0) return null;
+  const now = new Date();
+  const active = variant.pricingPhases.find(
+    (p) => new Date(p.startDate) <= now && new Date(p.endDate) >= now
+  );
+  return active ? { price: active.price, currency: active.currency } : null;
+}
+
 interface EventCardProps {
   event: Event & {
-    variants?: EventVariant[];
+    variants?: VariantWithPricing[];
     _count?: { comments: number; giveaways?: number };
   };
   isParticipating?: boolean;
@@ -140,16 +158,24 @@ export function EventCard({
                 <div className="mt-2 flex items-start gap-2">
                   <Route className="mt-0.5 h-4 w-4" />
                   <div className="flex flex-wrap gap-1">
-                    {event.variants.slice(0, 3).map((variant) => (
-                      <span
-                        key={variant.id}
-                        className="inline-flex items-center rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
-                      >
-                        {variant.distanceKm
-                          ? `${variant.distanceKm} km`
-                          : variant.name}
-                      </span>
-                    ))}
+                    {event.variants.slice(0, 3).map((variant) => {
+                      const currentPrice = getCurrentPrice(variant);
+                      return (
+                        <span
+                          key={variant.id}
+                          className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                        >
+                          {variant.distanceKm
+                            ? `${variant.distanceKm} km`
+                            : variant.name}
+                          {currentPrice && (
+                            <span className="text-accent">
+                              {currentPrice.price}€
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
                     {event.variants.length > 3 && (
                       <span className="inline-flex items-center rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
                         +{event.variants.length - 3}

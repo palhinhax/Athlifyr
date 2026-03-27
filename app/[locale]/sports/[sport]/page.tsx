@@ -57,7 +57,18 @@ async function getSportEvents(sportType: SportType, locale: Language) {
           language: locale,
         },
       },
-      variants: true,
+      variants: {
+        include: {
+          pricingPhases: {
+            select: {
+              startDate: true,
+              endDate: true,
+              price: true,
+              currency: true,
+            },
+          },
+        },
+      },
       _count: {
         select: {
           comments: true,

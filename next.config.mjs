@@ -98,6 +98,7 @@ const nextConfig = {
     "ffmpeg-static",
     "@ffprobe-installer/ffprobe",
     "sharp",
+    "@resvg/resvg-js",
   ],
   images: {
     qualities: [30, 75, 90],

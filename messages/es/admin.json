@@ -19,7 +19,8 @@
         "conversations": "Conversaciones IA",
         "appleSettings": "Apple",
         "credits": "Créditos",
-        "scraping": "Scraping"
+        "scraping": "Scraping",
+        "social": "Social"
       }
     },
     "contacts": {
@@ -799,6 +800,99 @@
           "scraping": "Scraping",
           "manual": "Manual"
         }
+      }
+    },
+    "social": {
+      "title": "Redes Sociales",
+      "description": "Gestionar publicaciones de Instagram y generación automática de contenido",
+      "refresh": "Actualizar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "close": "Cerrar",
+      "success": "Éxito",
+      "error": "Error",
+      "createPost": "Nueva Publicación",
+      "createPostDescription": "Crea una nueva publicación de Instagram. Se guardará como borrador para revisión.",
+      "posts": {
+        "title": "Publicaciones",
+        "all": "Todas",
+        "allTypes": "Todos los Tipos",
+        "deleteTitle": "¿Eliminar Publicación?",
+        "deleteDescription": "Esta acción no se puede deshacer. La publicación se eliminará permanentemente.",
+        "empty": "Sin publicaciones",
+        "emptyDescription": "Genera borradores a partir de eventos o crea una publicación personalizada.",
+        "status": {
+          "DRAFT": "Borrador",
+          "SCHEDULED": "Programada",
+          "PUBLISHING": "Publicando",
+          "PUBLISHED": "Publicada",
+          "FAILED": "Fallida",
+          "CANCELLED": "Cancelada"
+        },
+        "type": {
+          "EVENT": "Evento",
+          "WEEKLY_ROUNDUP": "Resumen Semanal",
+          "LAST_CALL": "Última Llamada",
+          "RESULTS": "Resultados",
+          "CUSTOM": "Personalizada"
+        }
+      },
+      "actions": {
+        "view": "Ver Detalles",
+        "publish": "Publicar",
+        "cancel": "Cancelar",
+        "retry": "Reintentar",
+        "duplicate": "Duplicar",
+        "edit": "Editar",
+        "save": "Guardar",
+        "publishSuccess": "Publicación enviada para publicación",
+        "cancelSuccess": "Publicación cancelada",
+        "retrySuccess": "Publicación restablecida como borrador para revisión",
+        "duplicateSuccess": "Publicación duplicada",
+        "deleteSuccess": "Publicación eliminada",
+        "editSuccess": "Publicación actualizada",
+        "createSuccess": "Publicación creada"
+      },
+      "form": {
+        "type": "Tipo de Publicación",
+        "title": "Título",
+        "titlePlaceholder": "Título interno para referencia...",
+        "caption": "Leyenda",
+        "captionPlaceholder": "Escribe la leyenda para Instagram...",
+        "hashtags": "Hashtags",
+        "hashtagsHint": "Separados por comas, sin #",
+        "imageUrl": "URL de la Imagen"
+      },
+      "detail": {
+        "created": "Creada",
+        "scheduled": "Programada para",
+        "published": "Publicada en",
+        "error": "Error",
+        "createdBy": "Creada por",
+        "retries": "Reintentos",
+        "logs": "Registro de Actividad"
+      },
+      "generate": {
+        "title": "Generar Borradores Automáticos",
+        "description": "Crea automáticamente borradores de publicaciones a partir de los próximos eventos. Todos los posts se guardan como borradores para revisión antes de publicar.",
+        "days": "Período",
+        "daysLabel": "días",
+        "sport": "Deporte",
+        "allSports": "Todos los Deportes",
+        "events": "Posts de Eventos",
+        "weekly": "Resumen Semanal",
+        "lastCall": "Última Llamada",
+        "compilation": "Compilación Semanal"
+      },
+      "schedule": {
+        "title": "Programar Publicación",
+        "dateTime": "Fecha y Hora",
+        "hint": "Deja vacío para crear como borrador",
+        "confirm": "Programar",
+        "success": "Publicación programada con éxito",
+        "futureRequired": "La fecha debe ser en el futuro",
+        "selectDate": "Selecciona una fecha primero",
+        "generateAndSchedule": "Generar y programar para la fecha seleccionada:"
       }
     }
   }

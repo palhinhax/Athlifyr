@@ -17,6 +17,15 @@
     },
     "app/api/analyses/lift/route.ts": {
       "maxDuration": 120
+    },
+    "app/api/cron/publish-scheduled/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/cron/weekly-social/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/admin/social/generate/route.ts": {
+      "maxDuration": 120
     }
   },
   "crons": [
@@ -27,6 +36,14 @@
     {
       "path": "/api/cron/recalculate-hybrid-scores",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-social",
+      "schedule": "0 9 * * 3"
+    },
+    {
+      "path": "/api/cron/publish-scheduled",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

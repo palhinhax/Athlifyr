@@ -194,7 +194,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google" || account?.provider === "apple") {
+      if (
+        account?.provider === "google" ||
+        account?.provider === "apple" ||
+        account?.provider === "facebook"
+      ) {
         await normalizeOAuthEmail(user, account, profile);
 
         if (account.provider === "google") {

@@ -19,7 +19,8 @@
         "conversations": "AI Conversations",
         "appleSettings": "Apple",
         "credits": "Credits",
-        "scraping": "Scraping"
+        "scraping": "Scraping",
+        "social": "Social"
       }
     },
     "contacts": {
@@ -799,6 +800,99 @@
           "scraping": "Scraping",
           "manual": "Manual"
         }
+      }
+    },
+    "social": {
+      "title": "Social Media",
+      "description": "Manage Instagram posts and automated content generation",
+      "refresh": "Refresh",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "close": "Close",
+      "success": "Success",
+      "error": "Error",
+      "createPost": "New Post",
+      "createPostDescription": "Create a new Instagram post. It will be saved as a draft for review.",
+      "posts": {
+        "title": "Posts",
+        "all": "All",
+        "allTypes": "All Types",
+        "deleteTitle": "Delete Post?",
+        "deleteDescription": "This action cannot be undone. The post will be permanently deleted.",
+        "empty": "No posts",
+        "emptyDescription": "Generate drafts from events or create a custom post.",
+        "status": {
+          "DRAFT": "Draft",
+          "SCHEDULED": "Scheduled",
+          "PUBLISHING": "Publishing",
+          "PUBLISHED": "Published",
+          "FAILED": "Failed",
+          "CANCELLED": "Cancelled"
+        },
+        "type": {
+          "EVENT": "Event",
+          "WEEKLY_ROUNDUP": "Weekly Roundup",
+          "LAST_CALL": "Last Call",
+          "RESULTS": "Results",
+          "CUSTOM": "Custom"
+        }
+      },
+      "actions": {
+        "view": "View Details",
+        "publish": "Publish",
+        "cancel": "Cancel",
+        "retry": "Retry",
+        "duplicate": "Duplicate",
+        "edit": "Edit",
+        "save": "Save",
+        "publishSuccess": "Post sent for publishing",
+        "cancelSuccess": "Post cancelled",
+        "retrySuccess": "Post reset to draft for review",
+        "duplicateSuccess": "Post duplicated",
+        "deleteSuccess": "Post deleted",
+        "editSuccess": "Post updated",
+        "createSuccess": "Post created"
+      },
+      "form": {
+        "type": "Post Type",
+        "title": "Title",
+        "titlePlaceholder": "Internal title for reference...",
+        "caption": "Caption",
+        "captionPlaceholder": "Write your Instagram caption...",
+        "hashtags": "Hashtags",
+        "hashtagsHint": "Separated by commas, without #",
+        "imageUrl": "Image URL"
+      },
+      "detail": {
+        "created": "Created",
+        "scheduled": "Scheduled for",
+        "published": "Published at",
+        "error": "Error",
+        "createdBy": "Created by",
+        "retries": "Retries",
+        "logs": "Activity Log"
+      },
+      "generate": {
+        "title": "Auto-Generate Drafts",
+        "description": "Automatically create draft posts from upcoming events. All posts are saved as drafts for review before publishing.",
+        "days": "Period",
+        "daysLabel": "days",
+        "sport": "Sport",
+        "allSports": "All Sports",
+        "events": "Event Posts",
+        "weekly": "Weekly Roundup",
+        "lastCall": "Last Call",
+        "compilation": "Weekly Compilation"
+      },
+      "schedule": {
+        "title": "Schedule Post",
+        "dateTime": "Date & Time",
+        "hint": "Leave empty to create as draft",
+        "confirm": "Schedule",
+        "success": "Post scheduled successfully",
+        "futureRequired": "The date must be in the future",
+        "selectDate": "Please select a date first",
+        "generateAndSchedule": "Generate & Schedule for the selected date:"
       }
     }
   }

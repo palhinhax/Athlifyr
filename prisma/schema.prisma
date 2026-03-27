@@ -98,6 +98,9 @@ model User {
   // Admin notes (event/venue submission requests from chat)
   adminNotes AdminNote[]
 
+  // Social posts created/approved by this admin
+  socialPosts SocialPost[] @relation("SocialPostCreator")
+
   // LiveRace - Event registrations
   registrations Registration[]
 
@@ -2969,4 +2972,74 @@ model VenueSettlementBatch {
   @@index([periodStart, periodEnd])
   @@index([idempotencyKey])
   @@index([createdAt])
+}
+
+// ─── Social Post Management ──────────────────────────────────────────────────
+// Instagram auto-posting system with admin workflow (draft → review → publish)
+
+model SocialPost {
+  id              String           @id @default(cuid())
+  platform        SocialPlatform   @default(INSTAGRAM)
+  type            SocialPostType
+  status          SocialPostStatus @default(DRAFT)
+  title           String           // Internal title for admin reference
+  caption         String           @db.Text
+  hashtags        String[]         // Array of hashtag strings (without #)
+  callToAction    String?          // e.g. "Inscreve-te em athlifyr.com"
+  imageUrl        String?          // Primary image URL (from event or uploaded)
+  mediaUrls       String[]         // Additional media URLs (carousel)
+  scheduledFor    DateTime?        // When to publish
+  publishedAt     DateTime?        // When actually published
+  externalPostId  String?          // Instagram/platform post ID after publishing
+  externalUrl     String?          // Permalink on Instagram
+  errorMessage    String?          @db.Text // Last error if failed
+  retryCount      Int              @default(0)
+  metadata        Json?            // Flexible: event IDs, generation params, etc.
+  createdById     String?          // Admin who created/approved
+  createdBy       User?            @relation("SocialPostCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  logs            SocialPostLog[]
+
+  @@index([status])
+  @@index([type])
+  @@index([platform])
+  @@index([scheduledFor])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model SocialPostLog {
+  id        String   @id @default(cuid())
+  postId    String
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  action    String     // e.g. "created", "scheduled", "published", "failed", "cancelled", "edited"
+  details   Json?      // Extra context (error messages, old/new values, etc.)
+  userId    String?    // Who performed the action (null for system actions)
+  createdAt DateTime   @default(now())
+
+  @@index([postId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+}
+
+enum SocialPostType {
+  EVENT           // Single event promotion
+  WEEKLY_ROUNDUP  // Weekly events compilation
+  LAST_CALL       // Registration closing soon
+  RESULTS         // Race results
+  CUSTOM          // Manual/custom post
+}
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  CANCELLED
 }

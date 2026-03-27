@@ -161,25 +161,28 @@ export function EventCard({
                     {event.variants.slice(0, 3).map((variant) => {
                       const currentPrice = getCurrentPrice(variant);
                       return (
-                        <div
+                        <span
                           key={variant.id}
-                          className="inline-flex items-center gap-1.5"
+                          className="inline-flex items-center rounded-full border border-border/60 bg-card px-2.5 py-1 shadow-sm"
                         >
-                          <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                          <span className="text-xs font-semibold text-foreground">
                             {variant.distanceKm
                               ? `${variant.distanceKm} km`
                               : variant.name}
                           </span>
                           {currentPrice && (
-                            <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary">
-                              {currentPrice.price}€
-                            </span>
+                            <>
+                              <span className="mx-1.5 h-3 w-px bg-border" />
+                              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                {currentPrice.price}€
+                              </span>
+                            </>
                           )}
-                        </div>
+                        </span>
                       );
                     })}
                     {event.variants.length > 3 && (
-                      <span className="inline-flex items-center rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border/60 bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-sm">
                         +{event.variants.length - 3}
                       </span>
                     )}

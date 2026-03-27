@@ -201,11 +201,23 @@ export default function EventsMapClient({
 
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
+    // Add geolocation control: centers on user location + blue dot
+    const geolocateControl = new mapboxgl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      fitBoundsOptions: { maxZoom: 8 },
+      trackUserLocation: true,
+      showUserHeading: true,
+    });
+    map.addControl(geolocateControl, "bottom-right");
+
     map.on("moveend", handleBoundsChange);
     map.on("zoomend", handleBoundsChange);
 
-    // Initial fetch after map loads
-    map.on("load", handleBoundsChange);
+    // Initial fetch after map loads, then trigger geolocation
+    map.on("load", () => {
+      handleBoundsChange();
+      geolocateControl.trigger();
+    });
 
     return () => {
       // Clear all markers

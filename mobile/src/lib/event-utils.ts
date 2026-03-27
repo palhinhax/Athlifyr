@@ -12,6 +12,8 @@ export const sportTypeIcons: Record<string, string> = {
   CYCLING: "🚴",
   SURF: "🏄",
   TRIATHLON: "🏊‍♂️",
+  DUATHLON: "🏃‍♂️🚴",
+  AQUATHLON: "🏊🏃",
   SWIMMING: "🏊",
   OTHER: "📍",
 };
@@ -30,6 +32,8 @@ export const sportTypeColors: Record<string, string> = {
   BTT: "#84CC16",
   SWIMMING: "#06B6D4",
   TRIATHLON: "#8B5CF6",
+  DUATHLON: "#7C3AED",
+  AQUATHLON: "#2DD4BF",
   HYROX: "#EF4444",
   CROSSFIT: "#F97316",
   OCR: "#A855F7",
@@ -64,6 +68,8 @@ export const SPORT_TYPES = [
   "CYCLING",
   "SURF",
   "TRIATHLON",
+  "DUATHLON",
+  "AQUATHLON",
   "SWIMMING",
   "OTHER",
 ] as const;

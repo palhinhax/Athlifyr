@@ -11,6 +11,8 @@ import {
   HomeNoEventsCta,
 } from "@/components/home-client-tracking";
 import { AppDownloadSection } from "@/components/app-download-section";
+import { sportIcons } from "@/lib/sport-config";
+import { Link } from "@/i18n/routing";
 
 async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({
@@ -37,6 +39,22 @@ async function getUpcomingEvents(country: string) {
     take: 6,
   });
 }
+
+const SPORT_LINKS = [
+  { slug: "trail", type: "TRAIL" },
+  { slug: "running", type: "RUNNING" },
+  { slug: "cycling", type: "CYCLING" },
+  { slug: "btt", type: "BTT" },
+  { slug: "triathlon", type: "TRIATHLON" },
+  { slug: "duathlon", type: "DUATHLON" },
+  { slug: "aquathlon", type: "AQUATHLON" },
+  { slug: "swimming", type: "SWIMMING" },
+  { slug: "hyrox", type: "HYROX" },
+  { slug: "crossfit", type: "CROSSFIT" },
+  { slug: "ocr", type: "OCR" },
+  { slug: "walking", type: "WALKING" },
+  { slug: "surf", type: "SURF" },
+] as const;
 
 async function getEventImageUrls(): Promise<string[]> {
   const events = await prisma.event.findMany({
@@ -73,6 +91,7 @@ export default async function Home({
 
   const t = await getTranslations({ locale, namespace: "home" });
   const tNav = await getTranslations({ locale, namespace: "nav" });
+  const tCommon = await getTranslations({ locale, namespace: "common" });
 
   // Get user's country from headers
   const headersList = await headers();
@@ -106,6 +125,27 @@ export default async function Home({
 
       {/* App Download Section */}
       <AppDownloadSection />
+
+      {/* Browse by Sport */}
+      <section className="container py-6 md:py-12">
+        <h2 className="mb-6 text-xl font-bold sm:text-2xl md:text-3xl">
+          {t("browseBySport")}
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {SPORT_LINKS.map(({ slug, type }) => (
+            <Link
+              key={slug}
+              href={`/sports/${slug}`}
+              className="flex items-center gap-2.5 rounded-lg border bg-card p-3 transition-colors hover:border-accent hover:bg-accent/5"
+            >
+              <span className="text-xl">{sportIcons[type]}</span>
+              <span className="text-sm font-medium">
+                {tCommon(`sports.${type}`)}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* Upcoming Events */}
       <section className="container py-6 md:py-12">

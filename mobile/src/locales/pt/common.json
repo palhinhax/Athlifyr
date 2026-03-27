@@ -21,6 +21,8 @@
     "CYCLING": "Ciclismo",
     "SURF": "Surf",
     "TRIATHLON": "Triatlo",
+    "DUATHLON": "Duatlo",
+    "AQUATHLON": "Aquatlo",
     "SWIMMING": "Natação",
     "OTHER": "Outro"
   },
@@ -114,6 +116,12 @@
       "applyFilters": "Aplicar Filtros",
       "clearFilters": "Limpar Filtros",
       "eventsCount": "{{count}} eventos"
+    },
+    "locationFilter": {
+      "enable": "Ativar Localização",
+      "disable": "Desativar Localização",
+      "active": "Ativa",
+      "radius": "Raio"
     },
     "featured": "Destaque",
     "giveaway": {

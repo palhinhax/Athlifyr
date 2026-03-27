@@ -12,7 +12,6 @@ import {
   Fragment,
 } from "react";
 import { Loader2, Map, LayoutGrid, Search, Calendar, Star } from "lucide-react";
-import { calculateDistance } from "@/lib/geolocation";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
 import { Button } from "@/components/ui/button";
@@ -55,31 +54,6 @@ interface PaginationInfo {
   totalCount: number;
   totalPages: number;
   hasMore: boolean;
-}
-
-function filterByDistance(
-  events: EventWithVariants[],
-  filters: EventsFiltersType
-): EventWithVariants[] {
-  if (
-    !filters.locationEnabled ||
-    !filters.userLat ||
-    !filters.userLng ||
-    !filters.distanceRadius ||
-    filters.searchQuery
-  ) {
-    return events;
-  }
-  return events.filter((event) => {
-    if (!event.latitude || !event.longitude) return false;
-    const distance = calculateDistance(
-      filters.userLat!,
-      filters.userLng!,
-      event.latitude,
-      event.longitude
-    );
-    return distance <= filters.distanceRadius!;
-  });
 }
 
 export function EventsPageClient({ userId }: EventsPageClientProps) {
@@ -189,6 +163,19 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           params.append("search", filters.searchQuery);
         }
 
+        // Add location-based filtering (server-side)
+        if (
+          filters.locationEnabled &&
+          filters.userLat &&
+          filters.userLng &&
+          filters.distanceRadius &&
+          !filters.searchQuery
+        ) {
+          params.append("lat", filters.userLat.toString());
+          params.append("lng", filters.userLng.toString());
+          params.append("radiusKm", filters.distanceRadius.toString());
+        }
+
         // Fetch events
         const response = await fetch(`/api/events?${params}`);
         if (!response.ok) {
@@ -200,12 +187,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           pagination: PaginationInfo;
         } = await response.json();
 
-        let fetchedEvents = data.events;
-
-        // Filter by distance if location is enabled (but not when searching or in map mode)
-        if (viewMode === "list") {
-          fetchedEvents = filterByDistance(fetchedEvents, filters);
-        }
+        const fetchedEvents = data.events;
 
         // Append or replace events
         if (append) {
@@ -246,7 +228,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         setLoadingMore(false);
       }
     },
-    [filters, userId, viewMode]
+    [filters, userId]
   );
 
   // Fetch featured events once on mount and when sport filters change

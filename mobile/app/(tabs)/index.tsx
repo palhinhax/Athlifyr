@@ -14,6 +14,11 @@ import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { EventCard } from "@/src/components/EventCard";
 import { EventsMap } from "@/src/components/EventsMap";
+import { MapSportFilter } from "@/src/components/MapSportFilter";
+import { DateRangeSlider } from "@/src/components/DateRangeSlider";
+
+import { useEventSportFilter } from "@/src/hooks/useEventSportFilter";
+import { useLocationFilter } from "@/src/hooks/useLocationFilter";
 import { Search, LayoutGrid, Map, Star, Calendar } from "lucide-react-native";
 import type { Event } from "@/src/types";
 
@@ -39,6 +44,54 @@ export default function EventsScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const {
+    selectedSports,
+    onSportsChange,
+    loaded: filterLoaded,
+  } = useEventSportFilter();
+  const {
+    locationEnabled,
+    radiusKm,
+    userLat,
+    userLng,
+    loaded: locationLoaded,
+    onLocationToggle: handleLocationToggle,
+    onRadiusChange: handleRadiusChange,
+    onLocationObtained: handleLocationObtained,
+  } = useLocationFilter();
+  const [startDays, setStartDays] = useState(0);
+  const [endDays, setEndDays] = useState(60);
+  const [debouncedRadius, setDebouncedRadius] = useState(100);
+  const [debouncedStartDays, setDebouncedStartDays] = useState(0);
+  const [debouncedEndDays, setDebouncedEndDays] = useState(60);
+
+  // Sync debounced radius with persisted value once loaded
+  useEffect(() => {
+    setDebouncedRadius(radiusKm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationLoaded]);
+
+  // Debounce radius changes so the API isn't called on every drag pixel
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRadius(radiusKm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [radiusKm]);
+
+  // Debounce date range changes for the map API
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedStartDays(startDays);
+      setDebouncedEndDays(endDays);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [startDays, endDays]);
+
+  const handleDateRangeChange = useCallback((start: number, end: number) => {
+    setStartDays(start);
+    setEndDays(end);
+  }, []);
 
   // Debounce search
   useEffect(() => {
@@ -62,6 +115,16 @@ export default function EventsScreen() {
           params.append("search", debouncedSearch);
         }
 
+        if (selectedSports.length > 0) {
+          params.append("sportTypes", selectedSports.join(","));
+        }
+
+        if (locationEnabled && userLat !== null && userLng !== null) {
+          params.append("lat", userLat.toString());
+          params.append("lng", userLng.toString());
+          params.append("radiusKm", debouncedRadius.toString());
+        }
+
         const response = await api.get<EventsResponse>(
           `/events?${params.toString()}`
         );
@@ -83,12 +146,31 @@ export default function EventsScreen() {
         setRefreshing(false);
       }
     },
-    [debouncedSearch]
+    [
+      debouncedSearch,
+      selectedSports,
+      locationEnabled,
+      userLat,
+      userLng,
+      debouncedRadius,
+    ]
   );
 
   useEffect(() => {
-    fetchEvents(1, false);
-  }, [debouncedSearch, fetchEvents]);
+    if (filterLoaded && locationLoaded) {
+      fetchEvents(1, false);
+    }
+  }, [
+    debouncedSearch,
+    selectedSports,
+    filterLoaded,
+    locationLoaded,
+    fetchEvents,
+    locationEnabled,
+    userLat,
+    userLng,
+    debouncedRadius,
+  ]);
 
   // Fetch featured events
   useEffect(() => {
@@ -143,6 +225,24 @@ export default function EventsScreen() {
       </View>
     );
   };
+
+  // Filter featured events to match active filters
+  const filteredFeatured = useMemo(() => {
+    let filtered = featuredEvents;
+
+    if (selectedSports.length > 0) {
+      filtered = filtered.filter((e) =>
+        e.sportTypes?.some((s: string) => selectedSports.includes(s))
+      );
+    }
+
+    // Hide featured section when location filter is active
+    if (locationEnabled && userLat !== null && userLng !== null) {
+      return [];
+    }
+
+    return filtered;
+  }, [featuredEvents, selectedSports, locationEnabled, userLat, userLng]);
 
   // Group events by month/year for section headers
   const sections = useMemo(() => {
@@ -234,9 +334,41 @@ export default function EventsScreen() {
         </View>
       </View>
 
+      {/* Sport filter - always visible below search */}
+      <View style={styles.filterWrapper}>
+        <MapSportFilter
+          selectedSports={selectedSports}
+          onSportsChange={onSportsChange}
+          inline
+          showLocationFilter={viewMode === "list"}
+          locationEnabled={locationEnabled}
+          latitude={userLat}
+          longitude={userLng}
+          radiusKm={radiusKm}
+          onLocationToggle={handleLocationToggle}
+          onRadiusChange={handleRadiusChange}
+          onLocationObtained={handleLocationObtained}
+        />
+      </View>
+
       {/* Content */}
       {viewMode === "map" ? (
-        <EventsMap searchQuery={debouncedSearch} />
+        <>
+          <DateRangeSlider
+            startDays={startDays}
+            endDays={endDays}
+            onRangeChange={handleDateRangeChange}
+          />
+          <EventsMap
+            searchQuery={debouncedSearch}
+            selectedSports={selectedSports}
+            onSportsChange={onSportsChange}
+            startDays={debouncedStartDays}
+            endDays={debouncedEndDays}
+            userLatitude={userLat}
+            userLongitude={userLng}
+          />
+        </>
       ) : loading && events.length === 0 ? (
         <View style={styles.loadingContainer} accessibilityRole="none">
           <ActivityIndicator
@@ -246,49 +378,51 @@ export default function EventsScreen() {
           />
         </View>
       ) : (
-        <SectionList
-          sections={sections}
-          renderItem={({ item }) => <EventCard event={item} />}
-          renderSectionHeader={({ section }) => (
-            <View style={styles.sectionHeader}>
-              <Calendar size={18} color={theme.colors.primary} />
-              <Text style={styles.sectionTitle}>{section.title}</Text>
-              <View style={styles.sectionLine} />
-              <Text style={styles.sectionCount}>{section.data.length}</Text>
-            </View>
-          )}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListHeaderComponent={
-            featuredEvents.length > 0 && !debouncedSearch ? (
-              <View style={styles.featuredSection}>
-                <View style={styles.sectionHeader}>
-                  <Star size={18} color="#facc15" fill="#facc15" />
-                  <Text style={styles.sectionTitle}>
-                    {t("events.featured")}
-                  </Text>
-                  <View style={styles.sectionLine} />
-                </View>
-                {featuredEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
+        <View style={{ flex: 1 }}>
+          <SectionList
+            sections={sections}
+            renderItem={({ item }) => <EventCard event={item} />}
+            renderSectionHeader={({ section }) => (
+              <View style={styles.sectionHeader}>
+                <Calendar size={18} color={theme.colors.primary} />
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+                <View style={styles.sectionLine} />
+                <Text style={styles.sectionCount}>{section.data.length}</Text>
               </View>
-            ) : null
-          }
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={renderEmpty}
-          accessibilityLabel={t("events.a11y.eventsList")}
-          stickySectionHeadersEnabled={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={theme.colors.primary}
-            />
-          }
-        />
+            )}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListHeaderComponent={
+              filteredFeatured.length > 0 && !debouncedSearch ? (
+                <View style={styles.featuredSection}>
+                  <View style={styles.sectionHeader}>
+                    <Star size={18} color="#facc15" fill="#facc15" />
+                    <Text style={styles.sectionTitle}>
+                      {t("events.featured")}
+                    </Text>
+                    <View style={styles.sectionLine} />
+                  </View>
+                  {filteredFeatured.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </View>
+              ) : null
+            }
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmpty}
+            accessibilityLabel={t("events.a11y.eventsList")}
+            stickySectionHeadersEnabled={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.colors.primary}
+              />
+            }
+          />
+        </View>
       )}
     </View>
   );
@@ -304,6 +438,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+  },
+  filterWrapper: {
+    position: "relative",
+    zIndex: 10,
   },
   searchRow: {
     flexDirection: "row",

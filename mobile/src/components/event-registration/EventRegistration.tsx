@@ -1,5 +1,11 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { Users, Target } from "lucide-react-native";
+import {
+  Users,
+  Target,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+} from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { theme } from "@/src/constants/theme";
@@ -8,6 +14,7 @@ import { useEventRegistration } from "./useEventRegistration";
 import { PaidRegistrationFlow } from "./PaidRegistrationFlow";
 import { SocialParticipationFlow } from "./SocialParticipationFlow";
 import { styles } from "./eventRegistrationStyles";
+import { ConfirmModal } from "../ui/ConfirmModal";
 
 interface EventRegistrationProps {
   readonly eventId: string;
@@ -43,7 +50,20 @@ export function EventRegistration({
     handleRegister,
     handleUnregister,
     handleMarkInterested,
+    modalConfig,
+    closeModal,
   } = useEventRegistration({ eventId, variants, hasRegistrations });
+
+  function getModalIcon() {
+    if (!modalConfig) return undefined;
+    if (modalConfig.variant === "success") {
+      return <CheckCircle2 size={28} color={theme.colors.success} />;
+    }
+    if (modalConfig.variant === "error") {
+      return <XCircle size={28} color={theme.colors.error} />;
+    }
+    return <AlertCircle size={28} color={theme.colors.warning} />;
+  }
 
   function renderRegistrationContent() {
     if (hasRegistrations) {
@@ -144,6 +164,18 @@ export function EventRegistration({
             </Text>
           </TouchableOpacity>
         </View>
+      )}
+
+      {/* Confirmation Modal */}
+      {modalConfig && (
+        <ConfirmModal
+          visible={!!modalConfig}
+          onClose={closeModal}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          icon={getModalIcon()}
+          actions={modalConfig.actions}
+        />
       )}
     </View>
   );

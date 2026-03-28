@@ -24,7 +24,7 @@ import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
 import { LiveRaceSection } from "@/components/live-race-section";
 import { LiveRaceCheckinBanner } from "@/components/live-race-checkin-banner";
-import { Language } from "@prisma/client";
+import { Language, Prisma } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
 import { getFriendsGoing } from "@/lib/event-friends";
@@ -275,58 +275,70 @@ export default async function EventPage({ params }: PageProps) {
     session?.user?.id
   );
 
-  // Get related events for internal linking (same sport type, same region, or upcoming)
-  const relatedEvents = await prisma.event.findMany({
-    where: {
-      AND: [
-        { id: { not: event.id } }, // Exclude current event
-        { startDate: { gte: new Date() } }, // Only future events
-        {
-          OR: [
-            { sportTypes: { hasSome: event.sportTypes } }, // Same sport
-            { country: event.country }, // Same country
-            { city: event.city }, // Same city
-          ],
-        },
-      ],
-    },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      city: true,
-      country: true,
-      startDate: true,
-      imageUrl: true,
-      sportTypes: true,
-      translations: {
-        where: {
-          language: locale,
-        },
-        select: {
-          title: true,
-          city: true,
-        },
-      },
-    },
-    orderBy: [{ startDate: "asc" }],
-    take: 6,
-  });
+  // Get related events — same sport type, ordered by proximity + date (raw SQL)
+  const sportArray = event.sportTypes.map((s) => Prisma.sql`${s}::"SportType"`);
 
-  // Apply translations to related events
-  const translatedRelatedEvents = relatedEvents.map((e) => {
-    const translation = e.translations[0];
-    return {
-      id: e.id,
-      slug: e.slug,
-      title: translation?.title || e.title,
-      city: translation?.city || e.city,
-      country: e.country,
-      startDate: e.startDate,
-      imageUrl: e.imageUrl,
-      sportTypes: e.sportTypes,
-    };
-  });
+  const rawRelated = await prisma.$queryRaw<
+    {
+      id: string;
+      slug: string;
+      title: string;
+      city: string;
+      country: string;
+      start_date: Date;
+      image_url: string | null;
+      sport_types: string[];
+      t_title: string | null;
+      t_city: string | null;
+    }[]
+  >`
+    SELECT
+      e.id,
+      e.slug,
+      e.title,
+      e.city,
+      e.country,
+      e."startDate" AS start_date,
+      e."imageUrl"  AS image_url,
+      e."sportTypes" AS sport_types,
+      t.title  AS t_title,
+      t.city   AS t_city
+    FROM "Event" e
+    LEFT JOIN "EventTranslation" t
+      ON t."eventId" = e.id AND t.language = ${locale}::"Language"
+    WHERE
+      e.id != ${event.id}
+      AND e."startDate" >= NOW()
+      AND e."sportTypes" && ARRAY[${Prisma.join(sportArray, ",")}]
+    ORDER BY
+      CASE
+        WHEN e.latitude IS NOT NULL AND e.longitude IS NOT NULL
+          AND ${event.latitude ?? null} IS NOT NULL
+        THEN (
+          6371 * acos(
+            LEAST(1.0, GREATEST(-1.0,
+              cos(radians(${event.latitude ?? 0})) * cos(radians(e.latitude)) *
+              cos(radians(e.longitude) - radians(${event.longitude ?? 0})) +
+              sin(radians(${event.latitude ?? 0})) * sin(radians(e.latitude))
+            ))
+          )
+        )
+        ELSE 999999
+      END ASC,
+      e."startDate" ASC
+    LIMIT 6
+  `;
+
+  const translatedRelatedEvents = rawRelated.map((e) => ({
+    id: e.id,
+    slug: e.slug,
+    title: e.t_title || e.title,
+    city: e.t_city || e.city,
+    country: e.country,
+    startDate: e.start_date,
+    imageUrl: e.image_url,
+    sportTypes: e.sport_types as unknown as typeof event.sportTypes,
+  }));
 
   // Prepare event data for header component
   const eventForHeader = {
@@ -576,12 +588,6 @@ export default async function EventPage({ params }: PageProps) {
               currentUserId={session?.user?.id}
               isAdmin={isAdmin}
             />
-
-            {/* Related Events for Internal Linking */}
-            <RelatedEvents
-              events={translatedRelatedEvents}
-              title={t("relatedEvents")}
-            />
           </div>
 
           {/* Sidebar - Right Column (Desktop only) */}
@@ -602,6 +608,12 @@ export default async function EventPage({ params }: PageProps) {
             weather={event.weather}
           />
         </div>
+
+        {/* Related Events — Full Width below grid */}
+        <RelatedEvents
+          events={translatedRelatedEvents}
+          title={t("relatedEvents")}
+        />
       </div>
     </div>
   );

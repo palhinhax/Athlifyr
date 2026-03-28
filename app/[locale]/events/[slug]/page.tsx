@@ -373,6 +373,11 @@ export default async function EventPage({ params }: PageProps) {
 
   const shareDescription = `${event.title} - ${formatDate(event.startDate, locale)} em ${event.city}`;
 
+  // Determine if the event is truly past (end of event day has passed)
+  const eventEndDate = new Date(event.endDate || event.startDate);
+  eventEndDate.setHours(23, 59, 59, 999);
+  const isPastEvent = eventEndDate < new Date();
+
   // Get variant labels for i18n
   const variantLabels = {
     title: t("variants.title"),
@@ -476,9 +481,7 @@ export default async function EventPage({ params }: PageProps) {
             {event.weather && event.weather.length > 0 && (
               <EventWeatherMobile
                 weather={event.weather}
-                isPastEvent={
-                  new Date(event.endDate || event.startDate) < new Date()
-                }
+                isPastEvent={isPastEvent}
               />
             )}
 
@@ -486,7 +489,7 @@ export default async function EventPage({ params }: PageProps) {
             {!event.cancelled && (
               <div className="mt-8">
                 {/* Check if event has already happened */}
-                {new Date(event.endDate || event.startDate) < new Date() ? (
+                {isPastEvent ? (
                   <EventPastParticipation
                     eventId={event.id}
                     variants={event.variants.map((v) => ({
@@ -596,6 +599,7 @@ export default async function EventPage({ params }: PageProps) {
               title: event.title,
               imageUrl: event.imageUrl,
               startDate: event.startDate,
+              endDate: event.endDate,
               city: event.city,
               country: event.country,
               latitude: event.latitude,

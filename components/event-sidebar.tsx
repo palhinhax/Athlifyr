@@ -31,6 +31,7 @@ interface EventSidebarProps {
     title: string;
     imageUrl: string | null;
     startDate: Date;
+    endDate: Date | null;
     city: string;
     country: string;
     latitude: number | null;
@@ -57,8 +58,10 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
   const hasImage =
     event.imageUrl && event.imageUrl !== "/placeholder-event.jpg";
 
-  // Check if event has already happened
-  const isPastEvent = new Date(event.startDate) < new Date();
+  // Check if event has already happened (end of event day must have passed)
+  const eventEndDate = new Date(event.endDate || event.startDate);
+  eventEndDate.setHours(23, 59, 59, 999);
+  const isPastEvent = eventEndDate < new Date();
 
   return (
     <>

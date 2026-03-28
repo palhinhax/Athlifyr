@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const WEATHER_UPDATE_SECRET = process.env.WEATHER_UPDATE_SECRET;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 interface OpenWeatherResponse {
   dt: number;
@@ -92,17 +93,30 @@ async function fetchAndSaveWeatherForEvent(event: WeatherEvent): Promise<void> {
 
 /**
  * Update weather forecasts for all events in the next 6 days
- * Called daily by GitHub Actions
+ * Called by Vercel Cron (GET) or manually (POST)
  */
+function verifyAuth(request: Request): boolean {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader) return false;
+  if (WEATHER_UPDATE_SECRET && authHeader === `Bearer ${WEATHER_UPDATE_SECRET}`)
+    return true;
+  if (CRON_SECRET && authHeader === `Bearer ${CRON_SECRET}`) return true;
+  return false;
+}
+
+/** Vercel Cron entry point */
+export async function GET(request: Request) {
+  return handleWeatherUpdate(request);
+}
+
+/** Legacy POST entry point */
 export async function POST(request: Request) {
+  return handleWeatherUpdate(request);
+}
+
+async function handleWeatherUpdate(request: Request) {
   try {
-    // Verify secret token for security
-    const authHeader = request.headers.get("authorization");
-    if (
-      !WEATHER_UPDATE_SECRET ||
-      !authHeader ||
-      authHeader !== `Bearer ${WEATHER_UPDATE_SECRET}`
-    ) {
+    if (!verifyAuth(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

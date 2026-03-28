@@ -113,7 +113,7 @@ export async function generateMetadata({
     description: t("seo.description"),
     keywords: keywords[localeKey] || keywords.pt,
     alternates: {
-      canonical: `${baseUrl}/${locale}/venues/join`,
+      canonical: `${baseUrl}/pt/venues/join`,
       languages: {
         pt: `${baseUrl}/pt/venues/join`,
         en: `${baseUrl}/en/venues/join`,
@@ -146,10 +146,10 @@ export async function generateMetadata({
       images: [`${baseUrl}/og-venues.png`],
     },
     robots: {
-      index: true,
+      index: locale === "pt",
       follow: true,
       googleBot: {
-        index: true,
+        index: locale === "pt",
         follow: true,
         "max-video-preview": -1,
         "max-image-preview": "large",

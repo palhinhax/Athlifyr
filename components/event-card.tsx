@@ -13,14 +13,45 @@ import {
   Gift,
 } from "lucide-react";
 import { formatDateRange } from "@/lib/event-utils";
-import type { Event, EventVariant } from "@prisma/client";
+import type { Event, EventVariant, PricingPhase } from "@prisma/client";
 import { useLocale, useTranslations } from "next-intl";
 import { SportBadge } from "@/components/sport-badge";
 import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
+type VariantWithPricing = EventVariant & {
+  pricingPhases?: Pick<
+    PricingPhase,
+    "startDate" | "endDate" | "price" | "currency"
+  >[];
+};
+
+function getPriceRange(
+  variants: VariantWithPricing[]
+): { min: number; max: number; currency: string } | null {
+  const now = new Date();
+  const prices: number[] = [];
+  let currency = "EUR";
+  for (const v of variants) {
+    if (!v.pricingPhases) continue;
+    const active = v.pricingPhases.find(
+      (p) => new Date(p.startDate) <= now && new Date(p.endDate) >= now
+    );
+    if (active) {
+      prices.push(active.price);
+      currency = active.currency;
+    }
+  }
+  if (prices.length === 0) return null;
+  return {
+    min: Math.round(Math.min(...prices)),
+    max: Math.round(Math.max(...prices)),
+    currency,
+  };
+}
+
 interface EventCardProps {
   event: Event & {
-    variants?: EventVariant[];
+    variants?: VariantWithPricing[];
     _count?: { comments: number; giveaways?: number };
   };
   isParticipating?: boolean;
@@ -100,12 +131,37 @@ export function EventCard({
               {t("going")}
             </div>
           )}
-          {event._count && (event._count.giveaways ?? 0) > 0 && (
-            <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground shadow-md">
-              <Gift className="h-3.5 w-3.5" />
-              {t("giveaway.badge")}
-            </div>
-          )}
+          <div className="absolute bottom-2 right-2 flex flex-col items-end gap-1">
+            {(() => {
+              const priceRange =
+                event.variants && event.variants.length > 0
+                  ? getPriceRange(event.variants)
+                  : null;
+              if (!priceRange) return null;
+              if (priceRange.min === 0 && priceRange.max === 0) {
+                return (
+                  <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-extrabold text-white shadow-md">
+                    {t("registration.flow.free")}
+                  </span>
+                );
+              }
+              const symbol =
+                priceRange.currency === "EUR" ? "€" : priceRange.currency;
+              return (
+                <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-extrabold text-white shadow-md">
+                  {priceRange.min === priceRange.max
+                    ? `${priceRange.min}${symbol}`
+                    : `${priceRange.min}–${priceRange.max}${symbol}`}
+                </span>
+              );
+            })()}
+            {event._count && (event._count.giveaways ?? 0) > 0 && (
+              <div className="flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground shadow-md">
+                <Gift className="h-3.5 w-3.5" />
+                {t("giveaway.badge")}
+              </div>
+            )}
+          </div>
           {event.hasLiveRace && (
             <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-black/80 px-2.5 py-1 shadow-md backdrop-blur-sm">
               <Image
@@ -138,12 +194,12 @@ export function EventCard({
               event.variants.length > 0 &&
               !event.sportTypes.includes("HYROX") && (
                 <div className="mt-2 flex items-start gap-2">
-                  <Route className="mt-0.5 h-4 w-4" />
-                  <div className="flex flex-wrap gap-1">
+                  <Route className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <div className="flex flex-wrap gap-1.5">
                     {event.variants.slice(0, 3).map((variant) => (
                       <span
                         key={variant.id}
-                        className="inline-flex items-center rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                        className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-1 text-[11px] font-bold tracking-tight text-foreground ring-1 ring-primary/20"
                       >
                         {variant.distanceKm
                           ? `${variant.distanceKm} km`
@@ -151,7 +207,7 @@ export function EventCard({
                       </span>
                     ))}
                     {event.variants.length > 3 && (
-                      <span className="inline-flex items-center rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-1 text-[11px] font-bold text-muted-foreground ring-1 ring-primary/20">
                         +{event.variants.length - 3}
                       </span>
                     )}

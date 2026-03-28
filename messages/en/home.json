@@ -18,7 +18,8 @@
     "analysisLiftTitle": "Lift Analysis",
     "analysisLiftDescription": "Barbell tracking with trajectory analysis, speed and rep detection.",
     "appStoreAlt": "Download on the App Store",
-    "googlePlayAlt": "Get it on Google Play"
+    "googlePlayAlt": "Get it on Google Play",
+    "browseBySport": "Browse by Sport"
   },
   "promo": {
     "intro": "Athlifyr",

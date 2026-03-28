@@ -3,91 +3,94 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const SUPPORTED_LOCALES = ["pt", "en", "es", "fr", "de", "it"];
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Always use canonical www domain for SEO
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
 
-  // Get all events for the sitemap
+  // Only include future events with complete data (description + city)
   const events = await prisma.event.findMany({
     select: {
       slug: true,
       updatedAt: true,
-      startDate: true,
+      description: true,
+      city: true,
     },
     where: {
-      startDate: {
-        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Include events from last 30 days
-      },
+      startDate: { gte: new Date() },
+      cancelled: false,
+      description: { not: "" },
+      city: { not: "" },
     },
     orderBy: {
       startDate: "asc",
     },
   });
 
-  // Static pages with language variants
-  // Generate one entry per locale (no redirecting URLs in sitemap)
-  const staticPages: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap(
-    (locale) => [
-      {
-        url: `${baseUrl}/${locale}`,
-        lastModified: new Date(),
-        changeFrequency: "daily" as const,
-        priority: 1.0,
-      },
-      {
-        url: `${baseUrl}/${locale}/events`,
-        lastModified: new Date(),
-        changeFrequency: "hourly" as const,
-        priority: 0.9,
-      },
-      {
-        url: `${baseUrl}/${locale}/feed`,
-        lastModified: new Date(),
-        changeFrequency: "hourly" as const,
-        priority: 0.7,
-      },
-      {
-        url: `${baseUrl}/${locale}/presentation/venue`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.8,
-      },
-      {
-        url: `${baseUrl}/${locale}/presentation/live-race`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.8,
-      },
-      {
-        url: `${baseUrl}/${locale}/venues/join`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.9,
-      },
-      {
-        url: `${baseUrl}/${locale}/pricing`,
-        lastModified: new Date(),
-        changeFrequency: "monthly" as const,
-        priority: 0.9,
-      },
-    ]
-  );
+  // Static pages — only canonical locale (pt)
+  const staticPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/pt`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/pt/events`,
+      lastModified: new Date(),
+      changeFrequency: "hourly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/pt/presentation/venue`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/pt/presentation/live-race`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/pt/venues/join`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/pt/pricing`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/pt/video-analysis`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/pt/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+  ];
 
-  // Dynamic event pages with language variants
-  // Generate one entry per locale for each event
-  const eventPages: MetadataRoute.Sitemap = events.flatMap((event) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      url: `${baseUrl}/${locale}/events/${event.slug}`,
+  // Event pages — only canonical locale (pt), only future + complete events
+  const eventPages: MetadataRoute.Sitemap = events
+    .filter(
+      (e) => e.description.trim().length >= 10 && e.city.trim().length > 0
+    )
+    .map((event) => ({
+      url: `${baseUrl}/pt/events/${event.slug}`,
       lastModified: event.updatedAt,
       changeFrequency: "weekly" as const,
-      priority: event.startDate > new Date() ? 0.9 : 0.6, // Higher priority for upcoming events
-    }))
-  );
+      priority: 0.9,
+    }));
 
-  // Sport category pages
+  // Sport category pages — only canonical locale (pt)
   const sportSlugs = [
     "running",
     "trail",
@@ -102,15 +105,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "swimming",
   ];
 
-  // Sport category pages - one entry per locale
-  const sportPages: MetadataRoute.Sitemap = sportSlugs.flatMap((sport) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      url: `${baseUrl}/${locale}/sports/${sport}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }))
-  );
+  const sportPages: MetadataRoute.Sitemap = sportSlugs.map((sport) => ({
+    url: `${baseUrl}/pt/sports/${sport}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
 
   return [...staticPages, ...sportPages, ...eventPages];
 }

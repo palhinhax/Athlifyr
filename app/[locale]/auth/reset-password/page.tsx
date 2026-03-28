@@ -6,6 +6,7 @@ import { AuthVideoBackground } from "@/components/auth/auth-video-background";
 export const metadata: Metadata = {
   title: "Alterar Password - Athlifyr",
   description: "Altera a tua password da conta Athlifyr",
+  robots: { index: false, follow: false },
 };
 
 function ResetPasswordContent() {

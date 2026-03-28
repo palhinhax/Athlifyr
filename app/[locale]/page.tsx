@@ -11,6 +11,29 @@ import {
   HomeNoEventsCta,
 } from "@/components/home-client-tracking";
 import { AppDownloadSection } from "@/components/app-download-section";
+import { sportIcons } from "@/lib/sport-config";
+import { Link } from "@/i18n/routing";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
+
+  return {
+    alternates: {
+      canonical: `${baseUrl}/pt`,
+    },
+    robots: {
+      index: locale === "pt",
+      follow: true,
+    },
+  };
+}
 
 async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({
@@ -21,7 +44,18 @@ async function getUpcomingEvents(country: string) {
       country: country,
     },
     include: {
-      variants: true,
+      variants: {
+        include: {
+          pricingPhases: {
+            select: {
+              startDate: true,
+              endDate: true,
+              price: true,
+              currency: true,
+            },
+          },
+        },
+      },
       _count: {
         select: {
           comments: true,
@@ -37,6 +71,22 @@ async function getUpcomingEvents(country: string) {
     take: 6,
   });
 }
+
+const SPORT_LINKS = [
+  { slug: "trail", type: "TRAIL" },
+  { slug: "running", type: "RUNNING" },
+  { slug: "cycling", type: "CYCLING" },
+  { slug: "btt", type: "BTT" },
+  { slug: "triathlon", type: "TRIATHLON" },
+  { slug: "duathlon", type: "DUATHLON" },
+  { slug: "aquathlon", type: "AQUATHLON" },
+  { slug: "swimming", type: "SWIMMING" },
+  { slug: "hyrox", type: "HYROX" },
+  { slug: "crossfit", type: "CROSSFIT" },
+  { slug: "ocr", type: "OCR" },
+  { slug: "walking", type: "WALKING" },
+  { slug: "surf", type: "SURF" },
+] as const;
 
 async function getEventImageUrls(): Promise<string[]> {
   const events = await prisma.event.findMany({
@@ -73,6 +123,7 @@ export default async function Home({
 
   const t = await getTranslations({ locale, namespace: "home" });
   const tNav = await getTranslations({ locale, namespace: "nav" });
+  const tSports = await getTranslations({ locale, namespace: "sports" });
 
   // Get user's country from headers
   const headersList = await headers();
@@ -143,6 +194,24 @@ export default async function Home({
         )}
       </section>
 
+      {/* Browse by Sport */}
+      <section className="container py-4 md:py-8">
+        <h2 className="mb-3 text-lg font-bold sm:text-xl">
+          {t("browseBySport")}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {SPORT_LINKS.map(({ slug, type }) => (
+            <Link
+              key={slug}
+              href={`/sports/${slug}`}
+              className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm transition-colors hover:border-accent hover:bg-accent/5"
+            >
+              <span>{sportIcons[type]}</span>
+              <span>{tSports(`${type}`)}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
       {/* CTA Section */}
       <HomeCtaSection
         locale={locale}

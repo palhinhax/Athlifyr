@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Alert, Linking } from "react-native";
+import { Linking } from "react-native";
+import type { ConfirmModalAction } from "../ui/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { api } from "@/src/lib/api";
@@ -42,6 +43,18 @@ export function useEventRegistration({
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [participantsCount, setParticipantsCount] = useState(0);
   const [interestedCount, setInterestedCount] = useState(0);
+
+  // Modal state (replaces native Alert.alert)
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    message?: string;
+    variant?: "success" | "error" | "warning" | "confirm";
+    actions?: ConfirmModalAction[];
+  } | null>(null);
+
+  const closeModal = useCallback(() => {
+    setModalConfig(null);
+  }, []);
 
   // Auto-select single variant
   useEffect(() => {
@@ -109,17 +122,26 @@ export function useEventRegistration({
 
   const requireAuth = (): boolean => {
     if (!isAuthenticated) {
-      Alert.alert(
-        t("events.registration.authRequired"),
-        t("events.registration.authRequiredDesc"),
-        [
-          { text: t("common.cancel"), style: "cancel" },
+      setModalConfig({
+        title: t("events.registration.authRequired"),
+        message: t("events.registration.authRequiredDesc"),
+        variant: "warning",
+        actions: [
           {
-            text: t("common.signInButton"),
-            onPress: () => router.push("/auth/login"),
+            label: t("common.cancel"),
+            variant: "outline",
+            onPress: () => setModalConfig(null),
           },
-        ]
-      );
+          {
+            label: t("common.signInButton"),
+            variant: "primary",
+            onPress: () => {
+              setModalConfig(null);
+              router.push("/auth/login");
+            },
+          },
+        ],
+      });
       return false;
     }
     return true;
@@ -131,10 +153,11 @@ export function useEventRegistration({
     if (!requireAuth()) return;
 
     if (variants.length > 1 && !selectedVariantId) {
-      Alert.alert(
-        t("events.registration.selectVariantRequired"),
-        t("events.registration.selectVariantRequiredDesc")
-      );
+      setModalConfig({
+        title: t("events.registration.selectVariantRequired"),
+        message: t("events.registration.selectVariantRequiredDesc"),
+        variant: "warning",
+      });
       return;
     }
 
@@ -154,10 +177,11 @@ export function useEventRegistration({
           ? (error as { response?: { data?: { error?: string } } }).response
               ?.data?.error
           : undefined;
-      Alert.alert(
-        t("events.registration.checkoutError"),
-        message ?? t("events.registration.checkoutErrorDesc")
-      );
+      setModalConfig({
+        title: t("events.registration.checkoutError"),
+        message: message ?? t("events.registration.checkoutErrorDesc"),
+        variant: "error",
+      });
     } finally {
       setIsCheckingOut(false);
     }
@@ -167,10 +191,11 @@ export function useEventRegistration({
     if (!requireAuth()) return;
 
     if (variants.length > 0 && !selectedVariantId) {
-      Alert.alert(
-        t("events.registration.selectVariantRequired"),
-        t("events.registration.selectVariantRequiredDesc")
-      );
+      setModalConfig({
+        title: t("events.registration.selectVariantRequired"),
+        message: t("events.registration.selectVariantRequiredDesc"),
+        variant: "warning",
+      });
       return;
     }
 
@@ -185,15 +210,17 @@ export function useEventRegistration({
       setUserParticipation(response.data);
       setParticipantsCount((prev) => prev + 1);
       if (wasInterested) setInterestedCount((prev) => Math.max(0, prev - 1));
-      Alert.alert(
-        t("events.registration.markedAsParticipant"),
-        t("events.registration.participationRegistered")
-      );
+      setModalConfig({
+        title: t("events.registration.markedAsParticipant"),
+        message: t("events.registration.participationRegistered"),
+        variant: "success",
+      });
     } catch {
-      Alert.alert(
-        t("common.error"),
-        t("events.registration.registrationError")
-      );
+      setModalConfig({
+        title: t("common.error"),
+        message: t("events.registration.registrationError"),
+        variant: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -212,10 +239,11 @@ export function useEventRegistration({
         setParticipantsCount((prev) => Math.max(0, prev - 1));
       }
     } catch {
-      Alert.alert(
-        t("common.error"),
-        t("events.registration.cancellationError")
-      );
+      setModalConfig({
+        title: t("common.error"),
+        message: t("events.registration.cancellationError"),
+        variant: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -224,24 +252,30 @@ export function useEventRegistration({
   const handleUnregister = async () => {
     if (!isAuthenticated) return;
     const isInterested = userParticipation?.status === "interested";
-    Alert.alert(
-      isInterested
+    setModalConfig({
+      title: isInterested
         ? t("events.registration.removeInterest")
         : t("events.registration.cancelParticipation"),
-      isInterested
+      message: isInterested
         ? t("events.registration.interestRemovedDesc")
         : t("events.registration.cancelParticipationDesc"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
+      variant: "confirm",
+      actions: [
         {
-          text: t("common.delete"),
-          style: "destructive",
+          label: t("common.cancel"),
+          variant: "outline",
+          onPress: () => setModalConfig(null),
+        },
+        {
+          label: t("common.delete"),
+          variant: "destructive",
           onPress: () => {
+            setModalConfig(null);
             void performUnregister();
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   const handleMarkInterested = async () => {
@@ -255,15 +289,17 @@ export function useEventRegistration({
       });
       setUserParticipation(response.data);
       setInterestedCount((prev) => prev + 1);
-      Alert.alert(
-        t("events.registration.markedAsInterested"),
-        t("events.registration.markedAsInterestedDesc")
-      );
+      setModalConfig({
+        title: t("events.registration.markedAsInterested"),
+        message: t("events.registration.markedAsInterestedDesc"),
+        variant: "success",
+      });
     } catch {
-      Alert.alert(
-        t("common.error"),
-        t("events.registration.registrationError")
-      );
+      setModalConfig({
+        title: t("common.error"),
+        message: t("events.registration.registrationError"),
+        variant: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -304,5 +340,9 @@ export function useEventRegistration({
     handleRegister,
     handleUnregister,
     handleMarkInterested,
+
+    // Modal
+    modalConfig,
+    closeModal,
   };
 }

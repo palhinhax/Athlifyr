@@ -16,7 +16,11 @@ export async function generateMetadata({
     description:
       "Declaração de Acessibilidade e Usabilidade do sítio web Athlifyr, conforme o Decreto-Lei n.º 83/2018, de 19 de outubro.",
     alternates: {
-      canonical: `https://www.athlifyr.com/${locale}/accessibility`,
+      canonical: `https://www.athlifyr.com/pt/accessibility`,
+    },
+    robots: {
+      index: locale === "pt",
+      follow: true,
     },
   };
 }

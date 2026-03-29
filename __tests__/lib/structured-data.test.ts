@@ -44,6 +44,9 @@ describe("structured-data", () => {
       registrationFieldSettings: {},
       liveStatus: "SCHEDULED" as const,
       scrapingSource: null,
+      scrapedEventId: null,
+      lastImportedBy: null,
+      lastImportedAt: null,
     };
 
     const baseVariant = {

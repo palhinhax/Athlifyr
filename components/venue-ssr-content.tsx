@@ -538,7 +538,7 @@ function VenueSSRAbout({
         {getLabel("about", locale)} {venue.name}
       </h2>
       <div
-        className="prose prose-sm dark:prose-invert max-w-none"
+        className="prose prose-sm max-w-none dark:prose-invert"
         itemProp="description"
       >
         <div

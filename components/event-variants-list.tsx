@@ -1,3 +1,4 @@
+import { Route } from "lucide-react";
 import { TriathlonSegmentsDisplay } from "./triathlon-segments-display";
 import { VariantCardWithMap } from "./variant-card-with-map";
 
@@ -128,7 +129,10 @@ export function EventVariantsList({
       {/* Compact variant cards */}
       {standardVariants.length > 0 && (
         <div className="mb-6">
-          <h2 className="mb-3 text-lg font-bold sm:text-xl">{labels.title}</h2>
+          <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold">
+            <Route className="h-5 w-5 text-primary" />
+            {labels.title}
+          </h2>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {standardVariants.map((variant) => {
               const isSoldOut =

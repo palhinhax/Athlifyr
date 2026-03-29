@@ -86,7 +86,7 @@ export function VenueSEOContent() {
           viewport={{ once: true }}
           className="mx-auto mb-12 max-w-4xl"
         >
-          <div className="prose prose-lg dark:prose-invert mx-auto">
+          <div className="prose prose-lg mx-auto dark:prose-invert">
             <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
               {t("paragraph1")}
             </p>
@@ -129,7 +129,7 @@ export function VenueSEOContent() {
           viewport={{ once: true }}
           className="mx-auto mt-12 max-w-4xl"
         >
-          <div className="prose prose-lg dark:prose-invert mx-auto">
+          <div className="prose prose-lg mx-auto dark:prose-invert">
             <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
               {t("paragraph4")}
             </p>

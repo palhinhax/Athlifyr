@@ -103,7 +103,7 @@ export function LiveRaceSection({
             height={24}
             className="h-6 w-6"
           />
-          <h2 className="text-xl font-bold">{t("sectionTitle")}</h2>
+          <h2 className="text-xl font-semibold">{t("sectionTitle")}</h2>
         </div>
 
         <div className="flex items-center gap-2">

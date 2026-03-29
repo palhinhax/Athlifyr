@@ -591,6 +591,16 @@ export default async function EventPage({ params }: PageProps) {
               currentUserId={session?.user?.id}
               isAdmin={isAdmin}
             />
+
+            {/* Related Events — Mobile only */}
+            {translatedRelatedEvents.length > 0 && (
+              <div className="mt-12 lg:hidden">
+                <RelatedEvents
+                  events={translatedRelatedEvents}
+                  title={t("relatedEvents")}
+                />
+              </div>
+            )}
           </div>
 
           {/* Sidebar - Right Column (Desktop only) */}
@@ -610,14 +620,10 @@ export default async function EventPage({ params }: PageProps) {
               featuredVenue: event.featuredVenue,
             }}
             weather={event.weather}
+            relatedEvents={translatedRelatedEvents}
+            relatedEventsTitle={t("relatedEvents")}
           />
         </div>
-
-        {/* Related Events — Full Width below grid */}
-        <RelatedEvents
-          events={translatedRelatedEvents}
-          title={t("relatedEvents")}
-        />
       </div>
     </div>
   );

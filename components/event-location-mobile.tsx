@@ -26,10 +26,10 @@ export function EventLocationMobile({
   const t = useTranslations("events");
 
   return (
-    <div className="mb-8 overflow-hidden rounded-lg border bg-card shadow-sm lg:hidden">
+    <div className="mb-8 mt-6 overflow-hidden rounded-lg border bg-card shadow-sm lg:hidden">
       <div className="p-4">
         <h3 className="mb-1 flex items-center gap-2 font-semibold">
-          <MapPin className="h-5 w-5 text-red-500" />
+          <MapPin className="h-5 w-5 text-primary" />
           {t("locationTitle")}
         </h3>
         <p className="text-sm text-muted-foreground">

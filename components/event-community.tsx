@@ -1,5 +1,6 @@
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
+import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface EventCommunityProps {
@@ -37,7 +38,10 @@ export function EventCommunity({
 
   return (
     <div className="mt-12 border-t pt-12">
-      <h2 className="mb-6 text-2xl font-bold">{t("community")}</h2>
+      <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold">
+        <MessageCircle className="h-5 w-5 text-primary" />
+        {t("community")}
+      </h2>
       <div className="space-y-4">
         <CreatePost eventId={eventId} />
         {posts.length === 0 ? (

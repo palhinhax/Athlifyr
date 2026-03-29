@@ -9,6 +9,8 @@ import { StravaRouteEmbed } from "./strava-route-embed";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
 import { EventWeather } from "@/components/event-weather";
 import { EventFeaturedVenue } from "@/components/event-featured-venue";
+import { RelatedEvents } from "@/components/related-events";
+import { SportType } from "@prisma/client";
 import { useTranslations, useLocale } from "next-intl";
 
 interface FeaturedVenue {
@@ -24,6 +26,17 @@ interface FeaturedVenue {
     recommendations: number;
     reviews: number;
   };
+}
+
+interface RelatedEvent {
+  id: string;
+  slug: string;
+  title: string;
+  city: string;
+  country: string;
+  startDate: Date;
+  imageUrl: string | null;
+  sportTypes: SportType[];
 }
 
 interface EventSidebarProps {
@@ -49,9 +62,16 @@ interface EventSidebarProps {
     windSpeed: number | null;
     icon: string | null;
   }>;
+  relatedEvents?: RelatedEvent[];
+  relatedEventsTitle?: string;
 }
 
-export function EventSidebar({ event, weather }: EventSidebarProps) {
+export function EventSidebar({
+  event,
+  weather,
+  relatedEvents = [],
+  relatedEventsTitle,
+}: EventSidebarProps) {
   const t = useTranslations("events");
   const locale = useLocale();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -115,7 +135,7 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
             <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
               <div className="p-4">
                 <h3 className="mb-3 flex items-center gap-2 font-semibold">
-                  <MapPin className="h-5 w-5 text-red-500" />
+                  <MapPin className="h-5 w-5 text-primary" />
                   {t("locationTitle")}
                 </h3>
               </div>
@@ -163,6 +183,11 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
             <div className="mb-6">
               <StravaRouteEmbed embedCode={event.stravaRouteEmbed} />
             </div>
+          )}
+
+          {/* Related Events Carousel */}
+          {relatedEvents.length > 0 && (
+            <RelatedEvents events={relatedEvents} title={relatedEventsTitle} />
           )}
         </div>
       </aside>

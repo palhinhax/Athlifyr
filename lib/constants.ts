@@ -29,4 +29,4 @@ export const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.athlifyr.app";
 
 /** Set to true once the Android app is deployed to Google Play */
-export const GOOGLE_PLAY_ENABLED = false;
+export const GOOGLE_PLAY_ENABLED = true;

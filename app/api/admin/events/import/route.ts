@@ -190,8 +190,29 @@ export async function POST(req: NextRequest) {
     // Generate slug
     const slug = body.slug || generateSlug(body.title);
 
-    // Check if event already exists (by slug) — update instead of duplicate
-    const existingEvent = await prisma.event.findFirst({ where: { slug } });
+    // Check if event already exists:
+    // 1. By scrapedEventId (stable, preferred) — survives slug changes
+    // 2. Fallback to slug match
+    let existingEvent = null;
+    if (body.scrapedEventId) {
+      existingEvent = await prisma.event.findUnique({
+        where: { scrapedEventId: body.scrapedEventId },
+      });
+      if (existingEvent) {
+        console.log(
+          "[import] Matched by scrapedEventId:",
+          body.scrapedEventId,
+          "→",
+          existingEvent.id
+        );
+      }
+    }
+    if (!existingEvent) {
+      existingEvent = await prisma.event.findFirst({ where: { slug } });
+      if (existingEvent) {
+        console.log("[import] Matched by slug:", slug, "→", existingEvent.id);
+      }
+    }
     const isUpdate = !!existingEvent;
 
     // Validate currency helper
@@ -201,33 +222,36 @@ export async function POST(req: NextRequest) {
     let event;
 
     if (isUpdate) {
-      console.log("[import] Updating existing event:", existingEvent.id, slug);
+      // TypeScript narrowing: isUpdate guarantees existingEvent is non-null
+      const existing = existingEvent!;
+      console.log("[import] Updating existing event:", existing.id, slug);
 
       // Delete old related data that will be replaced
       await prisma.$transaction([
         prisma.eventFAQTranslation.deleteMany({
-          where: { faq: { eventId: existingEvent.id } },
+          where: { faq: { eventId: existing.id } },
         }),
-        prisma.eventFAQ.deleteMany({ where: { eventId: existingEvent.id } }),
+        prisma.eventFAQ.deleteMany({ where: { eventId: existing.id } }),
         prisma.pricingPhase.deleteMany({
-          where: { eventId: existingEvent.id },
+          where: { eventId: existing.id },
         }),
         prisma.eventVariantTranslation.deleteMany({
-          where: { variant: { eventId: existingEvent.id } },
+          where: { variant: { eventId: existing.id } },
         }),
         prisma.eventVariant.deleteMany({
-          where: { eventId: existingEvent.id },
+          where: { eventId: existing.id },
         }),
         prisma.eventTranslation.deleteMany({
-          where: { eventId: existingEvent.id },
+          where: { eventId: existing.id },
         }),
       ]);
 
       // Update the event itself
       event = await prisma.event.update({
-        where: { id: existingEvent.id },
+        where: { id: existing.id },
         data: {
           title: body.title,
+          slug,
           description: descriptionStr,
           sportTypes,
           startDate: new Date(body.startDate),
@@ -243,6 +267,9 @@ export async function POST(req: NextRequest) {
           imageUrl: body.imageUrl ?? null,
           externalUrl: body.externalUrl ?? null,
           scrapingSource: body.sourceName ?? null,
+          scrapedEventId: body.scrapedEventId ?? existing.scrapedEventId,
+          lastImportedBy: body.sourceName ?? null,
+          lastImportedAt: new Date(),
         },
       });
     } else {
@@ -266,6 +293,9 @@ export async function POST(req: NextRequest) {
           imageUrl: body.imageUrl ?? null,
           externalUrl: body.externalUrl ?? null,
           scrapingSource: body.sourceName ?? null,
+          scrapedEventId: body.scrapedEventId ?? null,
+          lastImportedBy: body.sourceName ?? null,
+          lastImportedAt: new Date(),
         },
       });
     }

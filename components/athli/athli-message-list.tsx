@@ -71,7 +71,7 @@ export function AthliMessageBubble({
           {isUser ? (
             <p className="whitespace-pre-wrap">{message.content}</p>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none [&_a]:text-primary [&_a]:underline [&_code]:text-xs [&_h1]:text-base [&_h1]:font-bold [&_h2]:text-sm [&_h2]:font-semibold [&_h3]:text-sm [&_h3]:font-medium [&_li]:my-0.5 [&_ol]:my-1 [&_p]:my-1 [&_pre]:rounded-lg [&_pre]:bg-background/50 [&_pre]:p-2 [&_ul]:my-1">
+            <div className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:underline [&_code]:text-xs [&_h1]:text-base [&_h1]:font-bold [&_h2]:text-sm [&_h2]:font-semibold [&_h3]:text-sm [&_h3]:font-medium [&_li]:my-0.5 [&_ol]:my-1 [&_p]:my-1 [&_pre]:rounded-lg [&_pre]:bg-background/50 [&_pre]:p-2 [&_ul]:my-1">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {message.content}
               </ReactMarkdown>

@@ -1,7 +1,7 @@
 import { CollapsibleDescription } from "@/components/collapsible-description";
 import { EventPricingPhases } from "@/components/event-pricing-phases";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FileText, Rocket } from "lucide-react";
 import { PricingPhase } from "@prisma/client";
 import { StravaRouteEmbed } from "@/components/strava-route-embed";
 
@@ -35,7 +35,10 @@ export function EventMainContent({
     <>
       {/* Description */}
       <div className="prose prose-lg mb-8 max-w-none overflow-x-hidden break-words">
-        <h2 className="mb-4 text-2xl font-bold">{t.aboutEvent}</h2>
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+          <FileText className="h-5 w-5 text-primary" />
+          {t.aboutEvent}
+        </h2>
         <CollapsibleDescription description={description} />
       </div>
 
@@ -56,7 +59,10 @@ export function EventMainContent({
       {/* CTA */}
       {externalUrl && !cancelled && !hasRegistrations && (
         <div className="border-t pt-8">
-          <h3 className="mb-4 text-xl font-bold">{t.readyToParticipate}</h3>
+          <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+            <Rocket className="h-5 w-5 text-primary" />
+            {t.readyToParticipate}
+          </h3>
           <p className="mb-6 text-muted-foreground">{t.moreInfoDescription}</p>
           <Button size="lg" className="gap-2" asChild>
             <a href={externalUrl} target="_blank" rel="noopener noreferrer">

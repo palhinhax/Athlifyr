@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.models import (
+    DedupPair,
     EventChangeLog,
     EventReviewStatus,
     ScrapedDocument,
@@ -122,7 +123,7 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
                     is_new = await _upsert_scraped_event(db, run.id, source_name, ev_data)
                 # Fetch the event for auto-generation check
                 row = await db.execute(
-                    select(ScrapedEvent.id, ScrapedEvent.ai_pending).where(
+                    select(ScrapedEvent.id, ScrapedEvent.ai_pending, ScrapedEvent.is_hidden).where(
                         ScrapedEvent.source_name == source_name,
                         ScrapedEvent.source_url == ev_data.source_url,
                     )
@@ -137,8 +138,30 @@ async def run_scraper(source_name: str, db: AsyncSession) -> ScrapingRun:
                     updated += 1
                     # Also queue for AI if something changed (ai_pending=True)
                     if ev_row and ev_row[1]:
-                        logger.info("[CHANGED] %s — queuing for AI re-processing", ev_data.title)
-                        ai_event_ids.append(ev_row[0])
+                        if ev_row[2]:  # is_hidden — this is a dedup secondary
+                            # Queue the primary event instead
+                            primary_id = await _get_dedup_primary_id(ev_row[0], db)
+                            if primary_id and primary_id not in ai_event_ids:
+                                logger.info(
+                                    "[CHANGED-SECONDARY] %s — queuing primary %s for AI re-processing",
+                                    ev_data.title, primary_id,
+                                )
+                                # Mark primary as ai_pending so it gets re-processed
+                                primary_result = await db.execute(
+                                    select(ScrapedEvent).where(ScrapedEvent.id == primary_id)
+                                )
+                                primary_ev = primary_result.scalar_one_or_none()
+                                if primary_ev and primary_ev.review_status != EventReviewStatus.REJECTED:
+                                    primary_ev.ai_pending = True
+                                    ai_event_ids.append(primary_id)
+                            else:
+                                logger.info(
+                                    "[CHANGED-SECONDARY] %s — no primary found, skipping",
+                                    ev_data.title,
+                                )
+                        else:
+                            logger.info("[CHANGED] %s — queuing for AI re-processing", ev_data.title)
+                            ai_event_ids.append(ev_row[0])
                     else:
                         logger.info("[UNCHANGED] %s — skipping AI", ev_data.title)
             except Exception:
@@ -306,6 +329,25 @@ async def _delete_bucket_object(bucket_url: str) -> None:
         logger.warning("Could not extract key from bucket URL: %s", bucket_url[:200])
     except Exception:
         logger.exception("Failed to delete old image: %s", bucket_url[:200])
+
+
+async def _get_dedup_primary_id(
+    secondary_event_id: uuid.UUID, db: AsyncSession,
+) -> uuid.UUID | None:
+    """Return the primary event ID if this event is a confirmed dedup secondary."""
+    result = await db.execute(
+        select(DedupPair.primary_event_id).where(
+            DedupPair.status == "confirmed",
+            DedupPair.primary_event_id.isnot(None),
+            (DedupPair.event_a_id == secondary_event_id)
+            | (DedupPair.event_b_id == secondary_event_id),
+        )
+    )
+    row = result.scalar_one_or_none()
+    # Only return if the primary is a different event
+    if row and row != secondary_event_id:
+        return row
+    return None
 
 
 async def _upload_image(
@@ -504,8 +546,9 @@ async def _upsert_scraped_event(
     )
     existing = result.scalar_one_or_none()
 
-    # 2. Cross-source deduplication: if no same-source match, look for an
-    #    event from *any* source with a matching title and same start_date.
+    # 2. Slug+date deduplication: if no same-source URL match, look for an
+    #    event from *any* source (including the same one) with a matching
+    #    title slug and the same start_date.
     #    Strategy (in order):
     #      a) Exact slug match + same date
     #      b) One slug contains the other + same date (handles prefix/suffix diffs)
@@ -521,7 +564,7 @@ async def _upsert_scraped_event(
                 select(ScrapedEvent).where(
                     ScrapedEvent.slug == candidate_slug,
                     cast(ScrapedEvent.start_date, SADate) == target_date,
-                    ScrapedEvent.source_name != source_name,
+                    ScrapedEvent.source_url != data.source_url,
                 )
             )
             cross_match = result.scalar_one_or_none()
@@ -531,7 +574,7 @@ async def _upsert_scraped_event(
                 result = await db.execute(
                     select(ScrapedEvent).where(
                         cast(ScrapedEvent.start_date, SADate) == target_date,
-                        ScrapedEvent.source_name != source_name,
+                        ScrapedEvent.source_url != data.source_url,
                         ScrapedEvent.slug.isnot(None),
                     )
                 )
@@ -552,8 +595,10 @@ async def _upsert_scraped_event(
                         break
 
             if cross_match:
+                is_same_src = cross_match.source_name == source_name
                 logger.info(
-                    "[CROSS-SOURCE] Merging '%s' (from %s) into existing '%s' (from %s)",
+                    "[%s] Merging '%s' (from %s) into existing '%s' (from %s)",
+                    "SAME-SOURCE-DEDUP" if is_same_src else "CROSS-SOURCE",
                     data.title, source_name, cross_match.title, cross_match.source_name,
                 )
                 existing = cross_match
@@ -1000,6 +1045,11 @@ async def generate_and_import_event(
             logger.debug("Auto-generate skipped for %s — rejected", event.title)
             return None
 
+        # Skip if hidden (dedup secondary — primary handles submission)
+        if event.is_hidden:
+            logger.debug("Auto-generate skipped for %s — hidden (dedup secondary)", event.title)
+            return None
+
         # Skip if no image (AI generation requires it)
         if not event.image_url:
             logger.info("Auto-generate skipped for %s — no image", event.title)
@@ -1055,6 +1105,80 @@ async def generate_and_import_event(
         if event.admin_notes:
             event_data["admin_notes"] = event.admin_notes
 
+        # GPX URL map — built from primary variants, enriched with secondary GPX later
+        gpx_url_by_name: dict[str, str] = {
+            v.name.lower(): (v.gpx_file_path or v.gpx_url)
+            for v in event.variants
+            if (v.gpx_file_path or v.gpx_url)
+        }
+
+        # ── Merge data from confirmed duplicate pairs ──────────────────────────
+        # If this event is the primary in any confirmed dedup pairs, include the
+        # secondary event's data so AI can produce a richer, merged result.
+        merged_pairs_result = await db.execute(
+            select(DedupPair)
+            .options(
+                selectinload(DedupPair.event_a).selectinload(ScrapedEvent.variants),
+                selectinload(DedupPair.event_a).selectinload(ScrapedEvent.pricing_phases),
+                selectinload(DedupPair.event_b).selectinload(ScrapedEvent.variants),
+                selectinload(DedupPair.event_b).selectinload(ScrapedEvent.pricing_phases),
+            )
+            .where(DedupPair.primary_event_id == event.id, DedupPair.status == "confirmed")
+        )
+        merged_pairs = list(merged_pairs_result.scalars().all())
+        if merged_pairs:
+            merged_sources = []
+            for mp in merged_pairs:
+                secondary = mp.event_b if mp.event_a_id == event.id else mp.event_a
+                if not secondary:
+                    continue
+                merged_sources.append({
+                    "source_name": secondary.source_name,
+                    "source_url": secondary.source_url,
+                    "title": secondary.title,
+                    "description": secondary.description,
+                    "raw_pricing_text": secondary.raw_pricing_text,
+                    "organizer_name": secondary.organizer_name,
+                    "external_url": secondary.external_url,
+                    "variants": [
+                        {
+                            "name": v.name,
+                            "distance_km": v.distance_km,
+                            "elevation_gain_m": v.elevation_gain_m,
+                            "elevation_loss_m": v.elevation_loss_m,
+                            "price": v.price,
+                            "currency": v.currency,
+                            "start_time": v.start_time,
+                        }
+                        for v in secondary.variants
+                    ],
+                    "pricing_phases": [
+                        {
+                            "variant_name": pp.variant_name,
+                            "phase_name": pp.phase_name,
+                            "start_date": str(pp.start_date) if pp.start_date else None,
+                            "end_date": str(pp.end_date) if pp.end_date else None,
+                            "price": pp.price,
+                            "currency": pp.currency,
+                            "note": pp.note,
+                        }
+                        for pp in secondary.pricing_phases
+                    ],
+                })
+                # Also collect GPX urls from secondary for injection
+                for v in secondary.variants:
+                    gpx = v.gpx_file_path or v.gpx_url
+                    if gpx:
+                        gpx_url_by_name.setdefault(v.name.lower(), gpx)
+
+            if merged_sources:
+                event_data["merged_sources"] = merged_sources
+                logger.info(
+                    "  Merged data from %d secondary event(s): %s",
+                    len(merged_sources),
+                    [s["source_name"] for s in merged_sources],
+                )
+
         logger.info(
             "Auto-generate AI for new event: %s (id=%s)", event.title, event_id,
         )
@@ -1107,11 +1231,7 @@ async def generate_and_import_event(
         generated["sourceName"] = event.source_name
 
         # Inject gpxUrl per variant by matching AI-generated variant names to scraped variants
-        gpx_url_by_name: dict[str, str] = {
-            v.name.lower(): (v.gpx_file_path or v.gpx_url)
-            for v in event.variants
-            if (v.gpx_file_path or v.gpx_url)
-        }
+        # (gpx_url_by_name was built earlier and enriched with secondary GPX from merged pairs)
         for v in generated.get("variants", []):
             name_key = (v.get("name") or "").lower()
             gpx_url = gpx_url_by_name.get(name_key)

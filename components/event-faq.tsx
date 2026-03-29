@@ -55,10 +55,10 @@ export function EventFAQ({ items, translations }: EventFAQProps) {
 
   return (
     <section className="mt-12">
-      <div className="mb-6 flex items-center gap-2">
+      <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold">
         <HelpCircle className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold">{translations.title}</h2>
-      </div>
+        {translations.title}
+      </h2>
 
       <div className="w-full">
         {visibleItems.map((item, index) => (

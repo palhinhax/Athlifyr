@@ -22,6 +22,8 @@ import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
 import { useToggleLike, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { CachedImage, CachedAvatar } from "@/src/components/CachedImage";
+import Markdown from "react-native-markdown-display";
+import { handleMarkdownLinkPress } from "@/src/lib/markdown-link-handler";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import {
   colors,
@@ -323,7 +325,9 @@ export function PostCard({ post }: PostCardProps) {
       </View>
 
       {/* Content */}
-      <Text style={styles.content}>{post.content}</Text>
+      <Markdown style={markdownStyles} onLinkPress={handleMarkdownLinkPress}>
+        {post.content}
+      </Markdown>
 
       {/* Media — Image */}
       {post.imageUrl && post.mediaType !== "video" && (
@@ -799,3 +803,78 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
   },
 });
+
+const markdownStyles = {
+  body: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text,
+    lineHeight: typography.fontSize.sm * 1.6,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  paragraph: {
+    marginTop: 0,
+    marginBottom: 4,
+  },
+  strong: {
+    fontWeight: "700" as const,
+  },
+  em: {
+    fontStyle: "italic" as const,
+  },
+  link: {
+    color: colors.primary,
+    textDecorationLine: "none" as const,
+  },
+  heading1: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: "700" as const,
+    marginBottom: 4,
+    marginTop: 8,
+    color: colors.text,
+  },
+  heading2: {
+    fontSize: typography.fontSize.md,
+    fontWeight: "700" as const,
+    marginBottom: 4,
+    marginTop: 8,
+    color: colors.text,
+  },
+  heading3: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: "700" as const,
+    marginBottom: 2,
+    marginTop: 6,
+    color: colors.text,
+  },
+  bullet_list: {
+    marginVertical: 2,
+  },
+  ordered_list: {
+    marginVertical: 2,
+  },
+  list_item: {
+    marginVertical: 0,
+  },
+  code_inline: {
+    fontFamily: "monospace",
+    backgroundColor: colors.muted,
+    paddingHorizontal: 4,
+    borderRadius: 4,
+  },
+  fence: {
+    backgroundColor: colors.muted,
+    borderRadius: 6,
+    padding: 8,
+    marginVertical: 4,
+  },
+  blockquote: {
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+    paddingLeft: 8,
+    opacity: 0.8,
+  },
+  image: {
+    display: "none" as const,
+  },
+};

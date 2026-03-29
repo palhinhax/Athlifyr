@@ -25,6 +25,8 @@ from app.sources.tictactiming.scraper import TicTacTimingScraper
 from app.sources.atrp.scraper import ATRPScraper
 from app.sources.itra.scraper import ITRAScraper
 from app.sources.xistarca.scraper import XistarcaScraper
+from app.sources.rockthesport.scraper import RockTheSportScraper
+from app.sources.sportmaniacs.scraper import SportmaniacsScraper
 from app.sources.racefinder.scraper import RaceFinderScraper
 
 # Register new scrapers here ↓
@@ -55,6 +57,8 @@ _SCRAPERS: dict[str, type[BaseScraper]] = {
     "tictactiming": TicTacTimingScraper,
     "itra": ITRAScraper,
     "xistarca": XistarcaScraper,
+    "rockthesport": RockTheSportScraper,
+    "sportmaniacs": SportmaniacsScraper,
     "racefinder": RaceFinderScraper,
 }
 

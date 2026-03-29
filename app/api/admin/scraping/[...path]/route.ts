@@ -78,4 +78,4 @@ export const PATCH = proxyRequest;
 export const DELETE = proxyRequest;
 
 // Scraping runs can take 10+ minutes (scrape + AI + import)
-export const maxDuration = 900;
+export const maxDuration = 800;

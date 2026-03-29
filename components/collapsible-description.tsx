@@ -127,7 +127,7 @@ export function CollapsibleDescription({
   if (!needsCollapsing) {
     return (
       <>
-        <div className="prose prose-slate dark:prose-invert max-w-none overflow-x-hidden break-words">
+        <div className="prose prose-slate max-w-none overflow-x-hidden break-words dark:prose-invert">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={markdownComponents}
@@ -156,7 +156,7 @@ export function CollapsibleDescription({
           maxHeight: isExpanded ? "none" : `${maxHeight}px`,
         }}
       >
-        <div className="prose prose-slate dark:prose-invert max-w-none overflow-x-hidden break-words">
+        <div className="prose prose-slate max-w-none overflow-x-hidden break-words dark:prose-invert">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={markdownComponents}

@@ -134,7 +134,8 @@ export function EventWeatherMobile({
 
   return (
     <div className="rounded-lg border bg-card p-4 lg:hidden">
-      <h3 className="mb-3 text-sm font-medium">
+      <h3 className="mb-3 flex items-center gap-2 font-semibold">
+        <CloudSun className="h-5 w-5 text-primary" />
         {isPastEvent ? t("weather.titlePast") : t("weather.title")}
       </h3>
 

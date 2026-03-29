@@ -43,7 +43,7 @@ export default async function AccessibilityPage({
 
   return (
     <PageContainer size="lg" maxWidth="max-w-4xl">
-      <article className="prose prose-gray dark:prose-invert max-w-none">
+      <article className="prose prose-gray max-w-none dark:prose-invert">
         <h1>Declaração de Acessibilidade e Usabilidade</h1>
 
         <p>

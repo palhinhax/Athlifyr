@@ -216,6 +216,16 @@ export default async function FeedPage({
         })
       : [];
 
+  // Deduplicate: if a user already has a post about an event, skip their participation card
+  const postUserEventPairs = new Set(
+    recentPosts
+      .filter((p) => p.userId && p.eventId)
+      .map((p) => `${p.userId}-${p.eventId}`)
+  );
+  const deduplicatedParticipations = recentParticipations.filter(
+    (p) => !postUserEventPairs.has(`${p.userId}-${p.eventId}`)
+  );
+
   // Combine and sort activities
   const activities: Array<{
     type: "comment" | "participation" | "post";
@@ -235,7 +245,7 @@ export default async function FeedPage({
       date: c.createdAt,
       data: c,
     })),
-    ...recentParticipations.map((p) => ({
+    ...deduplicatedParticipations.map((p) => ({
       type: "participation" as const,
       date: p.createdAt,
       data: p,

@@ -248,6 +248,9 @@ model Event {
 
   // ── Origin tracking (set when imported from scraping service) ──────────────
   scrapingSource       String?
+  scrapedEventId       String?            @unique
+  lastImportedBy       String?            // source name that last updated this event
+  lastImportedAt       DateTime?          // when the last import happened
 
   @@index([sportTypes])
   @@index([startDate])

@@ -30,7 +30,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
         </Link>
       </Button>
 
-      <article className="prose prose-gray dark:prose-invert max-w-none">
+      <article className="prose prose-gray max-w-none dark:prose-invert">
         <h1>{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
           {t("lastUpdated", { date: formattedDate })}

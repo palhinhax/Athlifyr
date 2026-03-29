@@ -21,7 +21,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
         </Link>
       </Button>
 
-      <article className="prose prose-gray dark:prose-invert max-w-none">
+      <article className="prose prose-gray max-w-none dark:prose-invert">
         <h1>Termos de Serviço</h1>
         <p className="text-sm text-muted-foreground">
           Última atualização: 16 de Janeiro de 2026

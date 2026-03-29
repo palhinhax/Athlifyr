@@ -28,6 +28,8 @@ import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { CachedImage, CachedAvatar } from "@/src/components/CachedImage";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+import Markdown from "react-native-markdown-display";
+import { handleMarkdownLinkPress } from "@/src/lib/markdown-link-handler";
 import { theme } from "@/src/constants/theme";
 
 // --- Types matching API response ---
@@ -779,12 +781,12 @@ export function VenueFeedTab({ venueId }: VenueFeedTabProps) {
 
             {/* Text content */}
             {post.content ? (
-              <Text
-                style={styles.postContent}
-                numberOfLines={hasEvent || hasWorkout ? 4 : 10}
+              <Markdown
+                style={venueMarkdownStyles}
+                onLinkPress={handleMarkdownLinkPress}
               >
                 {post.content}
-              </Text>
+              </Markdown>
             ) : null}
 
             {/* Media (image or video) */}
@@ -1165,3 +1167,78 @@ const styles = StyleSheet.create({
     color: theme.colors.textTertiary,
   },
 });
+
+const venueMarkdownStyles = {
+  body: {
+    fontSize: 15,
+    color: theme.colors.text,
+    lineHeight: 22,
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
+  },
+  paragraph: {
+    marginTop: 0,
+    marginBottom: 4,
+  },
+  strong: {
+    fontWeight: "700" as const,
+  },
+  em: {
+    fontStyle: "italic" as const,
+  },
+  link: {
+    color: theme.colors.primary,
+    textDecorationLine: "none" as const,
+  },
+  heading1: {
+    fontSize: 18,
+    fontWeight: "700" as const,
+    marginBottom: 4,
+    marginTop: 8,
+    color: theme.colors.text,
+  },
+  heading2: {
+    fontSize: 16,
+    fontWeight: "700" as const,
+    marginBottom: 4,
+    marginTop: 8,
+    color: theme.colors.text,
+  },
+  heading3: {
+    fontSize: 15,
+    fontWeight: "700" as const,
+    marginBottom: 2,
+    marginTop: 6,
+    color: theme.colors.text,
+  },
+  bullet_list: {
+    marginVertical: 2,
+  },
+  ordered_list: {
+    marginVertical: 2,
+  },
+  list_item: {
+    marginVertical: 0,
+  },
+  code_inline: {
+    fontFamily: "monospace",
+    backgroundColor: theme.colors.backgroundSecondary,
+    paddingHorizontal: 4,
+    borderRadius: 4,
+  },
+  fence: {
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderRadius: 6,
+    padding: 8,
+    marginVertical: 4,
+  },
+  blockquote: {
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.primary,
+    paddingLeft: 8,
+    opacity: 0.8,
+  },
+  image: {
+    display: "none" as const,
+  },
+};

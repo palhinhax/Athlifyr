@@ -36,6 +36,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { FeaturedEventCard } from "@/components/featured-event-card";
 import type { SportType, EventVariant } from "@prisma/client";
 
@@ -435,15 +437,15 @@ export function PostCard({
               </div>
             )}
           </Link>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 overflow-hidden">
             <Link
               href={`/user/${post.userId}`}
-              className="truncate font-semibold hover:underline"
+              className="block truncate font-semibold hover:underline"
             >
               {post.user.name}
             </Link>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span className="whitespace-nowrap">
+            <div className="min-w-0 flex-wrap items-center gap-x-2 overflow-hidden text-xs text-muted-foreground">
+              <span className="shrink-0 whitespace-nowrap">
                 {formatDistanceToNow(createdAt, {
                   addSuffix: true,
                   locale: pt,
@@ -451,10 +453,10 @@ export function PostCard({
               </span>
               {post.event && (
                 <>
-                  <span>•</span>
+                  <span className="shrink-0">•</span>
                   <Link
                     href={`/events/${post.event.slug}`}
-                    className="truncate hover:text-accent hover:underline"
+                    className="block min-w-0 hover:text-accent hover:underline"
                   >
                     {post.event.title}
                   </Link>
@@ -462,10 +464,9 @@ export function PostCard({
               )}
               {post.venue && !hideVenueBadge && (
                 <>
-                  <span>•</span>
                   <Link
                     href={`/venues/${post.venue.slug}`}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-white/20 bg-black/20 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-black/30"
+                    className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-white/20 bg-black/20 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-black/30"
                   >
                     <span>{post.venue.name}</span>
                   </Link>
@@ -500,7 +501,7 @@ export function PostCard({
         </div>
 
         {/* Content */}
-        <div className="px-4 pb-3">
+        <div className="overflow-hidden px-4 pb-3">
           {isEditing ? (
             <div className="space-y-2">
               <textarea
@@ -530,9 +531,11 @@ export function PostCard({
               </div>
             </div>
           ) : (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed">
-              {post.content}
-            </p>
+            <div className="prose prose-sm min-w-0 max-w-none [overflow-wrap:anywhere] dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:my-1 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-pre:overflow-x-auto prose-ol:my-1 prose-ul:my-1 prose-li:my-0 prose-img:hidden">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {post.content}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
 

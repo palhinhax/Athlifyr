@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Target } from "lucide-react";
+import { Users, Target, Ticket } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface EventRegistrationHeaderProps {
@@ -18,7 +18,8 @@ export function EventRegistrationHeader({
 
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h3 className="text-xl font-bold">
+      <h3 className="flex items-center gap-2 text-xl font-semibold">
+        <Ticket className="h-5 w-5 text-primary" />
         {hasRegistrations ? t("registerTitle") : t("willYouGo")}
       </h3>
       {(participantsCount >= 5 || interestedCount > 0) && (

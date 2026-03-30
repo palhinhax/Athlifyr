@@ -36,17 +36,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Check max submissions
-    if (
-      form.maxSubmissions !== null &&
-      form._count.submissions >= form.maxSubmissions
-    ) {
-      return NextResponse.json(
-        { error: "This form has reached its maximum number of submissions" },
-        { status: 403 }
-      );
-    }
-
     // Return only public data (no internal IDs for createdBy, etc.)
     return NextResponse.json({
       id: form.id,

@@ -49,6 +49,7 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
     const credits = (await import(`@/messages/${locale}/credits.json`)).default;
     const scoring = (await import(`@/messages/${locale}/scoring.json`)).default;
     const pricing = (await import(`@/messages/${locale}/pricing.json`)).default;
+    const forms = (await import(`@/messages/${locale}/forms.json`)).default;
 
     // Merge all messages
     Object.assign(
@@ -77,7 +78,8 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
       liveRacePresentation,
       credits,
       scoring,
-      pricing
+      pricing,
+      forms
     );
   } catch (error) {
     console.error(`Failed to load messages for locale "${locale}":`, error);

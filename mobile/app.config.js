@@ -1,6 +1,24 @@
 const config = ({ config }) => {
+  // Add the reversed iOS client ID as a URL scheme so iOS can handle
+  // the Google OAuth redirect deep-link (com.googleusercontent.apps.<id>:/oauth2redirect).
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+  const reversedIosClientId = iosClientId
+    ? iosClientId.split(".").reverse().join(".")
+    : null;
+
+  const schemes = Array.isArray(config.scheme)
+    ? [...config.scheme]
+    : config.scheme
+      ? [config.scheme]
+      : [];
+
+  if (reversedIosClientId && !schemes.includes(reversedIosClientId)) {
+    schemes.push(reversedIosClientId);
+  }
+
   return {
     ...config,
+    scheme: schemes,
     ios: {
       ...config.ios,
       buildNumber: String(config.ios?.buildNumber || "1"),

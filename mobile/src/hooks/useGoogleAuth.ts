@@ -45,35 +45,45 @@ export function useGoogleAuth() {
 
   const isWeb = Platform.OS === "web";
 
-  // Build the redirect URI dynamically:
-  // - Web: use makeRedirectUri() which produces the current page URL
-  // - Expo Go: exp://127.0.0.1:8081/--/redirect  (auto-detected, uses Web Client ID)
-  // - Dev build / Production (Android): com.athlifyr.app:/oauth2redirect
-  //     This is the reverse-DNS scheme required by Android OAuth Client IDs.
-  //     Google validates it automatically via package name + SHA-1 fingerprint.
-  //     Custom URI schemes (athlifyr://...) are rejected by Android-type clients.
+  const isIOS = Platform.OS === "ios";
+
+  // Build the redirect URI and client ID dynamically per platform:
+  //
+  // - Web: makeRedirectUri() → current page URL, uses Web Client ID
+  // - Expo Go: exp://<host>:8081/--/redirect, uses Web Client ID
+  // - Standalone Android: com.athlifyr.app:/oauth2redirect
+  //     Reverse-DNS scheme required by Android OAuth Client IDs.
+  //     Google validates via package name + SHA-1 fingerprint.
+  // - Standalone iOS: <reversed-ios-client-id>:/oauth2redirect
+  //     iOS OAuth Client IDs require the reversed client ID as the URL scheme.
+  //     Google validates via bundle ID.
   //
   // ⚠️ IMPORTANT: makeRedirectUri({ scheme, path }) produces "scheme://path" (two slashes),
-  //    but Android OAuth clients require "scheme:/path" (one slash).
-  //    Use the literal string to avoid the Error 400: invalid_request from Google.
+  //    but native OAuth clients require "scheme:/path" (one slash).
+  //    Use literal strings to avoid Error 400: invalid_request from Google.
   let redirectUri: string;
+  let clientId: string;
+
   if (isWeb) {
     redirectUri = AuthSession.makeRedirectUri({ preferLocalhost: true });
+    clientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "";
   } else if (isExpoGo) {
     redirectUri = AuthSession.makeRedirectUri({
       scheme: "athlifyr",
       path: "redirect",
     });
+    clientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "";
+  } else if (isIOS) {
+    clientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? "";
+    // iOS requires the reversed client ID as the redirect URI scheme.
+    // e.g. "123-abc.apps.googleusercontent.com" → "com.googleusercontent.apps.123-abc"
+    const reversedClientId = clientId.split(".").reverse().join(".");
+    redirectUri = `${reversedClientId}:/oauth2redirect`;
   } else {
+    // Android
+    clientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "";
     redirectUri = "com.athlifyr.app:/oauth2redirect";
   }
-
-  // Web and Expo Go use the Web Client ID (web-type credential in Google Cloud Console).
-  // Standalone Android uses the Android Client ID.
-  const clientId =
-    isWeb || isExpoGo
-      ? (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "")
-      : (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "");
 
   console.log("[GoogleAuth]", {
     isExpoGo,

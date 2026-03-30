@@ -61,9 +61,13 @@ function getClientCredentials(platform: "ios" | "android" | "web"): {
 } {
   switch (platform) {
     case "android":
-    case "ios":
       return {
         clientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
+        clientSecret: undefined,
+      };
+    case "ios":
+      return {
+        clientId: process.env.GOOGLE_IOS_CLIENT_ID,
         clientSecret: undefined,
       };
     default: // "web"
@@ -231,7 +235,8 @@ async function upsertUser(
 
 /** Maps a platform string to the corresponding env var name suffix for error messages. */
 function platformEnvKey(platform: string): string {
-  if (platform === "android" || platform === "ios") return "ANDROID";
+  if (platform === "android") return "ANDROID";
+  if (platform === "ios") return "IOS";
   return "MOBILE_WEB";
 }
 

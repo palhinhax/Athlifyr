@@ -199,6 +199,24 @@ export default function EventsScreen() {
     fetchFeatured();
   }, []);
 
+  // Fetch featured events
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append("featured", "true");
+        params.append("pageSize", "50");
+        const response = await api.get<EventsResponse>(
+          `/events?${params.toString()}`
+        );
+        setFeaturedEvents(response.data.events);
+      } catch {
+        // Featured section is non-critical
+      }
+    };
+    fetchFeatured();
+  }, []);
+
   const handleRefresh = () => {
     setRefreshing(true);
     fetchEvents(1, false);

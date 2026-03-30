@@ -5,6 +5,7 @@ import { randomBytes, createHash } from "crypto";
 import { notifyGiveawayWinners } from "@/lib/notifications";
 
 const GIVEAWAY_DRAW_SECRET = process.env.GIVEAWAY_DRAW_SECRET;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 /**
  * Pick winning ticket numbers in a verifiable way.
@@ -59,18 +60,31 @@ function pickWinningTickets(
 }
 
 /**
- * Daily auto draw endpoint — called by GitHub Actions
- * Draws all giveaways scheduled for today (Europe/Lisbon timezone)
+ * Daily auto draw endpoint
+ * Called by Vercel Cron (GET) or manually (POST)
  */
+function verifyAuth(request: Request): boolean {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader) return false;
+  if (GIVEAWAY_DRAW_SECRET && authHeader === `Bearer ${GIVEAWAY_DRAW_SECRET}`)
+    return true;
+  if (CRON_SECRET && authHeader === `Bearer ${CRON_SECRET}`) return true;
+  return false;
+}
+
+/** Vercel Cron entry point */
+export async function GET(request: Request) {
+  return handleDraw(request);
+}
+
+/** Legacy POST entry point */
 export async function POST(request: Request) {
+  return handleDraw(request);
+}
+
+async function handleDraw(request: Request) {
   try {
-    // Verify secret token
-    const authHeader = request.headers.get("authorization");
-    if (
-      !GIVEAWAY_DRAW_SECRET ||
-      !authHeader ||
-      authHeader !== `Bearer ${GIVEAWAY_DRAW_SECRET}`
-    ) {
+    if (!verifyAuth(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

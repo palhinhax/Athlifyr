@@ -1,0 +1,12 @@
+{
+  "forms": {
+    "submit": "Invia",
+    "submitSuccess": "Modulo inviato con successo!",
+    "submitSuccessDescription": "La tua risposta è stata registrata. Grazie!",
+    "errors": {
+      "loadFailed": "Impossibile caricare il modulo",
+      "submitFailed": "Impossibile inviare il modulo",
+      "fieldRequired": "Il campo \"{field}\" è obbligatorio"
+    }
+  }
+}

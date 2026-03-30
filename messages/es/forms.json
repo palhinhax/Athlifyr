@@ -1,0 +1,12 @@
+{
+  "forms": {
+    "submit": "Enviar",
+    "submitSuccess": "¡Formulario enviado con éxito!",
+    "submitSuccessDescription": "Tu respuesta ha sido registrada. ¡Gracias!",
+    "errors": {
+      "loadFailed": "Error al cargar el formulario",
+      "submitFailed": "Error al enviar el formulario",
+      "fieldRequired": "El campo \"{field}\" es obligatorio"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "forms": {
+    "submit": "Submit",
+    "submitSuccess": "Form submitted successfully!",
+    "submitSuccessDescription": "Your response has been recorded. Thank you!",
+    "errors": {
+      "loadFailed": "Failed to load form",
+      "submitFailed": "Failed to submit form",
+      "fieldRequired": "The field \"{field}\" is required"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "forms": {
+    "submit": "Envoyer",
+    "submitSuccess": "Formulaire envoyé avec succès !",
+    "submitSuccessDescription": "Votre réponse a été enregistrée. Merci !",
+    "errors": {
+      "loadFailed": "Échec du chargement du formulaire",
+      "submitFailed": "Échec de l'envoi du formulaire",
+      "fieldRequired": "Le champ \"{field}\" est obligatoire"
+    }
+  }
+}

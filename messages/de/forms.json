@@ -1,0 +1,12 @@
+{
+  "forms": {
+    "submit": "Absenden",
+    "submitSuccess": "Formular erfolgreich gesendet!",
+    "submitSuccessDescription": "Deine Antwort wurde gespeichert. Vielen Dank!",
+    "errors": {
+      "loadFailed": "Formular konnte nicht geladen werden",
+      "submitFailed": "Formular konnte nicht gesendet werden",
+      "fieldRequired": "Das Feld \"{field}\" ist erforderlich"
+    }
+  }
+}

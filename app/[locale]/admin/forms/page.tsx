@@ -70,6 +70,7 @@ interface FormSummary {
   status: FormStatus;
   slug: string;
   closesAt: string | null;
+  maxSubmissions: number | null;
   createdAt: string;
   _count: { submissions: number; fields: number };
 }
@@ -297,9 +298,14 @@ export default function AdminFormsPage() {
                       {t("fieldsCount", { count: form._count.fields })}
                     </span>
                     <span>
-                      {t("submissionsCount", {
-                        count: form._count.submissions,
-                      })}
+                      {form.maxSubmissions
+                        ? t("submissionsOfMax", {
+                            count: form._count.submissions,
+                            max: form.maxSubmissions,
+                          })
+                        : t("submissionsCount", {
+                            count: form._count.submissions,
+                          })}
                     </span>
                     <span>{new Date(form.createdAt).toLocaleDateString()}</span>
                   </div>
@@ -425,6 +431,11 @@ function FormBuilderDialog({
   const [closesAt, setClosesAt] = useState(
     form?.closesAt ? new Date(form.closesAt).toISOString().slice(0, 16) : ""
   );
+  const [maxSubmissions, setMaxSubmissions] = useState<string>(
+    form?.maxSubmissions === null || form?.maxSubmissions === undefined
+      ? ""
+      : String(form.maxSubmissions)
+  );
   const [fields, setFields] = useState<FormField[]>(
     form?.fields?.map((f) => ({
       id: f.id,
@@ -520,6 +531,9 @@ function FormBuilderDialog({
         title,
         description,
         closesAt: closesAt || null,
+        maxSubmissions: maxSubmissions
+          ? Number.parseInt(maxSubmissions, 10)
+          : null,
         fields: fields.map((f) => ({
           label: f.label,
           placeholder: f.placeholder || undefined,
@@ -590,6 +604,19 @@ function FormBuilderDialog({
                 value={closesAt}
                 onChange={(e) => setClosesAt(e.target.value)}
               />
+            </div>
+            <div>
+              <Label>{t("maxSubmissions")}</Label>
+              <Input
+                type="number"
+                min="1"
+                value={maxSubmissions}
+                onChange={(e) => setMaxSubmissions(e.target.value)}
+                placeholder={t("maxSubmissionsPlaceholder")}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("maxSubmissionsHint")}
+              </p>
             </div>
           </div>
 

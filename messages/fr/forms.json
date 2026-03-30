@@ -3,6 +3,8 @@
     "submit": "Envoyer",
     "submitSuccess": "Formulaire envoyé avec succès !",
     "submitSuccessDescription": "Votre réponse a été enregistrée. Merci !",
+    "formFull": "Ce formulaire n'accepte plus de réponses.",
+    "spotsRemaining": "{count, plural, one {# place restante} other {# places restantes}}",
     "errors": {
       "loadFailed": "Échec du chargement du formulaire",
       "submitFailed": "Échec de l'envoi du formulaire",

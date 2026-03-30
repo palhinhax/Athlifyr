@@ -14,6 +14,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       where: { slug },
       include: {
         fields: { orderBy: { order: "asc" } },
+        _count: { select: { submissions: true } },
       },
     });
 
@@ -35,6 +36,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Check max submissions
+    if (
+      form.maxSubmissions !== null &&
+      form._count.submissions >= form.maxSubmissions
+    ) {
+      return NextResponse.json(
+        { error: "This form has reached its maximum number of submissions" },
+        { status: 403 }
+      );
+    }
+
     // Return only public data (no internal IDs for createdBy, etc.)
     return NextResponse.json({
       id: form.id,
@@ -42,6 +54,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       description: form.description,
       slug: form.slug,
       closesAt: form.closesAt,
+      maxSubmissions: form.maxSubmissions,
+      submissionCount: form._count.submissions,
       fields: form.fields.map((f) => ({
         id: f.id,
         label: f.label,
@@ -99,7 +113,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const form = await prisma.form.findUnique({
       where: { slug },
-      include: { fields: true },
+      include: {
+        fields: true,
+        _count: { select: { submissions: true } },
+      },
     });
 
     if (!form) {
@@ -116,6 +133,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (form.closesAt && new Date(form.closesAt) < new Date()) {
       return NextResponse.json(
         { error: "This form is closed" },
+        { status: 403 }
+      );
+    }
+
+    // Check max submissions
+    if (
+      form.maxSubmissions !== null &&
+      form._count.submissions >= form.maxSubmissions
+    ) {
+      return NextResponse.json(
+        { error: "This form has reached its maximum number of submissions" },
         { status: 403 }
       );
     }

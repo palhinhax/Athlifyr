@@ -42,6 +42,8 @@ interface FormData {
   description: string | null;
   slug: string;
   closesAt: string | null;
+  maxSubmissions: number | null;
+  submissionCount: number;
   fields: FormFieldData[];
 }
 
@@ -388,6 +390,42 @@ export function PublicFormClient({ slug }: Readonly<{ slug: string }>) {
 
   if (!form) return null;
 
+  // Check if form has reached max submissions
+  const isFull =
+    form.maxSubmissions !== null &&
+    form.maxSubmissions !== undefined &&
+    form.submissionCount >= form.maxSubmissions;
+
+  const hasLimit = typeof form.maxSubmissions === "number";
+  const spotsLeft = hasLimit
+    ? (form.maxSubmissions as number) - form.submissionCount
+    : null;
+
+  if (isFull) {
+    return (
+      <FormPageShell>
+        <div className="mb-6 flex justify-center">
+          <Image
+            src="/logo-removebg-preview.png"
+            alt="Athlifyr"
+            width={160}
+            height={40}
+            className="drop-shadow-lg"
+            priority
+          />
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/10 p-10 text-center shadow-2xl backdrop-blur-xl">
+          <AlertCircle className="mx-auto mb-4 h-16 w-16 text-orange-400" />
+          <p className="text-2xl font-bold text-white">{form.title}</p>
+          <p className="mt-3 text-white/70">{t("formFull")}</p>
+        </div>
+        <p className="mt-4 text-center text-xs text-white/40">
+          Powered by Athlifyr
+        </p>
+      </FormPageShell>
+    );
+  }
+
   // Group fields by section
   const sections = new Map<string, FormFieldData[]>();
   for (const field of form.fields) {
@@ -425,6 +463,13 @@ export function PublicFormClient({ slug }: Readonly<{ slug: string }>) {
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {form.description}
               </ReactMarkdown>
+            </div>
+          )}
+          {spotsLeft !== null && (
+            <div className="mt-3">
+              <span className="inline-block rounded-full bg-orange-500/20 px-3 py-1 text-xs font-medium text-orange-300">
+                {t("spotsRemaining", { count: spotsLeft })}
+              </span>
             </div>
           )}
         </div>

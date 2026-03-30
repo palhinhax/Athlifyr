@@ -3,6 +3,8 @@
     "submit": "Invia",
     "submitSuccess": "Modulo inviato con successo!",
     "submitSuccessDescription": "La tua risposta è stata registrata. Grazie!",
+    "formFull": "Questo modulo non accetta pi\u00f9 risposte.",
+    "spotsRemaining": "{count, plural, one {# posto rimanente} other {# posti rimanenti}}",
     "errors": {
       "loadFailed": "Impossibile caricare il modulo",
       "submitFailed": "Impossibile inviare il modulo",

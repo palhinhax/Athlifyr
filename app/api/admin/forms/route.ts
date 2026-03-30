@@ -40,10 +40,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, fields, closesAt } = body as {
+    const { title, description, fields, closesAt, maxSubmissions } = body as {
       title: string;
       description?: string;
       closesAt?: string;
+      maxSubmissions?: number | null;
       fields: Array<{
         label: string;
         placeholder?: string;
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
         slug,
         createdById: session.user.id,
         closesAt: closesAt ? new Date(closesAt) : null,
+        maxSubmissions: maxSubmissions ?? null,
         fields: {
           create: fields.map((f, idx) => ({
             label: f.label,

@@ -3,6 +3,8 @@
     "submit": "Enviar",
     "submitSuccess": "Formulário enviado com sucesso!",
     "submitSuccessDescription": "A tua resposta foi registada. Obrigado!",
+    "formFull": "Este formulário já não aceita mais respostas.",
+    "spotsRemaining": "{count, plural, one {# vaga restante} other {# vagas restantes}}",
     "errors": {
       "loadFailed": "Erro ao carregar formulário",
       "submitFailed": "Erro ao enviar formulário",

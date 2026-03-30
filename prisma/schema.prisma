@@ -3069,6 +3069,8 @@ model Form {
   slug        String     @unique
   /// Optional: close the form after this date
   closesAt    DateTime?
+  /// Optional: maximum number of submissions allowed (null = unlimited)
+  maxSubmissions Int?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 

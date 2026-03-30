@@ -58,22 +58,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
     const body = await request.json();
-    const { title, description, status, closesAt, fields } = body as {
-      title?: string;
-      description?: string;
-      status?: FormStatus;
-      closesAt?: string | null;
-      fields?: Array<{
-        id?: string;
-        label: string;
-        placeholder?: string;
-        type: string;
-        required?: boolean;
-        order: number;
-        options?: string[];
-        section?: string;
-      }>;
-    };
+    const { title, description, status, closesAt, maxSubmissions, fields } =
+      body as {
+        title?: string;
+        description?: string;
+        status?: FormStatus;
+        closesAt?: string | null;
+        maxSubmissions?: number | null;
+        fields?: Array<{
+          id?: string;
+          label: string;
+          placeholder?: string;
+          type: string;
+          required?: boolean;
+          order: number;
+          options?: string[];
+          section?: string;
+        }>;
+      };
 
     const existing = await prisma.form.findUnique({ where: { id } });
     if (!existing) {
@@ -108,6 +110,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(closesAt !== undefined && {
           closesAt: closesAt ? new Date(closesAt) : null,
         }),
+        ...(maxSubmissions !== undefined && { maxSubmissions }),
       },
       include: {
         fields: { orderBy: { order: "asc" } },

@@ -3,24 +3,17 @@ import { ProfileGallery } from "./ProfileGallery";
 import { FriendsSection } from "./FriendsSection";
 
 interface OtherSectionsProps {
-  followingCount: number;
-  followersCount: number;
+  friendsCount: number;
 }
 
-export function OtherSections({
-  followingCount,
-  followersCount,
-}: OtherSectionsProps) {
+export function OtherSections({ friendsCount }: OtherSectionsProps) {
   return (
     <>
       {/* Gallery Section */}
       <ProfileGallery />
 
-      {/* Connections Section */}
-      <FriendsSection
-        followingCount={followingCount}
-        followersCount={followersCount}
-      />
+      {/* Friends Section */}
+      <FriendsSection friendsCount={friendsCount} />
     </>
   );
 }

@@ -61,7 +61,7 @@ function NotificationIcon({ notification }: { notification: AppNotification }) {
     case "FRIEND_REQUEST":
       return <UserPlus size={16} color={colors.info} />;
     case "FRIEND_ACCEPTED":
-      return <UserCheck size={16} color={"#16a34a"} />;
+      return <UserCheck size={16} color="#16a34a" />;
     case "VENUE_INVITE":
     case "VENUE_INVITE_ACCEPTED":
       return <Building2 size={16} color="#9333ea" />;
@@ -173,7 +173,7 @@ function NotificationItem({
               venue: notification.venueName ?? "?",
             });
       case "FRIEND_REQUEST":
-        return t("notifications.newFollowerFrom", {
+        return t("notifications.friendRequestFrom", {
           name: notification.userName ?? "?",
         });
       case "VENUE_INVITE":
@@ -193,7 +193,7 @@ function NotificationItem({
       case "TRIAL_RESPONSE":
         return notification.sessionTitle ?? "";
       case "FRIEND_REQUEST":
-        return t("notifications.startedFollowingYou");
+        return t("notifications.wantsToBeYourFriend");
       case "VENUE_INVITE":
         return t("notifications.invitedAsRole", {
           role: notification.role ?? "COACH",
@@ -206,6 +206,7 @@ function NotificationItem({
 
   const hasActions =
     notification.type === "TRIAL_REQUEST" ||
+    notification.type === "FRIEND_REQUEST" ||
     notification.type === "VENUE_INVITE";
 
   // Notifications without a sender user (broadcast, system, push-test, etc.)
@@ -276,6 +277,9 @@ function NotificationItem({
             <TouchableOpacity
               style={[
                 styles.acceptButton,
+                notification.type === "FRIEND_REQUEST" && {
+                  backgroundColor: colors.info,
+                },
                 notification.type === "VENUE_INVITE" && {
                   backgroundColor: "#9333ea",
                 },
@@ -354,6 +358,9 @@ export default function NotificationsScreen() {
               `/trial-bookings/${id}/${action === "accept" ? "accept" : "reject"}`
             );
             break;
+          case "FRIEND_REQUEST":
+            await api.patch(`/friends/${id}`, { action });
+            break;
           case "VENUE_INVITE":
             await api.post(`/venues/invites/${id}/respond`, {
               accept: action === "accept",
@@ -366,9 +373,13 @@ export default function NotificationsScreen() {
             ? action === "accept"
               ? "notifications.trialAccepted"
               : "notifications.trialRejected"
-            : action === "accept"
-              ? "notifications.inviteAccepted"
-              : "notifications.inviteDeclined";
+            : type === "FRIEND_REQUEST"
+              ? action === "accept"
+                ? "notifications.friendAccepted"
+                : "notifications.friendRejected"
+              : action === "accept"
+                ? "notifications.inviteAccepted"
+                : "notifications.inviteDeclined";
 
         showToast(t(successKey), "success");
         invalidate();

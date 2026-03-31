@@ -7,8 +7,7 @@ interface ProfileStatsProps {
   stats: {
     upcomingEvents: number;
     pastEvents: number;
-    followersCount: number;
-    followingCount: number;
+    friendsCount: number;
   };
 }
 
@@ -31,15 +30,9 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
       </View>
       <View style={styles.statCard}>
         <Text style={[styles.statNumber, { color: "#f59e0b" }]}>
-          {stats.followersCount}
+          {stats.friendsCount}
         </Text>
-        <Text style={styles.statLabel}>{t("profile.followers")}</Text>
-      </View>
-      <View style={styles.statCard}>
-        <Text style={[styles.statNumber, { color: "#a855f7" }]}>
-          {stats.followingCount}
-        </Text>
-        <Text style={styles.statLabel}>{t("profile.following")}</Text>
+        <Text style={styles.statLabel}>{t("profile.friends")}</Text>
       </View>
     </View>
   );
@@ -48,7 +41,6 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
 const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: "row",
-    alignItems: "stretch",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.lg,
   },
@@ -58,7 +50,6 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
     alignItems: "center",
-    justifyContent: "center",
     borderWidth: 1,
     borderColor: theme.colors.border,
   },

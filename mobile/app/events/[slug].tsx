@@ -224,7 +224,7 @@ export default function EventDetailScreen() {
           {/* Giveaway */}
           {!event.cancelled && <GiveawayCard eventId={event.id} />}
 
-          {/* Meta Info (Date, Location, Following) */}
+          {/* Meta Info (Date, Location, Friends) */}
           <EventMetaInfo
             startDate={event.startDate}
             endDate={event.endDate}

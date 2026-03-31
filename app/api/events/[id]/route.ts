@@ -497,35 +497,18 @@ function notifyDateChangeIfNeeded(
   });
 }
 
-// --- Locale helpers ---
-
-const SUPPORTED_LOCALES = new Set<string>(["pt", "en", "es", "fr", "de", "it"]);
-
-function getLocaleFromRequest(request: Request): Language | null {
-  const acceptLanguage = request.headers.get("accept-language");
-  if (!acceptLanguage) return null;
-  const lang = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
-  return lang && SUPPORTED_LOCALES.has(lang) ? (lang as Language) : null;
-}
-
 // --- GET handler ---
 
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const locale = getLocaleFromRequest(request);
-    console.log(
-      `[events/detail] Accept-Language: "${request.headers.get("accept-language")}", resolved locale: ${locale}`
-    );
     const isCuid = /^c[a-z0-9]{20,30}$/i.test(id);
 
     const event = await prisma.event.findFirst({
       where: isCuid ? { id } : { slug: id },
       include: {
-        translations: locale ? { where: { language: locale } } : false,
         variants: {
           include: {
-            translations: locale ? { where: { language: locale } } : false,
             triathlonSegments: { orderBy: { order: "asc" } },
             pricingPhases: { orderBy: { startDate: "asc" } },
             _count: {
@@ -543,22 +526,6 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
-
-    // Overlay translated fields when a locale was requested
-    if (locale && Array.isArray(event.translations)) {
-      const t = event.translations[0];
-      if (t?.title) event.title = t.title;
-      if (t?.description) event.description = t.description;
-      if (t?.city) event.city = t.city;
-
-      for (const variant of event.variants) {
-        if (Array.isArray(variant.translations)) {
-          const vt = variant.translations[0];
-          if (vt?.name) variant.name = vt.name;
-          if (vt?.description) variant.description = vt.description;
-        }
-      }
     }
 
     return NextResponse.json(event);

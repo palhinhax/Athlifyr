@@ -15,38 +15,38 @@ const notificationTranslations: Record<
   string,
   Record<SupportedLocale, string>
 > = {
-  // Follow notifications
+  // Friend notifications
   "friend.request.title": {
-    en: "New Follower",
-    pt: "Novo Seguidor",
-    es: "Nuevo Seguidor",
-    fr: "Nouvel Abonné",
-    de: "Neuer Follower",
-    it: "Nuovo Follower",
+    en: "New Friend Request",
+    pt: "Novo Pedido de Amizade",
+    es: "Nueva Solicitud de Amistad",
+    fr: "Nouvelle Demande d'Amitié",
+    de: "Neue Freundschaftsanfrage",
+    it: "Nuova Richiesta di Amicizia",
   },
   "friend.request.body": {
-    en: "{name} started following you",
-    pt: "{name} começou a seguir-te",
-    es: "{name} empezó a seguirte",
-    fr: "{name} a commencé à te suivre",
-    de: "{name} folgt dir jetzt",
-    it: "{name} ha iniziato a seguirti",
+    en: "{name} sent you a friend request",
+    pt: "{name} enviou-te um pedido de amizade",
+    es: "{name} te envió una solicitud de amistad",
+    fr: "{name} vous a envoyé une demande d'amitié",
+    de: "{name} hat dir eine Freundschaftsanfrage gesendet",
+    it: "{name} ti ha inviato una richiesta di amicizia",
   },
   "friend.accepted.title": {
-    en: "New Follower",
-    pt: "Novo Seguidor",
-    es: "Nuevo Seguidor",
-    fr: "Nouvel Abonné",
-    de: "Neuer Follower",
-    it: "Nuovo Follower",
+    en: "Friend Request Accepted",
+    pt: "Pedido de Amizade Aceite",
+    es: "Solicitud de Amistad Aceptada",
+    fr: "Demande d'Amitié Acceptée",
+    de: "Freundschaftsanfrage Akzeptiert",
+    it: "Richiesta di Amicizia Accettata",
   },
   "friend.accepted.body": {
-    en: "{name} is now following you",
-    pt: "{name} agora segue-te",
-    es: "{name} ahora te sigue",
-    fr: "{name} te suit maintenant",
-    de: "{name} folgt dir jetzt",
-    it: "{name} ti segue adesso",
+    en: "{name} accepted your friend request",
+    pt: "{name} aceitou o teu pedido de amizade",
+    es: "{name} aceptó tu solicitud de amistad",
+    fr: "{name} a accepté votre demande d'amitié",
+    de: "{name} hat deine Freundschaftsanfrage akzeptiert",
+    it: "{name} ha accettato la tua richiesta di amicizia",
   },
 
   // Trial notifications
@@ -525,35 +525,7 @@ function getDefaultChannelId(type: NotificationType): string {
 // ============================================================================
 
 /**
- * Send new follower notification
- */
-export async function notifyNewFollower(params: {
-  receiverUserId: string;
-  followerUserId: string;
-  followerName: string;
-  followerImage?: string | null;
-}): Promise<void> {
-  const { receiverUserId, followerUserId, followerName, followerImage } =
-    params;
-  const locale = await getUserLocale(receiverUserId);
-
-  await createNotification({
-    userId: receiverUserId,
-    type: NotificationType.FRIEND_REQUEST,
-    title: t("friend.request.title", locale),
-    body: t("friend.request.body", locale, { name: followerName }),
-    data: {
-      senderId: followerUserId,
-      senderName: followerName,
-      senderImage: followerImage ?? undefined,
-      route: `/user/${followerUserId}`,
-      screen: "profile",
-    },
-  });
-}
-
-/**
- * @deprecated Use notifyNewFollower instead
+ * Send friend request notification
  */
 export async function notifyFriendRequest(params: {
   receiverUserId: string;
@@ -561,11 +533,21 @@ export async function notifyFriendRequest(params: {
   senderName: string;
   senderImage?: string | null;
 }): Promise<void> {
-  return notifyNewFollower({
-    receiverUserId: params.receiverUserId,
-    followerUserId: params.senderUserId,
-    followerName: params.senderName,
-    followerImage: params.senderImage,
+  const { receiverUserId, senderUserId, senderName, senderImage } = params;
+  const locale = await getUserLocale(receiverUserId);
+
+  await createNotification({
+    userId: receiverUserId,
+    type: NotificationType.FRIEND_REQUEST,
+    title: t("friend.request.title", locale),
+    body: t("friend.request.body", locale, { name: senderName }),
+    data: {
+      senderId: senderUserId,
+      senderName,
+      senderImage: senderImage ?? undefined,
+      route: "/friends",
+      screen: "friends",
+    },
   });
 }
 

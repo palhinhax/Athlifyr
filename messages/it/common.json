@@ -150,9 +150,9 @@
       "cancel": "Annulla"
     },
     "removeFriendDialog": {
-      "title": "Smetti di seguire",
-      "description": "Sei sicuro di voler smettere di seguire {name}? Non vedrai più le sue attività nel tuo feed.",
-      "confirm": "Smetti di seguire",
+      "title": "Rimuovi Amico",
+      "description": "Sei sicuro di voler rimuovere {name} dai tuoi amici? Non vedrai più le sue attività nel tuo feed.",
+      "confirm": "Rimuovi",
       "cancel": "Annulla"
     }
   },
@@ -199,12 +199,12 @@
     "emptyDescription": "Le tue notifiche appariranno qui",
     "trialAcceptedTitle": "Lezione di prova accettata da {venue}",
     "trialRejectedTitle": "Lezione di prova rifiutata da {venue}",
-    "friendRequestFrom": "{name} ha iniziato a seguirti",
+    "friendRequestFrom": "Richiesta di amicizia da {name}",
     "venueInviteFrom": "Invito da {venue}",
-    "wantsToBeYourFriend": "Ha iniziato a seguirti",
+    "wantsToBeYourFriend": "Vuole essere tuo amico",
     "invitedAsRole": "Invitato come {role}",
-    "friendAccepted": "Ti segue adesso",
-    "friendRejected": "Follow rimosso",
+    "friendAccepted": "Richiesta di amicizia accettata",
+    "friendRejected": "Richiesta di amicizia rifiutata",
     "inviteAccepted": "Invito accettato",
     "inviteDeclined": "Invito rifiutato",
     "actionError": "Si è verificato un errore",

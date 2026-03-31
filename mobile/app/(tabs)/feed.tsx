@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { MessageSquare } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
@@ -39,7 +39,6 @@ export default function FeedScreen() {
   const { posts, isLoading, refetch } = useFeedPosts();
   const user = useAuthStore((s) => s.user);
   const [refreshing, setRefreshing] = useState(false);
-  const insets = useSafeAreaInsets();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -47,24 +46,25 @@ export default function FeedScreen() {
     setRefreshing(false);
   }, [refetch]);
 
+  // Loading
   if (isLoading && posts.length === 0) {
     return (
-      <View style={styles.safeArea}>
-        <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <View style={styles.loadingContainer}>
           <ActivityIndicator
             size="large"
             color={theme.colors.primary}
             accessibilityLabel={t("a11y.loading")}
           />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   const renderPost = ({ item }: { item: FeedPost }) => <PostCard post={item} />;
 
   return (
-    <View style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -73,10 +73,9 @@ export default function FeedScreen() {
           user ? <CreatePostBox onPostCreated={refetch} /> : null
         }
         ListEmptyComponent={<EmptyFeed />}
-        contentContainerStyle={[
-          posts.length === 0 ? styles.emptyListContent : styles.listContent,
-          { paddingTop: insets.top + theme.spacing.xs },
-        ]}
+        contentContainerStyle={
+          posts.length === 0 ? styles.emptyListContent : styles.listContent
+        }
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         refreshControl={
@@ -85,12 +84,11 @@ export default function FeedScreen() {
             onRefresh={onRefresh}
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary]}
-            progressViewOffset={insets.top}
           />
         }
         accessibilityLabel={t("a11y.feedList")}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -107,34 +105,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // Top bar
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm + 2,
-    backgroundColor: theme.colors.backgroundSecondary,
-  },
-  logo: {
-    fontSize: theme.typography.fontSize["2xl"],
-    fontWeight: "900",
-    fontStyle: "italic",
-    color: theme.colors.text,
-    letterSpacing: -1,
-  },
-  topBarActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  iconBtn: {
-    padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-  },
-
   // List
   listContent: {
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
     paddingBottom: theme.spacing.xl,
   },
   emptyListContent: {
@@ -142,7 +116,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: theme.spacing.sm,
-    backgroundColor: theme.colors.backgroundSecondary,
   },
 
   // Empty state
@@ -174,5 +147,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: theme.typography.fontSize.sm * 1.5,
     marginBottom: theme.spacing.lg,
+  },
+  exploreButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.lg,
+    paddingVertical: theme.spacing.sm + 2,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  exploreButtonText: {
+    color: theme.colors.white,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: "600",
   },
 });

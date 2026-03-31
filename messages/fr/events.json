@@ -32,7 +32,7 @@
     "viewList": "Voir la Liste",
     "viewEvent": "Voir l'Événement",
     "availableVariants": "Épreuves Disponibles",
-    "friendsParticipating": "personnes que tu suis participent",
+    "friendsParticipating": "amis vont participer",
     "upcoming": "Événements à Venir",
     "featured": "En Vedette",
     "allEvents": "Tous les Événements",
@@ -459,6 +459,6 @@
     },
     "viewEvent": "Voir l'Événement",
     "availableVariants": "Épreuves Disponibles",
-    "friendsParticipating": "personnes que tu suis participent"
+    "friendsParticipating": "amis vont participer"
   }
 }

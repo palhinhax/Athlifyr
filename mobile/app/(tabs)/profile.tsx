@@ -107,10 +107,7 @@ export default function ProfileScreen() {
         />
         <PerformanceSection />
         <AnalysesSection />
-        <OtherSections
-          followingCount={stats.followingCount}
-          followersCount={stats.followersCount}
-        />
+        <OtherSections friendsCount={stats.friendsCount} />
         <View style={{ height: theme.spacing.xl }} />
       </ScrollView>
     </SafeAreaView>

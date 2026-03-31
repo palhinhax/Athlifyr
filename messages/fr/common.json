@@ -150,9 +150,9 @@
       "cancel": "Annuler"
     },
     "removeFriendDialog": {
-      "title": "Se désabonner",
-      "description": "Êtes-vous sûr de vouloir ne plus suivre {name} ? Vous ne verrez plus ses activités dans votre fil d'actualité.",
-      "confirm": "Se désabonner",
+      "title": "Supprimer l'ami",
+      "description": "Êtes-vous sûr de vouloir supprimer {name} de vos amis ? Vous ne verrez plus ses activités dans votre fil d'actualité.",
+      "confirm": "Supprimer",
       "cancel": "Annuler"
     }
   },
@@ -199,12 +199,12 @@
     "emptyDescription": "Tes notifications apparaîtront ici",
     "trialAcceptedTitle": "Cours d'essai accepté par {venue}",
     "trialRejectedTitle": "Cours d'essai refusé par {venue}",
-    "friendRequestFrom": "{name} a commencé à te suivre",
+    "friendRequestFrom": "Demande d'amitié de {name}",
     "venueInviteFrom": "Invitation de {venue}",
-    "wantsToBeYourFriend": "A commencé à te suivre",
+    "wantsToBeYourFriend": "Veut être ton ami",
     "invitedAsRole": "Invité en tant que {role}",
-    "friendAccepted": "Te suit maintenant",
-    "friendRejected": "Suivi supprimé",
+    "friendAccepted": "Demande d'amitié acceptée",
+    "friendRejected": "Demande d'amitié refusée",
     "inviteAccepted": "Invitation acceptée",
     "inviteDeclined": "Invitation refusée",
     "actionError": "Une erreur est survenue",

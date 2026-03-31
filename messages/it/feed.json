@@ -13,6 +13,19 @@
     "replies": "risposte",
     "loadingMore": "Caricamento altre pubblicazioni...",
     "allPostsLoaded": "Tutte le pubblicazioni caricate",
-    "loginToInteract": "Accedi per mettere mi piace ai post e lasciare commenti."
+    "loginToInteract": "Accedi per mettere mi piace ai post e lasciare commenti.",
+    "sidebar": {
+      "upcomingEvents": "Prossimi Eventi",
+      "viewAll": "Vedi Tutti",
+      "attending": "Atleti iscritti",
+      "suggestedAthletes": "Atleti che Potresti Conoscere",
+      "follow": "Segui",
+      "trending": "Di Tendenza",
+      "privacy": "Informativa sulla Privacy",
+      "terms": "Termini di Servizio"
+    },
+    "stories": {
+      "myStory": "La Mia Story"
+    }
   }
 }

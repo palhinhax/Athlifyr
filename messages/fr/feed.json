@@ -13,6 +13,19 @@
     "replies": "réponses",
     "loadingMore": "Chargement de plus de publications...",
     "allPostsLoaded": "Toutes les publications chargées",
-    "loginToInteract": "Connecte-toi pour aimer des publications et laisser des commentaires."
+    "loginToInteract": "Connecte-toi pour aimer des publications et laisser des commentaires.",
+    "sidebar": {
+      "upcomingEvents": "Événements à Venir",
+      "viewAll": "Tout Voir",
+      "attending": "Athlètes inscrits",
+      "suggestedAthletes": "Athlètes que Tu Pourrais Connaître",
+      "follow": "Suivre",
+      "trending": "Tendances",
+      "privacy": "Politique de Confidentialité",
+      "terms": "Conditions d'Utilisation"
+    },
+    "stories": {
+      "myStory": "Ma Story"
+    }
   }
 }

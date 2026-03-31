@@ -1,22 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import {
-  UserPlus,
-  Check,
-  UserMinus,
-  X,
-  MessageCircleIcon,
-  MoreHorizontal,
-  Ban,
-} from "lucide-react";
+import { MessageCircleIcon, MoreHorizontal, Ban } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/components/follow-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,192 +37,27 @@ interface PublicProfileHeaderProps {
   stats: {
     upcomingEvents: number;
     pastEvents: number;
-    friendsCount: number;
+    followersCount: number;
+    followingCount: number;
   };
-  friendshipStatus: string | null;
-  friendshipId: string | undefined;
+  isFollowing: boolean;
   isLoggedIn: boolean;
 }
 
 export function PublicProfileHeader({
   user,
   stats,
-  friendshipStatus: initialFriendshipStatus,
-  friendshipId: initialFriendshipId,
+  isFollowing,
   isLoggedIn,
 }: PublicProfileHeaderProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const t = useTranslations("block");
-  const [friendshipStatus, setFriendshipStatus] = useState(
-    initialFriendshipStatus
-  );
-  const [friendshipId, setFriendshipId] = useState(initialFriendshipId);
-  const [isLoading, setIsLoading] = useState(false);
+  const t = useTranslations("follow");
+  const tBlock = useTranslations("block");
+  const tProfile = useTranslations("profile");
   const [showChatWidget, setShowChatWidget] = useState(false);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
-  const [removeFriendDialogOpen, setRemoveFriendDialogOpen] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
-
-  const sendFriendRequest = async () => {
-    if (!isLoggedIn) {
-      toast({
-        variant: "destructive",
-        title: "Não autenticado",
-        description: "Precisas de fazer login para adicionar amigos.",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/friends", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
-      });
-
-      if (res.ok) {
-        toast({
-          title: "Pedido enviado!",
-          description: "O teu pedido de amizade foi enviado.",
-        });
-        setFriendshipStatus("request_sent");
-        router.refresh();
-      } else {
-        const error = await res.json();
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: error.error || "Não foi possível enviar o pedido.",
-        });
-      }
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Algo correu mal. Tenta novamente.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const respondToRequest = async (action: "accept" | "reject") => {
-    if (!friendshipId) return;
-
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/friends/${friendshipId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
-      });
-
-      if (res.ok) {
-        toast({
-          title: action === "accept" ? "Amigo adicionado!" : "Pedido rejeitado",
-          description:
-            action === "accept"
-              ? "Agora são amigos."
-              : "O pedido foi rejeitado.",
-        });
-        if (action === "accept") {
-          setFriendshipStatus("friends");
-        } else {
-          setFriendshipStatus(null);
-          setFriendshipId(undefined);
-        }
-        router.refresh();
-      } else {
-        const error = await res.json();
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: error.error || "Algo correu mal.",
-        });
-      }
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Algo correu mal. Tenta novamente.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const removeFriend = async () => {
-    if (!friendshipId) return;
-
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/friends/${friendshipId}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        toast({
-          title: "Amigo removido",
-          description: "A amizade foi removida.",
-        });
-        setFriendshipStatus(null);
-        setFriendshipId(undefined);
-        setRemoveFriendDialogOpen(false);
-        router.refresh();
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Não foi possível remover o amigo.",
-        });
-      }
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Algo correu mal. Tenta novamente.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const cancelFriendRequest = async () => {
-    if (!friendshipId) return;
-
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/friends/${friendshipId}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        toast({
-          title: "Pedido cancelado",
-          description: "O pedido de amizade foi cancelado.",
-        });
-        setFriendshipStatus(null);
-        setFriendshipId(undefined);
-        router.refresh();
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Não foi possível cancelar o pedido.",
-        });
-      }
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Algo correu mal. Tenta novamente.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleBlockUser = async () => {
     setIsBlocking(true);
@@ -242,8 +70,8 @@ export function PublicProfileHeader({
 
       if (res.ok) {
         toast({
-          title: t("blockSuccess"),
-          description: t("blockSuccessDesc"),
+          title: tBlock("blockSuccess"),
+          description: tBlock("blockSuccessDesc"),
         });
         setBlockDialogOpen(false);
         router.refresh();
@@ -251,15 +79,15 @@ export function PublicProfileHeader({
         const error = await res.json();
         toast({
           variant: "destructive",
-          title: t("blockError"),
-          description: error.error || t("blockError"),
+          title: tBlock("blockError"),
+          description: error.error || tBlock("blockError"),
         });
       }
     } catch {
       toast({
         variant: "destructive",
-        title: t("blockError"),
-        description: t("blockError"),
+        title: tBlock("blockError"),
+        description: tBlock("blockError"),
       });
     } finally {
       setIsBlocking(false);
@@ -303,7 +131,7 @@ export function PublicProfileHeader({
                     className="hidden gap-2 md:inline-flex"
                   >
                     <MessageCircleIcon className="h-4 w-4" />
-                    Mensagem
+                    {t("sendMessage")}
                   </Button>
                   {/* Mobile: Navigate to chat page */}
                   <Link
@@ -312,61 +140,12 @@ export function PublicProfileHeader({
                   >
                     <Button variant="outline" className="gap-2">
                       <MessageCircleIcon className="h-4 w-4" />
-                      Mensagem
+                      {t("sendMessage")}
                     </Button>
                   </Link>
                 </>
 
-                {friendshipStatus === "friends" ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => setRemoveFriendDialogOpen(true)}
-                    disabled={isLoading}
-                    className="gap-2"
-                  >
-                    <UserMinus className="h-4 w-4" />
-                    Remover Amigo
-                  </Button>
-                ) : friendshipStatus === "request_sent" ? (
-                  <Button
-                    variant="outline"
-                    onClick={cancelFriendRequest}
-                    disabled={isLoading}
-                    className="gap-2"
-                  >
-                    <X className="h-4 w-4" />
-                    Cancelar Pedido
-                  </Button>
-                ) : friendshipStatus === "request_received" ? (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => respondToRequest("accept")}
-                      disabled={isLoading}
-                      className="gap-2"
-                    >
-                      <Check className="h-4 w-4" />
-                      Aceitar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => respondToRequest("reject")}
-                      disabled={isLoading}
-                      className="gap-2"
-                    >
-                      <X className="h-4 w-4" />
-                      Rejeitar
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={sendFriendRequest}
-                    disabled={isLoading}
-                    className="gap-2"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Adicionar Amigo
-                  </Button>
-                )}
+                <FollowButton userId={user.id} initialFollowing={isFollowing} />
 
                 {/* Block user dropdown */}
                 <DropdownMenu>
@@ -381,7 +160,7 @@ export function PublicProfileHeader({
                       className="text-destructive focus:text-destructive"
                     >
                       <Ban className="mr-2 h-4 w-4" />
-                      {t("blockUser")}
+                      {tBlock("blockUser")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -397,7 +176,7 @@ export function PublicProfileHeader({
               {stats.upcomingEvents}
             </div>
             <div className="text-sm text-muted-foreground">
-              Próximos Eventos
+              {tProfile("upcomingEvents")}
             </div>
           </div>
           <div className="text-center">
@@ -405,14 +184,24 @@ export function PublicProfileHeader({
               {stats.pastEvents}
             </div>
             <div className="text-sm text-muted-foreground">
-              Eventos Passados
+              {tProfile("pastEvents")}
             </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-primary">
-              {stats.friendsCount}
+              {stats.followersCount}
             </div>
-            <div className="text-sm text-muted-foreground">Amigos</div>
+            <div className="text-sm text-muted-foreground">
+              {t("followers")}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">
+              {stats.followingCount}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {t("following")}
+            </div>
           </div>
         </div>
       </div>
@@ -427,54 +216,25 @@ export function PublicProfileHeader({
         />
       )}
 
-      {/* Remove Friend Confirmation Dialog */}
-      <AlertDialog
-        open={removeFriendDialogOpen}
-        onOpenChange={setRemoveFriendDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("removeFriendDialog.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("removeFriendDialog.description", {
-                name: user.name || "User",
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>
-              {t("removeFriendDialog.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={removeFriend}
-              disabled={isLoading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isLoading ? "..." : t("removeFriendDialog.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Block User Confirmation Dialog */}
       <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("blockDialog.title")}</AlertDialogTitle>
+            <AlertDialogTitle>{tBlock("blockDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("blockDialog.description", { name: user.name || "User" })}
+              {tBlock("blockDialog.description", { name: user.name || "User" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBlocking}>
-              {t("blockDialog.cancel")}
+              {tBlock("blockDialog.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleBlockUser}
               disabled={isBlocking}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isBlocking ? "..." : t("blockDialog.confirm")}
+              {isBlocking ? "..." : tBlock("blockDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -13,6 +13,19 @@
     "replies": "respostas",
     "loadingMore": "A carregar mais publicações...",
     "allPostsLoaded": "Todas as publicações carregadas",
-    "loginToInteract": "Inicia sessão para gostar de publicações e deixar comentários."
+    "loginToInteract": "Inicia sessão para gostar de publicações e deixar comentários.",
+    "sidebar": {
+      "upcomingEvents": "Próximos Eventos",
+      "viewAll": "Ver Todos",
+      "attending": "Atletas inscritos",
+      "suggestedAthletes": "Atletas que Podes Conhecer",
+      "follow": "Seguir",
+      "trending": "Em Tendência",
+      "privacy": "Política de Privacidade",
+      "terms": "Termos de Serviço"
+    },
+    "stories": {
+      "myStory": "A Minha Story"
+    }
   }
 }

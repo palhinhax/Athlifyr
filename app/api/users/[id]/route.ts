@@ -77,34 +77,22 @@ export async function GET(
     const pastEvents = user.participations.filter(
       (p) => p.event.startDate <= new Date()
     );
-    const friendsCount =
-      user.sentFriendships.length + user.receivedFriendships.length;
+    // sentFriendships = people this user follows, receivedFriendships = people following this user
+    const followingCount = user.sentFriendships.length;
+    const followersCount = user.receivedFriendships.length;
 
-    // If logged in, check friendship status with this user
-    let friendshipStatus: string | null = null;
-    let friendshipId: string | undefined = undefined;
+    // If logged in, check if current user follows this user
+    let isFollowing = false;
 
     if (currentUser?.id && currentUser.id !== id) {
-      const friendship = await prisma.friendship.findFirst({
+      const follow = await prisma.friendship.findFirst({
         where: {
-          OR: [
-            { senderId: currentUser.id, receiverId: id },
-            { senderId: id, receiverId: currentUser.id },
-          ],
+          senderId: currentUser.id,
+          receiverId: id,
+          status: "ACCEPTED",
         },
       });
-
-      if (friendship) {
-        if (friendship.status === "ACCEPTED") {
-          friendshipStatus = "friends";
-        } else if (friendship.status === "PENDING") {
-          friendshipStatus =
-            friendship.senderId === currentUser.id
-              ? "request_sent"
-              : "request_received";
-        }
-        friendshipId = friendship.id;
-      }
+      isFollowing = !!follow;
     }
 
     return NextResponse.json({
@@ -117,7 +105,8 @@ export async function GET(
       stats: {
         upcomingEvents: upcomingEvents.length,
         pastEvents: pastEvents.length,
-        friendsCount,
+        followersCount,
+        followingCount,
       },
       participations: user.participations.map((p) => ({
         id: p.id,
@@ -138,8 +127,7 @@ export async function GET(
             }
           : null,
       })),
-      friendshipStatus,
-      friendshipId,
+      isFollowing,
       isOwnProfile: currentUser?.id === id,
     });
   } catch (error) {

@@ -150,8 +150,8 @@
       "cancel": "Cancel"
     },
     "removeFriendDialog": {
-      "title": "Remove Friend",
-      "description": "Are you sure you want to remove {name} from your friends? You will no longer see their activities in your feed.",
+      "title": "Unfollow",
+      "description": "Are you sure you want to unfollow {name}? You will no longer see their activities in your feed.",
       "confirm": "Remove",
       "cancel": "Cancel"
     }
@@ -199,12 +199,12 @@
     "emptyDescription": "Your notifications will appear here",
     "trialAcceptedTitle": "Trial class accepted by {venue}",
     "trialRejectedTitle": "Trial class declined by {venue}",
-    "friendRequestFrom": "Friend request from {name}",
+    "friendRequestFrom": "{name} started following you",
     "venueInviteFrom": "Invitation from {venue}",
-    "wantsToBeYourFriend": "Wants to be your friend",
+    "wantsToBeYourFriend": "Started following you",
     "invitedAsRole": "Invited as {role}",
-    "friendAccepted": "Friend request accepted",
-    "friendRejected": "Friend request declined",
+    "friendAccepted": "Now following you",
+    "friendRejected": "Follow removed",
     "inviteAccepted": "Invitation accepted",
     "inviteDeclined": "Invitation declined",
     "actionError": "An error occurred",

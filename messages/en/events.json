@@ -32,7 +32,7 @@
     "viewList": "View List",
     "viewEvent": "View Event",
     "availableVariants": "Available Races",
-    "friendsParticipating": "friends are participating",
+    "friendsParticipating": "people you follow are participating",
     "upcoming": "Upcoming Events",
     "featured": "Featured",
     "allEvents": "All Events",
@@ -459,6 +459,6 @@
     },
     "viewEvent": "View Event",
     "availableVariants": "Available Variants",
-    "friendsParticipating": "friends participating"
+    "friendsParticipating": "people you follow participating"
   }
 }

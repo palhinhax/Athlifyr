@@ -387,7 +387,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               </h3>
               <div className="h-px flex-1 bg-border" />
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {featuredEvents.map((event) => (
                 <EventCard
                   key={event.id}
@@ -416,7 +416,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
                   {group.events.length}
                 </span>
               </div>
-              <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {group.events.map((event) => (
                   <EventCard
                     key={event.id}

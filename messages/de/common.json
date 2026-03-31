@@ -150,9 +150,9 @@
       "cancel": "Abbrechen"
     },
     "removeFriendDialog": {
-      "title": "Freund entfernen",
-      "description": "Bist du sicher, dass du {name} aus deinen Freunden entfernen möchtest? Du wirst die Aktivitäten dieser Person nicht mehr in deinem Feed sehen.",
-      "confirm": "Entfernen",
+      "title": "Entfolgen",
+      "description": "Bist du sicher, dass du {name} nicht mehr folgen möchtest? Du wirst die Aktivitäten dieser Person nicht mehr in deinem Feed sehen.",
+      "confirm": "Entfolgen",
       "cancel": "Abbrechen"
     }
   },
@@ -199,12 +199,12 @@
     "emptyDescription": "Deine Benachrichtigungen erscheinen hier",
     "trialAcceptedTitle": "Probestunde akzeptiert von {venue}",
     "trialRejectedTitle": "Probestunde abgelehnt von {venue}",
-    "friendRequestFrom": "Freundschaftsanfrage von {name}",
+    "friendRequestFrom": "{name} folgt dir jetzt",
     "venueInviteFrom": "Einladung von {venue}",
-    "wantsToBeYourFriend": "Möchte dein Freund sein",
+    "wantsToBeYourFriend": "Folgt dir jetzt",
     "invitedAsRole": "Eingeladen als {role}",
-    "friendAccepted": "Freundschaftsanfrage angenommen",
-    "friendRejected": "Freundschaftsanfrage abgelehnt",
+    "friendAccepted": "Folgt dir jetzt",
+    "friendRejected": "Folgen entfernt",
     "inviteAccepted": "Einladung angenommen",
     "inviteDeclined": "Einladung abgelehnt",
     "actionError": "Ein Fehler ist aufgetreten",

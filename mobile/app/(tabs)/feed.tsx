@@ -6,10 +6,11 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { MessageSquare } from "lucide-react-native";
+import { MessageSquare, Search, Bell } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";
 import { CreatePostBox } from "@/src/components/CreatePostBox";
@@ -32,6 +33,24 @@ function EmptyFeed() {
   );
 }
 
+// ─── Top App Bar ───────────────────────────────────────────────
+
+function TopAppBar() {
+  return (
+    <View style={styles.topBar}>
+      <Text style={styles.logo}>Athlifyr</Text>
+      <View style={styles.topBarActions}>
+        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6}>
+          <Search size={22} color={theme.colors.text} strokeWidth={2} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6}>
+          <Bell size={22} color={theme.colors.text} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 // ─── Main Feed Screen ──────────────────────────────────────────
 
 export default function FeedScreen() {
@@ -46,10 +65,10 @@ export default function FeedScreen() {
     setRefreshing(false);
   }, [refetch]);
 
-  // Loading
   if (isLoading && posts.length === 0) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <TopAppBar />
         <View style={styles.loadingContainer}>
           <ActivityIndicator
             size="large"
@@ -65,6 +84,7 @@ export default function FeedScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <TopAppBar />
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -105,10 +125,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  // Top bar
+  topBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm + 2,
+    backgroundColor: theme.colors.backgroundSecondary,
+  },
+  logo: {
+    fontSize: theme.typography.fontSize["2xl"],
+    fontWeight: "900",
+    fontStyle: "italic",
+    color: theme.colors.text,
+    letterSpacing: -1,
+  },
+  topBarActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  iconBtn: {
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
+  },
+
   // List
   listContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
+    paddingTop: theme.spacing.xs,
     paddingBottom: theme.spacing.xl,
   },
   emptyListContent: {
@@ -116,6 +161,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: theme.spacing.sm,
+    backgroundColor: theme.colors.backgroundSecondary,
   },
 
   // Empty state
@@ -147,16 +193,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: theme.typography.fontSize.sm * 1.5,
     marginBottom: theme.spacing.lg,
-  },
-  exploreButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.sm + 2,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  exploreButtonText: {
-    color: theme.colors.white,
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: "600",
   },
 });

@@ -12,9 +12,7 @@ import { useTranslation } from "react-i18next";
 import {
   Users,
   Search,
-  Clock,
   Check,
-  X,
   UserPlus,
   UserMinus,
   MessageCircle,
@@ -29,37 +27,19 @@ import { Toast } from "@/src/components/ui/Toast";
 
 // ─── Types ─────────────────────────────────────────────────────
 
-interface FriendUser {
+interface FollowUser {
   id: string;
   name: string | null;
   email: string;
   image: string | null;
-  friendshipStatus?: string | null;
-  friendshipId?: string;
+  isFollowing?: boolean;
 }
 
-interface PendingRequest {
-  id: string;
-  sender: FriendUser;
-  createdAt: string;
-}
-
-interface SentRequest {
-  id: string;
-  receiver: FriendUser;
-  createdAt: string;
-}
-
-interface Friend extends FriendUser {
-  friendshipId: string;
-  since: string;
-}
-
-type Tab = "friends" | "pending" | "search";
+type Tab = "following" | "followers" | "search";
 
 // ─── Avatar ────────────────────────────────────────────────────
 
-function FriendAvatar({
+function FollowAvatar({
   image,
   name,
 }: {
@@ -100,61 +80,51 @@ function FriendAvatar({
 // ─── Main Component ────────────────────────────────────────────
 
 interface FriendsSectionProps {
-  friendsCount: number;
+  followingCount: number;
+  followersCount: number;
 }
 
-export function FriendsSection({ friendsCount }: FriendsSectionProps) {
+export function FriendsSection(_props: FriendsSectionProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { toast, showToast, hideToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState<Tab>("friends");
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
-  const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
-  const [searchResults, setSearchResults] = useState<FriendUser[]>([]);
+  const [activeTab, setActiveTab] = useState<Tab>("following");
+  const [following, setFollowing] = useState<FollowUser[]>([]);
+  const [followers, setFollowers] = useState<FollowUser[]>([]);
+  const [searchResults, setSearchResults] = useState<FollowUser[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // ─── Fetch Data ────────────────────────────────────────────
 
-  const fetchFriends = useCallback(async () => {
+  const fetchFollowing = useCallback(async () => {
     try {
-      const res = await api.get<Friend[]>("/friends");
-      setFriends(res.data);
+      const res = await api.get<FollowUser[]>("/follow?type=following");
+      setFollowing(res.data);
     } catch (error) {
-      console.error("Error fetching friends:", error);
+      console.error("Error fetching following:", error);
     }
   }, []);
 
-  const fetchPendingRequests = useCallback(async () => {
+  const fetchFollowers = useCallback(async () => {
     try {
-      const res = await api.get<PendingRequest[]>("/friends?type=pending");
-      setPendingRequests(res.data);
+      const res = await api.get<FollowUser[]>("/follow?type=followers");
+      setFollowers(res.data);
     } catch (error) {
-      console.error("Error fetching pending requests:", error);
-    }
-  }, []);
-
-  const fetchSentRequests = useCallback(async () => {
-    try {
-      const res = await api.get<SentRequest[]>("/friends?type=sent");
-      setSentRequests(res.data);
-    } catch (error) {
-      console.error("Error fetching sent requests:", error);
+      console.error("Error fetching followers:", error);
     }
   }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchFriends();
-      fetchPendingRequests();
-      fetchSentRequests();
+      fetchFollowing();
+      fetchFollowers();
     }
-  }, [isAuthenticated, fetchFriends, fetchPendingRequests, fetchSentRequests]);
+  }, [isAuthenticated, fetchFollowing, fetchFollowers]);
 
   // ─── Search ────────────────────────────────────────────────
 
@@ -167,7 +137,7 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await api.get<FriendUser[]>(
+        const res = await api.get<FollowUser[]>(
           `/users/search?q=${encodeURIComponent(searchQuery)}`
         );
         setSearchResults(res.data);
@@ -183,69 +153,33 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
 
   // ─── Actions ───────────────────────────────────────────────
 
-  const sendFriendRequest = async (userId: string) => {
+  const handleFollow = async (userId: string) => {
     setProcessingId(userId);
     try {
-      await api.post("/friends", { userId });
-      showToast(t("profile.friendRequestSent"), "success");
+      await api.post("/follow", { userId });
+      showToast(t("profile.followSuccess"), "success");
       setSearchResults((prev) =>
-        prev.map((u) =>
-          u.id === userId ? { ...u, friendshipStatus: "request_sent" } : u
-        )
+        prev.map((u) => (u.id === userId ? { ...u, isFollowing: true } : u))
       );
-      fetchSentRequests();
+      fetchFollowing();
     } catch {
-      showToast(t("profile.friendRequestError"), "error");
+      showToast(t("profile.followError"), "error");
     } finally {
       setProcessingId(null);
     }
   };
 
-  const respondToRequest = async (
-    friendshipId: string,
-    action: "accept" | "reject"
-  ) => {
-    setProcessingId(friendshipId);
+  const handleUnfollow = async (userId: string) => {
+    setProcessingId(userId);
     try {
-      await api.patch(`/friends/${friendshipId}`, { action });
-      showToast(
-        action === "accept"
-          ? t("profile.friendAccepted")
-          : t("profile.friendRejected"),
-        "success"
+      await api.delete(`/follow/${userId}`);
+      showToast(t("profile.unfollowSuccess"), "success");
+      setFollowing((prev) => prev.filter((u) => u.id !== userId));
+      setSearchResults((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isFollowing: false } : u))
       );
-      fetchPendingRequests();
-      if (action === "accept") {
-        fetchFriends();
-      }
     } catch {
-      showToast(t("profile.friendActionError"), "error");
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
-  const cancelSentRequest = async (friendshipId: string) => {
-    setProcessingId(friendshipId);
-    try {
-      await api.delete(`/friends/${friendshipId}`);
-      showToast(t("profile.friendRequestCancelled"), "success");
-      fetchSentRequests();
-    } catch {
-      showToast(t("profile.friendActionError"), "error");
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
-  const removeFriend = async (friendshipId: string) => {
-    setProcessingId(friendshipId);
-    try {
-      await api.delete(`/friends/${friendshipId}`);
-      showToast(t("profile.friendRemoved"), "success");
-      fetchFriends();
-    } catch {
-      showToast(t("profile.friendActionError"), "error");
+      showToast(t("profile.unfollowError"), "error");
     } finally {
       setProcessingId(null);
     }
@@ -266,10 +200,6 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
     }
   };
 
-  // ─── Pending badge count ──────────────────────────────────
-
-  const pendingTotal = pendingRequests.length + sentRequests.length;
-
   // ─── Render ────────────────────────────────────────────────
 
   return (
@@ -277,70 +207,55 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
       {/* Section header */}
       <View style={styles.sectionHeader}>
         <Users size={20} color={theme.colors.primary} />
-        <Text style={styles.sectionTitle}>
-          {t("profile.friendsCount", { count: friendsCount })}
-        </Text>
+        <Text style={styles.sectionTitle}>{t("profile.connections")}</Text>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === "friends" && styles.tabActive]}
-          onPress={() => setActiveTab("friends")}
+          style={[styles.tab, activeTab === "following" && styles.tabActive]}
+          onPress={() => setActiveTab("following")}
           activeOpacity={0.7}
         >
-          <Users
-            size={14}
-            color={
-              activeTab === "friends"
-                ? theme.colors.primary
-                : theme.colors.textSecondary
-            }
-          />
           <Text
             style={[
               styles.tabText,
-              activeTab === "friends" && styles.tabTextActive,
+              activeTab === "following" && styles.tabTextActive,
             ]}
           >
-            {t("profile.friends")}
+            {t("profile.following")}
           </Text>
           <Text
             style={[
               styles.tabCount,
-              activeTab === "friends" && styles.tabCountActive,
+              activeTab === "following" && styles.tabCountActive,
             ]}
           >
-            ({friends.length})
+            ({following.length})
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tab, activeTab === "pending" && styles.tabActive]}
-          onPress={() => setActiveTab("pending")}
+          style={[styles.tab, activeTab === "followers" && styles.tabActive]}
+          onPress={() => setActiveTab("followers")}
           activeOpacity={0.7}
         >
-          <Clock
-            size={14}
-            color={
-              activeTab === "pending"
-                ? theme.colors.primary
-                : theme.colors.textSecondary
-            }
-          />
           <Text
             style={[
               styles.tabText,
-              activeTab === "pending" && styles.tabTextActive,
+              activeTab === "followers" && styles.tabTextActive,
             ]}
           >
-            {t("profile.pendingRequests")}
+            {t("profile.followers")}
           </Text>
-          {pendingTotal > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{pendingTotal}</Text>
-            </View>
-          )}
+          <Text
+            style={[
+              styles.tabCount,
+              activeTab === "followers" && styles.tabCountActive,
+            ]}
+          >
+            ({followers.length})
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -369,15 +284,17 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
 
       {/* Tab content */}
       <View style={styles.tabContent}>
-        {/* Friends List */}
-        {activeTab === "friends" && (
+        {/* Following List */}
+        {activeTab === "following" && (
           <View>
-            {friends.length === 0 ? (
+            {following.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Users size={40} color={theme.colors.textTertiary} />
-                <Text style={styles.emptyTitle}>{t("profile.noFriends")}</Text>
+                <Text style={styles.emptyTitle}>
+                  {t("profile.noFollowing")}
+                </Text>
                 <Text style={styles.emptyDescription}>
-                  {t("profile.noFriendsDescription")}
+                  {t("profile.noFollowingDescription")}
                 </Text>
                 <TouchableOpacity
                   style={styles.searchButton}
@@ -391,20 +308,20 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
                 </TouchableOpacity>
               </View>
             ) : (
-              friends.map((friend) => (
-                <View key={friend.friendshipId} style={styles.friendCard}>
-                  <FriendAvatar image={friend.image} name={friend.name} />
+              following.map((user) => (
+                <View key={user.id} style={styles.friendCard}>
+                  <FollowAvatar image={user.image} name={user.name} />
                   <View style={styles.friendInfo}>
                     <Text style={styles.friendName} numberOfLines={1}>
-                      {friend.name}
+                      {user.name}
                     </Text>
                     <Text style={styles.friendEmail} numberOfLines={1}>
-                      {friend.email}
+                      {user.email}
                     </Text>
                   </View>
                   <View style={styles.friendActions}>
                     <TouchableOpacity
-                      onPress={() => startChat(friend.id)}
+                      onPress={() => startChat(user.id)}
                       disabled={isLoading}
                       style={styles.iconButton}
                       activeOpacity={0.7}
@@ -415,12 +332,12 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => removeFriend(friend.friendshipId)}
-                      disabled={processingId === friend.friendshipId}
+                      onPress={() => handleUnfollow(user.id)}
+                      disabled={processingId === user.id}
                       style={styles.iconButton}
                       activeOpacity={0.7}
                     >
-                      {processingId === friend.friendshipId ? (
+                      {processingId === user.id ? (
                         <ActivityIndicator
                           size="small"
                           color={theme.colors.error}
@@ -436,112 +353,41 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
           </View>
         )}
 
-        {/* Pending Requests */}
-        {activeTab === "pending" && (
-          <View style={styles.pendingContainer}>
-            {/* Received */}
-            <Text style={styles.subSectionTitle}>
-              {t("profile.receivedRequests")} ({pendingRequests.length})
-            </Text>
-            {pendingRequests.length === 0 ? (
-              <View style={styles.emptySmall}>
-                <Text style={styles.emptySmallText}>
-                  {t("profile.noReceivedRequests")}
+        {/* Followers List */}
+        {activeTab === "followers" && (
+          <View>
+            {followers.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Users size={40} color={theme.colors.textTertiary} />
+                <Text style={styles.emptyTitle}>
+                  {t("profile.noFollowers")}
+                </Text>
+                <Text style={styles.emptyDescription}>
+                  {t("profile.noFollowersDescription")}
                 </Text>
               </View>
             ) : (
-              pendingRequests.map((request) => (
-                <View key={request.id} style={styles.friendCard}>
-                  <FriendAvatar
-                    image={request.sender.image}
-                    name={request.sender.name}
-                  />
+              followers.map((user) => (
+                <View key={user.id} style={styles.friendCard}>
+                  <FollowAvatar image={user.image} name={user.name} />
                   <View style={styles.friendInfo}>
                     <Text style={styles.friendName} numberOfLines={1}>
-                      {request.sender.name}
+                      {user.name}
                     </Text>
                     <Text style={styles.friendEmail} numberOfLines={1}>
-                      {request.sender.email}
+                      {user.email}
                     </Text>
-                  </View>
-                  <View style={styles.requestActions}>
-                    <TouchableOpacity
-                      style={[
-                        styles.actionBtn,
-                        styles.rejectBtn,
-                        processingId === request.id && styles.btnDisabled,
-                      ]}
-                      onPress={() => respondToRequest(request.id, "reject")}
-                      disabled={processingId === request.id}
-                      activeOpacity={0.7}
-                    >
-                      <X size={14} color={theme.colors.error} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.actionBtn,
-                        styles.acceptBtn,
-                        processingId === request.id && styles.btnDisabled,
-                      ]}
-                      onPress={() => respondToRequest(request.id, "accept")}
-                      disabled={processingId === request.id}
-                      activeOpacity={0.7}
-                    >
-                      {processingId === request.id ? (
-                        <ActivityIndicator
-                          size="small"
-                          color={theme.colors.white}
-                        />
-                      ) : (
-                        <Check size={14} color={theme.colors.white} />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
-            )}
-
-            {/* Sent */}
-            <Text style={[styles.subSectionTitle, { marginTop: 16 }]}>
-              {t("profile.sentRequests")} ({sentRequests.length})
-            </Text>
-            {sentRequests.length === 0 ? (
-              <View style={styles.emptySmall}>
-                <Text style={styles.emptySmallText}>
-                  {t("profile.noSentRequests")}
-                </Text>
-              </View>
-            ) : (
-              sentRequests.map((request) => (
-                <View key={request.id} style={styles.friendCard}>
-                  <FriendAvatar
-                    image={request.receiver.image}
-                    name={request.receiver.name}
-                  />
-                  <View style={styles.friendInfo}>
-                    <Text style={styles.friendName} numberOfLines={1}>
-                      {request.receiver.name}
-                    </Text>
-                    <View style={styles.pendingLabel}>
-                      <Clock size={12} color={theme.colors.textTertiary} />
-                      <Text style={styles.pendingLabelText}>
-                        {t("profile.awaitingResponse")}
-                      </Text>
-                    </View>
                   </View>
                   <TouchableOpacity
-                    style={[
-                      styles.cancelBtn,
-                      processingId === request.id && styles.btnDisabled,
-                    ]}
-                    onPress={() => cancelSentRequest(request.id)}
-                    disabled={processingId === request.id}
+                    onPress={() => startChat(user.id)}
+                    disabled={isLoading}
+                    style={styles.iconButton}
                     activeOpacity={0.7}
                   >
-                    <X size={14} color={theme.colors.error} />
-                    <Text style={styles.cancelBtnText}>
-                      {t("profile.cancel")}
-                    </Text>
+                    <MessageCircle
+                      size={18}
+                      color={theme.colors.textSecondary}
+                    />
                   </TouchableOpacity>
                 </View>
               ))
@@ -592,7 +438,7 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
             ) : (
               searchResults.map((user) => (
                 <View key={user.id} style={styles.friendCard}>
-                  <FriendAvatar image={user.image} name={user.name} />
+                  <FollowAvatar image={user.image} name={user.name} />
                   <View style={styles.friendInfo}>
                     <Text style={styles.friendName} numberOfLines={1}>
                       {user.name}
@@ -602,38 +448,32 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
                     </Text>
                   </View>
                   <View style={styles.searchAction}>
-                    {user.friendshipStatus === "friends" ? (
-                      <View style={styles.statusBadge}>
-                        <Check size={14} color="#16a34a" />
-                        <Text style={styles.statusText}>
-                          {t("profile.friends")}
-                        </Text>
-                      </View>
-                    ) : user.friendshipStatus === "request_sent" ? (
-                      <View style={styles.statusBadge}>
-                        <Clock size={14} color={theme.colors.textSecondary} />
-                        <Text style={styles.statusTextMuted}>
-                          {t("profile.requestSent")}
-                        </Text>
-                      </View>
-                    ) : user.friendshipStatus === "request_received" ? (
+                    {user.isFollowing ? (
                       <TouchableOpacity
                         style={[
-                          styles.actionBtn,
-                          styles.acceptBtn,
-                          processingId === user.friendshipId &&
-                            styles.btnDisabled,
+                          styles.unfollowBtn,
+                          processingId === user.id && styles.btnDisabled,
                         ]}
-                        onPress={() =>
-                          respondToRequest(user.friendshipId!, "accept")
-                        }
-                        disabled={processingId === user.friendshipId}
+                        onPress={() => handleUnfollow(user.id)}
+                        disabled={processingId === user.id}
                         activeOpacity={0.7}
                       >
-                        <Check size={14} color={theme.colors.white} />
-                        <Text style={styles.acceptBtnText}>
-                          {t("profile.acceptFriend")}
-                        </Text>
+                        {processingId === user.id ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={theme.colors.error}
+                          />
+                        ) : (
+                          <>
+                            <Check
+                              size={14}
+                              color={theme.colors.textSecondary}
+                            />
+                            <Text style={styles.unfollowBtnText}>
+                              {t("profile.following")}
+                            </Text>
+                          </>
+                        )}
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity
@@ -641,7 +481,7 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
                           styles.addBtn,
                           processingId === user.id && styles.btnDisabled,
                         ]}
-                        onPress={() => sendFriendRequest(user.id)}
+                        onPress={() => handleFollow(user.id)}
                         disabled={processingId === user.id}
                         activeOpacity={0.7}
                       >
@@ -654,7 +494,7 @@ export function FriendsSection({ friendsCount }: FriendsSectionProps) {
                           <>
                             <UserPlus size={14} color={theme.colors.white} />
                             <Text style={styles.addBtnText}>
-                              {t("profile.addFriend")}
+                              {t("profile.follow")}
                             </Text>
                           </>
                         )}
@@ -696,8 +536,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: theme.colors.text,
   },
-
-  // Tabs
   tabsContainer: {
     flexDirection: "row",
     backgroundColor: theme.colors.backgroundSecondary,
@@ -738,22 +576,6 @@ const styles = StyleSheet.create({
   tabCountActive: {
     color: theme.colors.text,
   },
-  badge: {
-    backgroundColor: theme.colors.error,
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: theme.colors.white,
-  },
-
-  // Tab content
   tabContent: {
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.lg,
@@ -761,8 +583,6 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     overflow: "hidden",
   },
-
-  // Friend card
   friendCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -816,78 +636,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: theme.borderRadius.md,
   },
-
-  // Request actions
-  requestActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: theme.borderRadius.md,
-  },
-  acceptBtn: {
-    backgroundColor: "#16a34a",
-  },
-  acceptBtnText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: theme.colors.white,
-  },
-  rejectBtn: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
   btnDisabled: {
     opacity: 0.5,
   },
-
-  // Cancel button
-  cancelBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  cancelBtnText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: theme.colors.error,
-  },
-
-  // Pending label
-  pendingLabel: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 2,
-  },
-  pendingLabelText: {
-    fontSize: 11,
-    color: theme.colors.textTertiary,
-  },
-
-  // Sub-section
-  subSectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: theme.colors.textSecondary,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.backgroundSecondary,
-  },
-  pendingContainer: {},
-
-  // Search
   searchInputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -910,8 +661,6 @@ const styles = StyleSheet.create({
   searchAction: {
     alignItems: "flex-end",
   },
-
-  // Add button
   addBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -926,8 +675,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.white,
   },
-
-  // Search button
+  unfollowBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: theme.borderRadius.md,
+  },
+  unfollowBtnText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: theme.colors.textSecondary,
+  },
   searchButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -944,25 +706,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.primary,
   },
-
-  // Status badges
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#16a34a",
-  },
-  statusTextMuted: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: theme.colors.textSecondary,
-  },
-
-  // Empty states
   emptyContainer: {
     alignItems: "center",
     paddingVertical: theme.spacing.xl,
@@ -981,14 +724,5 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
     textAlign: "center",
     lineHeight: 18,
-  },
-  emptySmall: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-  },
-  emptySmallText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: "center",
   },
 });

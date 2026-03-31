@@ -83,7 +83,7 @@ export function NewConversationModal({
             />
             <TextInput
               style={styles.searchInput}
-              placeholder={t("chat.searchFriends")}
+              placeholder={t("chat.searchPeople")}
               placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -101,8 +101,8 @@ export function NewConversationModal({
             <View style={styles.centerContainer}>
               <Text style={styles.emptyText}>
                 {friends.length === 0
-                  ? t("chat.noFriends")
-                  : t("chat.noFriendsFound")}
+                  ? t("chat.noPeople")
+                  : t("chat.noPeopleFound")}
               </Text>
             </View>
           ) : (

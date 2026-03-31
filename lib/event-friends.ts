@@ -19,33 +19,28 @@ export async function getFriendsGoing(
     return { friendsGoing: [], friendsGoingCount: 0 };
   }
 
-  // Get user's accepted friendships
-  const friendships = await prisma.friendship.findMany({
+  // Get users that the current user follows (senderId = follower, receiverId = followed)
+  const follows = await prisma.friendship.findMany({
     where: {
-      OR: [
-        { senderId: userId, status: "ACCEPTED" },
-        { receiverId: userId, status: "ACCEPTED" },
-      ],
+      senderId: userId,
+      status: "ACCEPTED",
     },
     select: {
-      senderId: true,
       receiverId: true,
     },
   });
 
-  const friendIds = friendships.map((f) =>
-    f.senderId === userId ? f.receiverId : f.senderId
-  );
+  const followingIds = follows.map((f) => f.receiverId);
 
-  if (friendIds.length === 0) {
+  if (followingIds.length === 0) {
     return { friendsGoing: [], friendsGoingCount: 0 };
   }
 
-  // Get friends participating in this event
+  // Get followed users participating in this event
   const participations = await prisma.participation.findMany({
     where: {
       eventId,
-      userId: { in: friendIds },
+      userId: { in: followingIds },
       status: "going",
     },
     include: {
@@ -65,7 +60,7 @@ export async function getFriendsGoing(
   const friendsGoingCount = await prisma.participation.count({
     where: {
       eventId,
-      userId: { in: friendIds },
+      userId: { in: followingIds },
       status: "going",
     },
   });

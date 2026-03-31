@@ -32,7 +32,7 @@
     "viewList": "Liste Anzeigen",
     "viewEvent": "Veranstaltung Anzeigen",
     "availableVariants": "Verfügbare Rennen",
-    "friendsParticipating": "Freunde nehmen teil",
+    "friendsParticipating": "Personen denen du folgst nehmen teil",
     "upcoming": "Bevorstehende Veranstaltungen",
     "featured": "Hervorgehoben",
     "allEvents": "Alle Veranstaltungen",
@@ -455,6 +455,6 @@
     },
     "viewEvent": "Event Ansehen",
     "availableVariants": "Verfügbare Varianten",
-    "friendsParticipating": "Freunde nehmen teil"
+    "friendsParticipating": "Personen denen du folgst nehmen teil"
   }
 }

@@ -248,7 +248,7 @@ export function CreatePost({
   }
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="rounded-xl bg-card">
       <form onSubmit={handleSubmit}>
         <div className="mb-3 flex items-start gap-3">
           <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">

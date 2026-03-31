@@ -13,6 +13,19 @@
     "replies": "Antworten",
     "loadingMore": "Weitere Beiträge werden geladen...",
     "allPostsLoaded": "Alle Beiträge geladen",
-    "loginToInteract": "Melde dich an, um Beiträge zu liken und Kommentare zu hinterlassen."
+    "loginToInteract": "Melde dich an, um Beiträge zu liken und Kommentare zu hinterlassen.",
+    "sidebar": {
+      "upcomingEvents": "Kommende Events",
+      "viewAll": "Alle Ansehen",
+      "attending": "Athleten angemeldet",
+      "suggestedAthletes": "Athleten, die Du Kennen Könntest",
+      "follow": "Folgen",
+      "trending": "Im Trend",
+      "privacy": "Datenschutzrichtlinie",
+      "terms": "Nutzungsbedingungen"
+    },
+    "stories": {
+      "myStory": "Meine Story"
+    }
   }
 }

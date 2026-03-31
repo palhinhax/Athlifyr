@@ -416,7 +416,7 @@ export function PostCard({
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
         {/* Header */}
         <div className="flex items-center gap-3 p-4 pb-3">
           <Link

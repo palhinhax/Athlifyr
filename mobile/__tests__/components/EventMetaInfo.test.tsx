@@ -39,43 +39,43 @@ describe("EventMetaInfo", () => {
     expect(getByText("Lisbon, Portugal")).toBeTruthy();
   });
 
-  it("renders friends going when count > 0", () => {
+  it("renders following going when count > 0", () => {
     const { getByText } = render(
       <EventMetaInfo
         startDate="2025-06-01"
         endDate={null}
         city="Lisbon"
         country="Portugal"
-        friendsGoingCount={3}
+        followingGoingCount={3}
       />
     );
-    expect(getByText("Friends Going")).toBeTruthy();
-    expect(getByText("3 friends")).toBeTruthy();
+    expect(getByText("Following Going")).toBeTruthy();
+    expect(getByText("3 people")).toBeTruthy();
   });
 
-  it("shows singular friend for count 1", () => {
+  it("shows singular person for count 1", () => {
     const { getByText } = render(
       <EventMetaInfo
         startDate="2025-06-01"
         endDate={null}
         city="Lisbon"
         country="Portugal"
-        friendsGoingCount={1}
+        followingGoingCount={1}
       />
     );
-    expect(getByText("1 friend")).toBeTruthy();
+    expect(getByText("1 person")).toBeTruthy();
   });
 
-  it("does not show friends section when count is 0", () => {
+  it("does not show following section when count is 0", () => {
     const { queryByText } = render(
       <EventMetaInfo
         startDate="2025-06-01"
         endDate={null}
         city="Lisbon"
         country="Portugal"
-        friendsGoingCount={0}
+        followingGoingCount={0}
       />
     );
-    expect(queryByText("Friends Going")).toBeNull();
+    expect(queryByText("Following Going")).toBeNull();
   });
 });

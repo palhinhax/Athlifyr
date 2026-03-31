@@ -10,12 +10,12 @@ import {
   Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { ImagePlus, Send, X } from "lucide-react-native";
+import { Send, X, Camera, Video } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
 import { CachedAvatar } from "@/src/components/CachedImage";
-import { colors, spacing, borderRadius } from "@/src/constants/theme";
+import { colors, spacing, borderRadius, shadows } from "@/src/constants/theme";
 
 interface CreatePostBoxProps {
   onPostCreated?: () => void;
@@ -126,7 +126,7 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
             uri={user.image}
             style={styles.avatar}
             alt={user.name ?? ""}
-            size={36}
+            size={40}
           />
         ) : (
           <View style={styles.avatarPlaceholder}>
@@ -173,18 +173,33 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
 
       {/* Actions row */}
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.mediaBtn}
-          onPress={handlePickMedia}
-          disabled={isSubmitting || isUploading}
-          accessibilityRole="button"
-          accessibilityLabel={t("a11y.addMedia")}
-        >
-          <ImagePlus size={18} color={colors.textSecondary} />
-          <Text style={styles.mediaBtnText}>
-            {t("feed.createPost.addMedia")}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.mediaButtons}>
+          <TouchableOpacity
+            style={styles.mediaBtn}
+            onPress={handlePickMedia}
+            disabled={isSubmitting || isUploading}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.addMedia")}
+          >
+            <Camera size={18} color={colors.textSecondary} />
+            <Text style={styles.mediaBtnText}>
+              {t("feed.createPost.photo")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.mediaBtn}
+            onPress={handlePickMedia}
+            disabled={isSubmitting || isUploading}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.addMedia")}
+          >
+            <Video size={18} color={colors.textSecondary} />
+            <Text style={styles.mediaBtnText}>
+              {t("feed.createPost.video")}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
@@ -216,14 +231,11 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     padding: spacing.md,
-    marginBottom: spacing.sm,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.sm,
+    ...shadows.md,
   },
   topRow: {
     flexDirection: "row",
@@ -231,51 +243,54 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarInitial: {
     color: colors.white,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
   },
   input: {
     flex: 1,
-    minHeight: 60,
+    minHeight: 44,
     maxHeight: 120,
     fontSize: 14,
     color: colors.text,
+    backgroundColor: colors.muted,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     textAlignVertical: "top",
-    paddingTop: 2,
   },
   previewContainer: {
     marginTop: spacing.sm,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.xl,
     overflow: "hidden",
     position: "relative",
   },
   preview: {
     width: "100%",
     height: 180,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.xl,
   },
   removeMedia: {
     position: "absolute",
-    top: 6,
-    right: 6,
+    top: 8,
+    right: 8,
     backgroundColor: "rgba(0,0,0,0.55)",
-    borderRadius: 10,
-    width: 22,
-    height: 22,
+    borderRadius: 12,
+    width: 24,
+    height: 24,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -288,28 +303,34 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
+  mediaButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
   mediaBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
     paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
   },
   mediaBtnText: {
     fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: "500",
   },
   submitBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     backgroundColor: colors.primary,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
     borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   submitBtnDisabled: {
-    opacity: 0.45,
+    opacity: 0.4,
   },
   submitBtnText: {
     color: colors.white,

@@ -509,6 +509,8 @@
     "createPost": {
       "placeholder": "Condividi qualcosa con la community...",
       "addMedia": "Aggiungi foto/video",
+      "photo": "Foto",
+      "video": "Video",
       "publish": "Pubblica",
       "uploadError": "Caricamento fallito. Riprova.",
       "submitError": "Creazione del post fallita. Riprova."

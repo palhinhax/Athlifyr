@@ -6,11 +6,10 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { MessageSquare, Search, Bell } from "lucide-react-native";
+import { MessageSquare } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";
 import { CreatePostBox } from "@/src/components/CreatePostBox";
@@ -33,24 +32,6 @@ function EmptyFeed() {
   );
 }
 
-// ─── Top App Bar ───────────────────────────────────────────────
-
-function TopAppBar() {
-  return (
-    <View style={styles.topBar}>
-      <Text style={styles.logo}>Athlifyr</Text>
-      <View style={styles.topBarActions}>
-        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6}>
-          <Search size={22} color={theme.colors.text} strokeWidth={2} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6}>
-          <Bell size={22} color={theme.colors.text} strokeWidth={2} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
 // ─── Main Feed Screen ──────────────────────────────────────────
 
 export default function FeedScreen() {
@@ -58,6 +39,7 @@ export default function FeedScreen() {
   const { posts, isLoading, refetch } = useFeedPosts();
   const user = useAuthStore((s) => s.user);
   const [refreshing, setRefreshing] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -67,24 +49,22 @@ export default function FeedScreen() {
 
   if (isLoading && posts.length === 0) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <TopAppBar />
-        <View style={styles.loadingContainer}>
+      <View style={styles.safeArea}>
+        <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
           <ActivityIndicator
             size="large"
             color={theme.colors.primary}
             accessibilityLabel={t("a11y.loading")}
           />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const renderPost = ({ item }: { item: FeedPost }) => <PostCard post={item} />;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <TopAppBar />
+    <View style={styles.safeArea}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -93,9 +73,10 @@ export default function FeedScreen() {
           user ? <CreatePostBox onPostCreated={refetch} /> : null
         }
         ListEmptyComponent={<EmptyFeed />}
-        contentContainerStyle={
-          posts.length === 0 ? styles.emptyListContent : styles.listContent
-        }
+        contentContainerStyle={[
+          posts.length === 0 ? styles.emptyListContent : styles.listContent,
+          { paddingTop: insets.top + theme.spacing.xs },
+        ]}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         refreshControl={
@@ -104,11 +85,12 @@ export default function FeedScreen() {
             onRefresh={onRefresh}
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary]}
+            progressViewOffset={insets.top}
           />
         }
         accessibilityLabel={t("a11y.feedList")}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -153,7 +135,6 @@ const styles = StyleSheet.create({
 
   // List
   listContent: {
-    paddingTop: theme.spacing.xs,
     paddingBottom: theme.spacing.xl,
   },
   emptyListContent: {

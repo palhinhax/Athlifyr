@@ -11,6 +11,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import {
   Heart,
   MessageCircle,
+  MoreHorizontal,
   User,
   Send,
   Trash2,
@@ -30,7 +31,6 @@ import {
   typography,
   spacing,
   borderRadius,
-  shadows,
 } from "@/src/constants/theme";
 
 // ─── Time Ago ──────────────────────────────────────────────────
@@ -313,117 +313,125 @@ export function PostCard({ post }: PostCardProps) {
             {post.venue && (
               <>
                 <Text style={styles.metaDot}>•</Text>
-                <View style={styles.venueBadge}>
-                  <Text style={styles.venueBadgeText} numberOfLines={1}>
-                    {post.venue.name}
-                  </Text>
-                </View>
+                <Text style={styles.venueName} numberOfLines={1}>
+                  {post.venue.name}
+                </Text>
               </>
             )}
           </View>
         </View>
+        <TouchableOpacity
+          style={styles.moreButton}
+          activeOpacity={0.6}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <MoreHorizontal size={20} color={colors.textTertiary} />
+        </TouchableOpacity>
       </View>
-
-      {/* Content */}
-      <Markdown style={markdownStyles} onLinkPress={handleMarkdownLinkPress}>
-        {post.content}
-      </Markdown>
 
       {/* Media — Image */}
       {post.imageUrl && post.mediaType !== "video" && (
-        <CachedImage
-          uri={post.imageUrl}
-          style={styles.postImage}
-          contentFit="cover"
-          alt="Post image"
-        />
+        <View style={styles.mediaContainer}>
+          <CachedImage
+            uri={post.imageUrl}
+            style={styles.postImage}
+            contentFit="cover"
+            alt="Post image"
+          />
+        </View>
       )}
 
       {/* Media — Video (inline autoplay like Instagram) */}
       {post.imageUrl && post.mediaType === "video" && player && (
-        <TouchableOpacity
-          style={styles.videoContainer}
-          activeOpacity={1}
-          onPress={handleVideoPress}
-        >
-          <VideoView
-            player={player}
-            style={styles.videoPlayer}
-            contentFit="cover"
-            nativeControls={false}
-          />
+        <View style={styles.mediaContainer}>
           <TouchableOpacity
-            style={styles.muteButton}
-            onPress={handleMuteToggle}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={
-              isMuted ? t("a11y.unmuteVideo") : t("a11y.muteVideo")
-            }
+            style={styles.videoWrapper}
+            activeOpacity={1}
+            onPress={handleVideoPress}
           >
-            {isMuted ? (
-              <VolumeOff size={16} color={colors.white} />
-            ) : (
-              <Volume2 size={16} color={colors.white} />
-            )}
+            <VideoView
+              player={player}
+              style={styles.videoPlayer}
+              contentFit="cover"
+              nativeControls={false}
+            />
+            <TouchableOpacity
+              style={styles.muteButton}
+              onPress={handleMuteToggle}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={
+                isMuted ? t("a11y.unmuteVideo") : t("a11y.muteVideo")
+              }
+            >
+              {isMuted ? (
+                <VolumeOff size={16} color={colors.white} />
+              ) : (
+                <Volume2 size={16} color={colors.white} />
+              )}
+            </TouchableOpacity>
           </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
       )}
 
-      {/* Actions bar */}
-      <View style={styles.actionsBar}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={handleLike}
-          activeOpacity={0.6}
-          accessibilityRole="button"
-          accessibilityLabel={
-            optimisticLiked
-              ? t("a11y.liked", { count: optimisticCount })
-              : t("a11y.like", { count: optimisticCount })
-          }
-          accessibilityState={{ selected: optimisticLiked }}
-        >
-          <Heart
-            size={20}
-            color={optimisticLiked ? colors.error : colors.textTertiary}
-            fill={optimisticLiked ? colors.error : "none"}
-          />
-          {optimisticCount > 0 && (
-            <Text
-              style={[
-                styles.actionCount,
-                optimisticLiked && styles.actionCountLiked,
-              ]}
-            >
-              {optimisticCount}
-            </Text>
-          )}
-        </TouchableOpacity>
+      {/* Caption */}
+      {post.content ? (
+        <View style={styles.captionContainer}>
+          <Markdown
+            style={captionMarkdownStyles}
+            onLinkPress={handleMarkdownLinkPress}
+          >
+            {`**${post.user.name ?? "User"}** ${post.content}`}
+          </Markdown>
+        </View>
+      ) : null}
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={handleToggleComments}
-          activeOpacity={0.6}
-          accessibilityRole="button"
-          accessibilityLabel={t("a11y.comments", { count: commentsCount })}
-          accessibilityState={{ expanded: showComments }}
-        >
-          <MessageCircle
-            size={20}
-            color={showComments ? colors.info : colors.textTertiary}
-          />
-          {commentsCount > 0 && (
-            <Text
-              style={[
-                styles.actionCount,
-                showComments && styles.actionCountActive,
-              ]}
-            >
-              {commentsCount}
-            </Text>
-          )}
-        </TouchableOpacity>
+      {/* Engagement Bar */}
+      <View style={styles.engagementBar}>
+        <View style={styles.engagementLeft}>
+          <TouchableOpacity
+            style={styles.engagementButton}
+            onPress={handleLike}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel={
+              optimisticLiked
+                ? t("a11y.liked", { count: optimisticCount })
+                : t("a11y.like", { count: optimisticCount })
+            }
+            accessibilityState={{ selected: optimisticLiked }}
+          >
+            <Heart
+              size={22}
+              color={optimisticLiked ? colors.primary : colors.textSecondary}
+              fill={optimisticLiked ? colors.primary : "none"}
+            />
+            {optimisticCount > 0 && (
+              <Text
+                style={[
+                  styles.engagementCount,
+                  optimisticLiked && styles.engagementCountLiked,
+                ]}
+              >
+                {optimisticCount}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.engagementButton}
+            onPress={handleToggleComments}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.comments", { count: commentsCount })}
+            accessibilityState={{ expanded: showComments }}
+          >
+            <MessageCircle size={22} color={colors.textSecondary} />
+            {commentsCount > 0 && (
+              <Text style={styles.engagementCount}>{commentsCount}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Comments Section */}
@@ -561,18 +569,17 @@ export function PostCard({ post }: PostCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
+    marginHorizontal: spacing.md,
     borderRadius: borderRadius.xl,
     overflow: "hidden",
-    ...shadows.sm,
   },
 
   // Header
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     gap: spacing.sm,
   },
   avatar: {
@@ -598,61 +605,61 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: typography.fontSize.sm,
-    fontWeight: "600",
+    fontWeight: "700",
     color: colors.text,
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginTop: 1,
+    marginTop: 2,
   },
   timeText: {
-    fontSize: typography.fontSize.xs,
+    fontSize: 10,
     color: colors.textTertiary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   metaDot: {
-    fontSize: typography.fontSize.xs,
+    fontSize: 10,
     color: colors.textTertiary,
   },
   eventName: {
-    fontSize: typography.fontSize.xs,
+    fontSize: 10,
     color: colors.primary,
     fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
     flexShrink: 1,
   },
-  venueBadge: {
-    backgroundColor: `${colors.text}12`,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-  },
-  venueBadgeText: {
-    fontSize: typography.fontSize.xs - 1,
+  venueName: {
+    fontSize: 10,
     fontWeight: "500",
-    color: colors.text,
+    color: colors.textTertiary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    flexShrink: 1,
   },
-
-  // Content
-  content: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text,
-    lineHeight: typography.fontSize.sm * 1.6,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
+  moreButton: {
+    padding: spacing.xs,
   },
 
   // Media
+  mediaContainer: {
+    paddingHorizontal: spacing.md,
+  },
   postImage: {
     width: "100%",
-    height: 280,
+    aspectRatio: 4 / 5,
+    borderRadius: borderRadius.xl,
     backgroundColor: colors.muted,
   },
-  videoContainer: {
+  videoWrapper: {
     width: "100%",
-    height: 300,
+    aspectRatio: 16 / 9,
+    borderRadius: borderRadius.xl,
+    overflow: "hidden",
     backgroundColor: colors.foreground,
-    position: "relative" as const,
   },
   videoPlayer: {
     width: "100%",
@@ -670,38 +677,44 @@ const styles = StyleSheet.create({
     alignItems: "center" as const,
   },
 
-  // Actions
-  actionsBar: {
+  // Engagement bar
+  engagementBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  engagementLeft: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.lg,
   },
-  actionButton: {
+  engagementButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
   },
-  actionCount: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textTertiary,
-    fontWeight: "500",
+  engagementCount: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: "600",
+    color: colors.textSecondary,
   },
-  actionCountLiked: {
-    color: colors.error,
+  engagementCountLiked: {
+    color: colors.primary,
   },
-  actionCountActive: {
-    color: colors.info,
+
+  // Caption
+  captionContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
   },
 
   // Comments Section
   commentsSection: {
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
 
@@ -804,17 +817,15 @@ const styles = StyleSheet.create({
   },
 });
 
-const markdownStyles = {
+const captionMarkdownStyles = {
   body: {
     fontSize: typography.fontSize.sm,
     color: colors.text,
-    lineHeight: typography.fontSize.sm * 1.6,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
+    lineHeight: typography.fontSize.sm * 1.5,
   },
   paragraph: {
     marginTop: 0,
-    marginBottom: 4,
+    marginBottom: 0,
   },
   strong: {
     fontWeight: "700" as const,
@@ -834,7 +845,7 @@ const markdownStyles = {
     color: colors.text,
   },
   heading2: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     fontWeight: "700" as const,
     marginBottom: 4,
     marginTop: 8,

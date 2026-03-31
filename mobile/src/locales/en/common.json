@@ -509,6 +509,8 @@
     "createPost": {
       "placeholder": "Share something with the community...",
       "addMedia": "Add photo/video",
+      "photo": "Photo",
+      "video": "Video",
       "publish": "Publish",
       "uploadError": "Failed to upload media. Please try again.",
       "submitError": "Failed to create post. Please try again."

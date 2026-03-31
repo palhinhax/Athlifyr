@@ -509,6 +509,8 @@
     "createPost": {
       "placeholder": "Partage quelque chose avec la communauté...",
       "addMedia": "Ajouter photo/vidéo",
+      "photo": "Photo",
+      "video": "Vidéo",
       "publish": "Publier",
       "uploadError": "Échec du téléchargement. Réessaie.",
       "submitError": "Échec de la création du post. Réessaie."

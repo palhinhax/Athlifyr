@@ -1,531 +1,937 @@
-<!DOCTYPE html>
+<!doctype html>
 
-<html lang="pt"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Rota das Ovelhas 2026 | Athlifyr</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              colors: {
-                "secondary-fixed-dim": "#ffb286",
-                "on-secondary-fixed": "#592500",
-                "secondary-fixed": "#ffc5a6",
-                "secondary": "#964300",
-                "on-surface-variant": "#595c5d",
-                "error": "#b31b25",
-                "on-tertiary-container": "#4e3300",
-                "outline": "#757778",
-                "surface-container": "#e6e8ea",
-                "on-tertiary-fixed-variant": "#5a3b00",
-                "error-container": "#fb5151",
-                "on-secondary-fixed-variant": "#853b00",
-                "surface-dim": "#d1d5d7",
-                "surface-bright": "#f5f6f7",
-                "on-error-container": "#570008",
-                "secondary-dim": "#833a00",
-                "surface-container-lowest": "#ffffff",
-                "primary-container": "#ff7936",
-                "on-background": "#2c2f30",
-                "tertiary-fixed": "#f7ad1e",
-                "tertiary": "#7c5400",
-                "error-dim": "#9f0519",
-                "tertiary-container": "#f7ad1e",
-                "outline-variant": "#abadae",
-                "tertiary-fixed-dim": "#e7a006",
-                "background": "#f5f6f7",
-                "on-secondary": "#fff0e9",
-                "on-primary-fixed": "#000000",
-                "primary-fixed": "#ff7936",
-                "primary-dim": "#8b3400",
-                "tertiary-dim": "#6c4900",
-                "on-primary-fixed-variant": "#511b00",
-                "surface-container-highest": "#dadddf",
-                "inverse-primary": "#fd6c1a",
-                "on-secondary-container": "#773400",
-                "primary": "#9e3c00",
-                "inverse-on-surface": "#9b9d9e",
-                "surface-container-low": "#eff1f2",
-                "primary-fixed-dim": "#f66714",
-                "on-tertiary-fixed": "#321f00",
-                "inverse-surface": "#0c0f10",
-                "secondary-container": "#ffc5a6",
-                "surface": "#f5f6f7",
-                "on-surface": "#2c2f30",
-                "surface-container-high": "#e0e3e4",
-                "on-error": "#ffefee",
-                "surface-tint": "#9e3c00",
-                "on-primary-container": "#411400",
-                "on-tertiary": "#fff0e0",
-                "on-primary": "#fff0ea",
-                "surface-variant": "#dadddf"
-              },
-              fontFamily: {
-                "headline": ["Plus Jakarta Sans"],
-                "body": ["Inter"],
-                "label": ["Inter"]
-              },
-              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rota das Ovelhas 2026 | Athlifyr</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#ffb286",
+              "on-secondary-fixed": "#592500",
+              "secondary-fixed": "#ffc5a6",
+              secondary: "#964300",
+              "on-surface-variant": "#595c5d",
+              error: "#b31b25",
+              "on-tertiary-container": "#4e3300",
+              outline: "#757778",
+              "surface-container": "#e6e8ea",
+              "on-tertiary-fixed-variant": "#5a3b00",
+              "error-container": "#fb5151",
+              "on-secondary-fixed-variant": "#853b00",
+              "surface-dim": "#d1d5d7",
+              "surface-bright": "#f5f6f7",
+              "on-error-container": "#570008",
+              "secondary-dim": "#833a00",
+              "surface-container-lowest": "#ffffff",
+              "primary-container": "#ff7936",
+              "on-background": "#2c2f30",
+              "tertiary-fixed": "#f7ad1e",
+              tertiary: "#7c5400",
+              "error-dim": "#9f0519",
+              "tertiary-container": "#f7ad1e",
+              "outline-variant": "#abadae",
+              "tertiary-fixed-dim": "#e7a006",
+              background: "#f5f6f7",
+              "on-secondary": "#fff0e9",
+              "on-primary-fixed": "#000000",
+              "primary-fixed": "#ff7936",
+              "primary-dim": "#8b3400",
+              "tertiary-dim": "#6c4900",
+              "on-primary-fixed-variant": "#511b00",
+              "surface-container-highest": "#dadddf",
+              "inverse-primary": "#fd6c1a",
+              "on-secondary-container": "#773400",
+              primary: "#9e3c00",
+              "inverse-on-surface": "#9b9d9e",
+              "surface-container-low": "#eff1f2",
+              "primary-fixed-dim": "#f66714",
+              "on-tertiary-fixed": "#321f00",
+              "inverse-surface": "#0c0f10",
+              "secondary-container": "#ffc5a6",
+              surface: "#f5f6f7",
+              "on-surface": "#2c2f30",
+              "surface-container-high": "#e0e3e4",
+              "on-error": "#ffefee",
+              "surface-tint": "#9e3c00",
+              "on-primary-container": "#411400",
+              "on-tertiary": "#fff0e0",
+              "on-primary": "#fff0ea",
+              "surface-variant": "#dadddf",
+            },
+            fontFamily: {
+              headline: ["Plus Jakarta Sans"],
+              body: ["Inter"],
+              label: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
             },
           },
-        }
+        },
+      };
     </script>
-<style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); }
-        .primary-gradient { background: linear-gradient(135deg, #9e3c00 0%, #ff7936 100%); }
-        .text-shadow-sm { text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+      }
+      .primary-gradient {
+        background: linear-gradient(135deg, #9e3c00 0%, #ff7936 100%);
+      }
+      .text-shadow-sm {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
     </style>
-</head>
-<body class="bg-surface font-body text-on-background antialiased selection:bg-secondary-container">
-<!-- TopNavBar -->
+  </head>
+  <body
+    class="bg-surface font-body text-on-background selection:bg-secondary-container antialiased"
+  >
+    <!-- TopNavBar -->
 
-<main class="">
-<!-- Hero Section -->
-<section class="relative h-[819px] w-full overflow-hidden">
-<img alt="Rota das Ovelhas" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBylOVRHu8yw-wMkIhQnENBunkza7j0015vZ_VRjKywK0yU5_MgnXcyYZeC5u6q2ydaiPgZnlQEIii3ChU90sGyerTD7r642_SAOnmLuq1HbNVmIsbfKOiDoknGy0gZBKikhfY4Oy6dS0MCqIHEuEOasgNQ03XOsW77ejveHygWcg2geX0hjXblHHwbUmrjKPY4z67leXNjHuJf8Di_jqHrPP1rLKuHZkIeJbrwPlShtHcM5TEV5XdZEFcfuGsAAAYdi9a16-pNaFo"/>
-<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-<div class="relative h-full max-w-screen-2xl mx-auto px-8 flex flex-col justify-end pb-24">
-<div class="flex flex-wrap gap-3 mb-6">
-<span class="glass-panel px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase text-on-surface">Trail Running</span>
-<span class="glass-panel px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase text-on-surface">Caminhada</span>
-</div>
-<h1 class="font-headline text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 leading-tight">
-                    Rota das Ovelhas <span class="text-primary-container">2026</span>
-</h1>
-<div class="flex flex-wrap items-center gap-6 text-white/90">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary-container">calendar_today</span>
-<span class="font-medium">3 de abril de 2026</span>
-</div>
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary-container">location_on</span>
-<span class="font-medium">Jardim de Lajeosa do Dão, Portugal</span>
-</div>
-</div>
-</div>
-</section>
-<!-- Registration Bar -->
-<div class="sticky top-20 z-40 bg-surface-container-lowest/80 backdrop-blur-md shadow-sm border-b border-surface-container">
-<div class="max-w-screen-2xl mx-auto px-8 py-4 flex justify-between items-center">
-<div class="hidden md:block">
-<p class="text-sm font-label text-on-surface-variant uppercase tracking-wider">Inscrições abertas até 30 de Março</p>
-<p class="text-lg font-bold text-on-surface">Preços a partir de 8,00€</p>
-</div>
-<button class="primary-gradient px-12 py-4 rounded-xl text-on-primary font-headline font-bold text-lg active:scale-95 transition-transform shadow-[0_8px_24px_rgba(158,60,0,0.2)]">Abrir Website</button>
-</div>
-</div>
-<!-- Info Grid -->
-<div class="max-w-screen-2xl mx-auto px-8 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
-<!-- Left Column -->
-<div class="lg:col-span-8 space-y-20">
-<!-- Sobre o Evento -->
-<section>
-<h2 class="font-headline text-3xl font-extrabold text-on-surface mb-8">Sobre o Evento</h2>
-<div class="prose prose-stone max-w-none text-on-surface-variant leading-relaxed space-y-4">
-<p class="text-lg">A <strong>Rota das Ovelhas</strong> é mais do que uma corrida; é uma imersão nas tradições e na natureza selvagem da Lajeosa do Dão. Em sua edição de 2026, o percurso desafia os atletas com trilhos técnicos, subidas memoráveis e a hospitalidade característica da Beira Alta.</p>
-<div class="bg-on-tertiary p-6 rounded-xl border-l-4 border-tertiary">
-<h4 class="font-bold text-tertiary mb-2 flex items-center gap-2">
-<span class="material-symbols-outlined">warning</span>
-                                Equipamento Obrigatório
-                            </h4>
-<p class="text-sm">Dorsal, telemóvel, manta térmica, apito, porta-resíduos e depósito para líquidos.</p>
-</div>
-</div>
-</section>
-<!-- Provas e Distâncias (Bento Grid Style) -->
-<section>
-<h2 class="font-headline text-3xl font-extrabold text-on-surface mb-8">Provas e Distâncias</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<!-- Card 1: Main Trail -->
-<div class="md:col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-[0_8px_32px_rgba(158,60,0,0.04)] group hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] transition-all flex flex-col md:flex-row justify-between gap-8">
-<div class="space-y-4">
-<div class="flex items-center gap-3">
-<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center">
-<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">terrain</span>
-</div>
-<h3 class="font-headline text-2xl font-bold">Trail Running</h3>
-</div>
-<div class="flex gap-6">
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Distância</span>
-<span class="text-xl font-black text-on-surface">25,7 km</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Desnível</span>
-<span class="text-xl font-black text-on-surface">817 m D+</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Início</span>
-<span class="text-xl font-black text-on-surface">08:00</span>
-</div>
-</div>
-</div>
-<div class="flex flex-col items-end justify-center">
-<span class="text-4xl font-black text-primary">15,00€</span>
-<span class="text-xs text-on-surface-variant font-medium">IVA Incluído</span>
-</div>
-</div>
-<!-- Card 2: Sprint Trail -->
-<div class="md:col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-[0_8px_32px_rgba(158,60,0,0.04)] group hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] transition-all flex flex-col md:flex-row justify-between gap-8">
-<div class="space-y-4">
-<div class="flex items-center gap-3">
-<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">bolt</span>
-</div>
-<h3 class="font-headline text-2xl font-bold">Sprint Trail</h3>
-</div>
-<div class="flex gap-6">
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Distância</span>
-<span class="text-xl font-black text-on-surface">13,5 km</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Desnível</span>
-<span class="text-xl font-black text-on-surface">428 m D+</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Início</span>
-<span class="text-xl font-black text-on-surface">08:10</span>
-</div>
-</div>
-</div>
-<div class="flex flex-col items-end justify-center">
-<span class="text-4xl font-black text-primary">12,00€</span>
-<span class="text-xs text-on-surface-variant font-medium">IVA Incluído</span>
-</div>
-</div>
-<!-- Card 3: Caminhada -->
-<div class="md:col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-[0_8px_32px_rgba(158,60,0,0.04)] group hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] transition-all flex flex-col md:flex-row justify-between gap-8">
-<div class="space-y-4">
-<div class="flex items-center gap-3">
-<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">hiking</span>
-</div>
-<h3 class="font-headline text-2xl font-bold">Caminhada</h3>
-</div>
-<div class="flex gap-6">
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Distância</span>
-<span class="text-xl font-black text-on-surface">13,5 km</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Tipo</span>
-<span class="text-xl font-black text-on-surface">Lazer</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Início</span>
-<span class="text-xl font-black text-on-surface">08:20</span>
-</div>
-</div>
-</div>
-<div class="flex flex-col items-end justify-center">
-<span class="text-4xl font-black text-primary">8,00€</span>
-<span class="text-xs text-on-surface-variant font-medium">IVA Incluído</span>
-</div>
-</div>
-</div>
-</section>
-<!-- Percurso (Updated with Tabs) -->
-<section id="percurso">
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-<div>
-<h2 class="font-headline text-3xl font-extrabold text-on-surface mb-4">Percurso</h2>
-<div class="inline-flex p-1 bg-surface-container-high rounded-xl">
-<button class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all bg-white text-primary shadow-sm" id="tab-trail">Trail Running</button>
-<button class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all text-on-surface-variant hover:text-on-surface" id="tab-sprint">Sprint Trail</button>
-<button class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all text-on-surface-variant hover:text-on-surface" id="tab-caminhada">Caminhada</button>
-</div>
-</div>
-<button class="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-surface-container-highest rounded-xl text-primary font-bold shadow-sm hover:shadow-md transition-all whitespace-nowrap">
-<span class="material-symbols-outlined">download</span>
-                            Download GPX <span class="text-xs font-normal text-on-surface-variant ml-1" id="gpx-type">(Trail)</span>
-</button>
-</div>
-<div class="relative w-full h-[500px] rounded-[32px] overflow-hidden bg-surface-container shadow-inner border-4 border-white group">
-<img alt="Map of the route" class="w-full h-full object-cover transition-opacity duration-500" id="route-map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q"/>
-<div class="absolute top-6 right-6 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-on-surface-variant shadow-lg hover:text-primary transition-colors">
-<span class="material-symbols-outlined">fullscreen</span>
-</button>
-</div>
-<div class="absolute bottom-8 left-8 right-8 flex flex-col md:flex-row items-end md:items-center justify-between gap-4">
-<div class="glass-panel p-5 rounded-2xl max-w-sm w-full border border-white/40">
-<div class="flex justify-between items-center mb-3">
-<h4 class="font-bold text-xs uppercase tracking-widest text-on-surface">Elevação</h4>
-<span class="text-[10px] font-bold text-primary" id="elevation-stat">Max: 482m</span>
-</div>
-<div class="w-full h-16 bg-primary/10 rounded-lg relative overflow-hidden">
-<div class="absolute inset-0 bg-primary/30" id="elevation-chart" style="clip-path: polygon(0 100%, 10% 80%, 20% 90%, 30% 60%, 40% 75%, 50% 40%, 60% 55%, 70% 20%, 80% 45%, 90% 10%, 100% 100%);"></div>
-</div>
-</div>
-<div class="flex gap-2">
-<div class="glass-panel px-4 py-2 rounded-xl border border-white/40 flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-green-500"></span>
-<span class="text-xs font-bold text-on-surface">Meta</span>
-</div>
-<div class="glass-panel px-4 py-2 rounded-xl border border-white/40 flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-red-500"></span>
-<span class="text-xs font-bold text-on-surface">Partida</span>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- FAQs -->
-<section>
-<h2 class="font-headline text-3xl font-extrabold text-on-surface mb-8">FAQs</h2>
-<div class="space-y-4">
-<details class="group bg-surface-container-low rounded-xl" open="">
-<summary class="list-none flex justify-between items-center p-6 cursor-pointer font-bold text-on-surface">
-                                Onde posso levantar o dorsal?
-                                <span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
-</summary>
-<div class="px-6 pb-6 text-on-surface-variant">
-                                O secretariado estará aberto no Jardim de Lajeosa do Dão no dia anterior entre as 16:00 e as 20:00, e no dia do evento a partir das 06:30.
-                            </div>
-</details>
-<details class="group bg-surface-container-low rounded-xl">
-<summary class="list-none flex justify-between items-center p-6 cursor-pointer font-bold text-on-surface">
-                                Existe banho no final da prova?
-                                <span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
-</summary>
-<div class="px-6 pb-6 text-on-surface-variant">
-                                Sim, estarão disponíveis balneários com água quente no Pavilhão Gimnodesportivo, a 500m da meta.
-                            </div>
-</details>
-</div>
-</section>
-</div>
-<!-- Right Column (Sidebar) -->
-<aside class="lg:col-span-4 space-y-8">
-<!-- Weather Widget -->
-<div class="bg-gradient-to-br from-sky-400 to-sky-600 p-8 rounded-2xl text-white shadow-lg">
-<div class="flex justify-between items-start mb-6">
-<div>
-<p class="text-xs font-bold uppercase tracking-wider opacity-80">Previsão para o Evento</p>
-<h4 class="text-3xl font-black">18°C</h4>
-</div>
-<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">light_mode</span>
-</div>
-<p class="text-sm font-medium opacity-90">Céu limpo com brisa suave. Condições perfeitas para trail running.</p>
-</div>
-<!-- Location Card -->
-<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)] overflow-hidden">
-<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4">Localização</h4>
-<div class="relative w-full h-40 rounded-xl overflow-hidden mb-4 bg-surface-container">
-<img alt="Mini map of Lajeosa do Dão" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q"/>
-<div class="absolute inset-0 flex items-center justify-center">
-<div class="bg-primary p-2 rounded-full shadow-lg ring-4 ring-white/30 animate-bounce">
-<span class="material-symbols-outlined text-white text-xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
-</div>
-</div>
-</div>
-<div class="space-y-4">
-<div>
-<p class="font-bold text-on-surface text-sm">Jardim de Lajeosa do Dão</p>
-<p class="text-xs text-on-surface-variant">3460-155 Lajeosa do Dão, Portugal</p>
-</div>
-<button class="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-surface-container-high text-on-surface font-bold text-sm hover:bg-surface-container-low transition-colors">
-                            Como Chegar
-                            <span class="material-symbols-outlined text-sm">open_in_new</span>
-</button>
-</div>
-</div>
-<!-- Participants -->
-<div class="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-6">Quem vai</h4>
-<div class="flex -space-x-3 mb-6">
-<img alt="Runner" class="w-12 h-12 rounded-full border-4 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF0RJZIannwtI0ycLOVrBVB1SmlO5MhMQrrF-tf8tNF9lhX3nPm9Wly9zIiyri828kAGebzgPIT1R-RTb6UsFOcBkFZvxcQDc3FM9hXQOsoagb2655gv9aZdSPLYCpQAmuxvDQ42pIJ3N0YjgHCm8wAQr9BjUTbUXyNWO7NZcGeBuMGH5FZ-jv9v6AqzBJ8B15hVy6AxioqTkXKLMqyTZdIwIlOgly2GmWj3uts8lL6zYfhqRzFL2GZxGRkNKCd0m0d60RwzRtCG0"/>
-<img alt="Runner" class="w-12 h-12 rounded-full border-4 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTmzYlPdAL1jbhh2iruPrx3n8QcIhAPu6I0QwRRv8ezkWagniwbEEiXDMQS8k6Shtl4hQx-GTwqVaQo5hk17HsLDKZ25xZayBoTXlwcVRGDq8Gh88ki54M4TjmD7fQUtcJ14chrQfLubgzrQRwqj9OklHeaVlWV4HDwhHu4RzNNTqkFzRx70hK7IUSUKb71oQhMNgN1t16Zyq0c-06UMxuI3N19ZQvMwPVGeUSPFm4qaxJPQ2A1NsSZ2Bze7AJEFQ6PeviYWdb720"/>
-<img alt="Runner" class="w-12 h-12 rounded-full border-4 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB46NyZLAFLAsVkcpmRk4dtHWc0BuWDJ_pFAfjr3j1Xy9uU_hFa5ALh4CrP8IsljSSet-Z9o8mfk7TLOlD3cEofC0ZGcfgwSRZFFZdI1WrwWijif7g_PW-qg5N_gMphHvSysI_e5FmcwrAVctRLJwIz_m920sJcEeLJNvL7MJ1QOigNiYcFkChbtfG3L_r4tsoQdUD8vt0AihykAHIgAG-wUSUALQQV89Go5DCCf9GjdQ5eatHAUszk4wbGGbk1tLj1JeMO74t0GRM"/>
-<img alt="Runner" class="w-12 h-12 rounded-full border-4 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnl5nF0M9s6vJUny_92JjJZW_PV6WmvM9j1gFhPhsKwjZJuDG2kSmU77lfSMhAeV_lyGEWOL-Gy50BCXuf2pODGDY2lcW1zyf_Oxm_OPPgPwHRz7O_0Hljlg05IMJFczLxqjq183HE-qHiv6WLsPJb3XJyYfKQbOyKt1xnVpCXvwcLDrya0m4dp8KJnrV8UofZAKYJBl9QZ0_WuS9L3xE9WsLU2bJl5dtRwGzkmlqEZt8yD7g2A7s2MLoTs_mJg_zZw6btFY8xZDY"/>
-<div class="w-12 h-12 rounded-full border-4 border-white bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">+142</div>
-</div>
-<p class="text-sm text-on-surface-variant mb-6"><strong>Ricardo</strong> e outros 4 amigos teus já se inscreveram.</p>
-<button class="w-full py-4 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-colors">Convidar Amigos</button>
-</div>
-<!-- Share & Save -->
-<div class="flex gap-4">
-<button class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-surface-container-lowest shadow-sm font-bold text-on-surface hover:bg-white transition-all">
-<span class="material-symbols-outlined">share</span> Partilhar
-                    </button>
-<button class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-surface-container-lowest shadow-sm font-bold text-on-surface hover:bg-white transition-all">
-<span class="material-symbols-outlined">bookmark</span> Guardar
-                    </button>
-</div>
-</aside>
-</div>
-<!-- Community Section -->
-<section class="bg-surface-container-low py-24">
-<div class="max-w-screen-2xl mx-auto px-8">
-<div class="flex justify-between items-center mb-12">
-<h2 class="font-headline text-5xl font-black text-on-surface tracking-tight">Comunidade</h2>
-<button class="primary-gradient px-8 py-3 rounded-xl text-on-primary font-bold shadow-lg hover:opacity-90 transition-opacity">Publicar Foto</button>
-</div>
-<div class="bg-white p-6 rounded-[32px] shadow-[0_8px_32px_rgba(0,0,0,0.04)] mb-12">
-<div class="flex gap-4">
-<img alt="Current User" class="w-12 h-12 rounded-full object-cover shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx1dsSj3HGAsVkpE9Y_TLrO54EO21XuB1NK0QLWLcJReNna3Xiq41n8WbuRrcp78eZgX-qPLD4XujliLqykL4Xk-PjsheemyNBjUz-Xr_3PBy1ovY-J93JQnUaUgbMM7eUs8RRcjbl1sPwyscQ_Wm0-EHnT07jC1vto7iJY1gTzzLLA4rPbkKuOc6_00Iu0A45Z0Y8j_QoqhIx6f7ANK_Ei0xpHTXQTYBHMNeTvJ2jG4cHC346t-XFlxyHRPZk3Z69ueKP-9F_vbM"/>
-<div class="flex-1">
-<textarea aria-label="Escrever comentário" class="w-full border-0 focus:ring-0 text-on-surface-variant placeholder:text-outline-variant bg-transparent resize-none min-h-[100px] font-body" placeholder="Partilha a tua experiência ou faz uma pergunta..."></textarea>
-<div class="flex justify-between items-center pt-4 border-t border-surface-container-high mt-2">
-<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant flex items-center gap-2" title="Adicionar foto">
-<span class="material-symbols-outlined">image</span>
-<span class="text-sm font-bold">Adicionar Foto</span>
-</button>
-<button class="bg-[#E85D04] px-8 py-2.5 rounded-full text-white font-headline font-bold text-sm shadow-[0_4px_12px_rgba(232,93,4,0.3)] hover:opacity-90 active:scale-95 transition-all">
-                                    Publicar
-                                </button>
-</div>
-</div>
-</div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-<!-- User Card 1 -->
-<div class="bg-surface-container-lowest p-8 rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
-<div class="flex items-center gap-4 mb-6">
-<img alt="Pedro Silva" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx1dsSj3HGAsVkpE9Y_TLrO54EO21XuB1NK0QLWLcJReNna3Xiq41n8WbuRrcp78eZgX-qPLD4XujliLqykL4Xk-PjsheemyNBjUz-Xr_3PBy1ovY-J93JQnUaUgbMM7eUs8RRcjbl1sPwyscQ_Wm0-EHnT07jC1vto7iJY1gTzzLLA4rPbkKuOc6_00Iu0A45Z0Y8j_QoqhIx6f7ANK_Ei0xpHTXQTYBHMNeTvJ2jG4cHC346t-XFlxyHRPZk3Z69ueKP-9F_vbM"/>
-<div>
-<h4 class="font-headline font-bold text-on-surface">Pedro Silva</h4>
-<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">HÁ 2 DIAS</p>
-</div>
-</div>
-<p class="text-on-surface-variant leading-relaxed mb-6">
-                            A subida do "Pinhal" o ano passado foi duríssima mas o reforço de queijo no final compensou tudo! Ansioso pela edição 2026. 🐐⛰️
-                        </p>
-<div class="flex items-center gap-6 text-on-surface-variant">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
-<span class="font-bold text-sm">24</span>
-</div>
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
-<span class="font-bold text-sm">3</span>
-</div>
-</div>
-</div>
-<!-- Featured Image Post -->
-<div class="bg-surface-container-lowest rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
-<div class="p-4">
-<img alt="Trail track" class="w-full h-auto rounded-[24px] object-cover aspect-[3/4]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDED8vnEilddsCWCq3XuqK3f_3M8ASjhsSWj1uI5mKrZUP6lA3iPQbsWhKqX2zIzIp085lKSjSJ8VFrul770aQ656KZpcJY3zACMkw9sxBDpenQTQsSDbtlyb9toGIDVsOzrK60WrwqwtyJ_dZ00NmceEiw5cReRnhs4Hf5YL1TYALtyLmzwB5gm9v7MMuyf4KL0Q0kO2w8VHh4TiuMtY-GYX3z7s3DMy0yj3DzEaktAN1g8S7cezL1bcbpBcqqTDfF4cB_l393bjI"/>
-</div>
-<div class="px-8 pb-8 pt-4">
-<div class="flex items-center gap-3 mb-4">
-<img alt="Marta Dias" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkI66eVdp41fuHnoJpUbT96ugBsHtAVyyVJx4cmrnWCiQnAPHTC1aEhXjGHjLzdno3weSTHdpsUlXdtqUQM_Xun5iTRRGWhkOO764gLtwlvYANzaBQfgGuPZX9IgyE6sl_pw1ybVj18sJUpFyZDmjG5JHG0QnItLZ-LqN6xNMLH38vnOF7PW6dXA0bbJwHg5dK1mkkyqZ9TiYZADEI6-pB_alJya9lo_owkCwEb1M8NX6KkzgqrmTJOvZASC0SJAX2BxFS_Aytpqs"/>
-<h4 class="font-headline font-bold text-on-surface text-sm">Marta Dias</h4>
-</div>
-<p class="text-sm text-on-surface-variant leading-relaxed">
-                                Lembranças de 2024. Quem mais está pronto? #RotaDasOvelhas
-                            </p>
-</div>
-</div>
-<!-- User Card 2 -->
-<div class="bg-surface-container-lowest p-8 rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
-<div class="flex items-center gap-4 mb-6">
-<img alt="João Ramos" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC26evvs45Atb1bkmCw9O6i7g3wmbyKnJSROcZ9gPdXZUi6QdyrtNzSmx5adxL9Gv-PbpHurAp_Ry55eZQiaXtDnBgacCXrYXxIfjpBDGma0g-MtPtBh806nxT0VmgDFadpgev4iL1BflUUyynT_rEQn3KredJAcw2A2wOPJckkC0mxBQmSNVPZPC6ro3XbfrN7_KOJ2z3le6n95gOC6ROKdD1nIqy_qN5wh6lW7xnaW-A0TVVCU1763e0KFys6PNhkttxTL0eX0rs"/>
-<div>
-<h4 class="font-headline font-bold text-on-surface">João Ramos</h4>
-<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">HÁ 4 HORAS</p>
-</div>
-</div>
-<p class="text-on-surface-variant leading-relaxed mb-6">
-                            As inscrições da caminhada costumam esgotar rápido? Queria levar a família toda este ano.
-                        </p>
-<div class="flex items-center gap-6 text-on-surface-variant">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-xl">thumb_up</span>
-<span class="font-bold text-sm">12</span>
-</div>
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-xl">chat_bubble</span>
-<span class="font-bold text-sm">1</span>
-</div>
-</div>
-</div>
-</div>
-<div class="mt-16 text-center">
-<button class="text-primary font-headline font-extrabold text-lg hover:underline transition-all">
-                        Ver mais comentários
-                    </button>
-</div>
-</div>
-</section>
-</main>
-<!-- Footer -->
-<footer class="bg-stone-50 dark:bg-stone-950 font-['Inter'] text-sm tracking-wide">
-<div class="flex flex-col md:flex-row justify-between items-center py-12 px-8 max-w-screen-2xl mx-auto gap-6">
-<div class="text-xl font-bold text-stone-900 dark:text-white">Athlifyr</div>
-<div class="flex flex-wrap justify-center gap-8">
-<a class="text-stone-500 dark:text-stone-400 hover:text-orange-500 dark:hover:text-orange-400 underline underline-offset-4 transition-all" href="#">Terms of Service</a>
-<a class="text-stone-500 dark:text-stone-400 hover:text-orange-500 dark:hover:text-orange-400 underline underline-offset-4 transition-all" href="#">Privacy Policy</a>
-<a class="text-stone-500 dark:text-stone-400 hover:text-orange-500 dark:hover:text-orange-400 underline underline-offset-4 transition-all" href="#">Support</a>
-</div>
-<div class="text-stone-500 dark:text-stone-400">
-                © 2024 Athlifyr. Golden Hour Performance.
+    <main class="">
+      <!-- Hero Section -->
+      <section class="relative h-[819px] w-full overflow-hidden">
+        <img
+          alt="Rota das Ovelhas"
+          class="absolute inset-0 h-full w-full object-cover"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBylOVRHu8yw-wMkIhQnENBunkza7j0015vZ_VRjKywK0yU5_MgnXcyYZeC5u6q2ydaiPgZnlQEIii3ChU90sGyerTD7r642_SAOnmLuq1HbNVmIsbfKOiDoknGy0gZBKikhfY4Oy6dS0MCqIHEuEOasgNQ03XOsW77ejveHygWcg2geX0hjXblHHwbUmrjKPY4z67leXNjHuJf8Di_jqHrPP1rLKuHZkIeJbrwPlShtHcM5TEV5XdZEFcfuGsAAAYdi9a16-pNaFo"
+        />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+        ></div>
+        <div
+          class="relative mx-auto flex h-full max-w-screen-2xl flex-col justify-end px-8 pb-24"
+        >
+          <div class="mb-6 flex flex-wrap gap-3">
+            <span
+              class="glass-panel text-on-surface rounded-full px-4 py-1 text-xs font-bold uppercase tracking-widest"
+              >Trail Running</span
+            >
+            <span
+              class="glass-panel text-on-surface rounded-full px-4 py-1 text-xs font-bold uppercase tracking-widest"
+              >Caminhada</span
+            >
+          </div>
+          <h1
+            class="font-headline mb-4 text-6xl font-black leading-tight tracking-tighter text-white md:text-8xl"
+          >
+            Rota das Ovelhas <span class="text-primary-container">2026</span>
+          </h1>
+          <div class="flex flex-wrap items-center gap-6 text-white/90">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary-container"
+                >calendar_today</span
+              >
+              <span class="font-medium">3 de abril de 2026</span>
             </div>
-</div>
-</footer>
-<script>
-        const routeData = {
-            trail: {
-                map: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q",
-                elevation: "polygon(0 100%, 10% 80%, 20% 90%, 30% 60%, 40% 75%, 50% 40%, 60% 55%, 70% 20%, 80% 45%, 90% 10%, 100% 100%)",
-                maxElev: "Max: 817m",
-                gpx: "(Trail)"
-            },
-            sprint: {
-                map: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q",
-                elevation: "polygon(0 100%, 15% 90%, 25% 95%, 40% 70%, 55% 85%, 70% 50%, 85% 75%, 100% 100%)",
-                maxElev: "Max: 428m",
-                gpx: "(Sprint)"
-            },
-            caminhada: {
-                map: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q",
-                elevation: "polygon(0 100%, 20% 95%, 40% 98%, 60% 92%, 80% 96%, 100% 100%)",
-                maxElev: "Max: 120m",
-                gpx: "(Lazer)"
-            }
-        };
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary-container"
+                >location_on</span
+              >
+              <span class="font-medium"
+                >Jardim de Lajeosa do Dão, Portugal</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Registration Bar -->
+      <div
+        class="bg-surface-container-lowest/80 border-surface-container sticky top-0 z-40 border-b shadow-sm backdrop-blur-md"
+      >
+        <div
+          class="mx-auto flex max-w-screen-2xl items-center justify-between px-8 py-4"
+        >
+          <div class="hidden md:block">
+            <p
+              class="font-label text-on-surface-variant text-sm uppercase tracking-wider"
+            >
+              Inscrições abertas até 30 de Março
+            </p>
+            <p class="text-on-surface text-lg font-bold">
+              Preços a partir de 8,00€
+            </p>
+          </div>
+          <button
+            class="primary-gradient text-on-primary font-headline rounded-xl px-12 py-4 text-lg font-bold shadow-[0_8px_24px_rgba(158,60,0,0.2)] transition-transform active:scale-95"
+          >
+            Abrir Website
+          </button>
+        </div>
+      </div>
+      <!-- Info Grid -->
+      <div
+        class="mx-auto grid max-w-screen-2xl grid-cols-1 gap-12 px-8 py-16 lg:grid-cols-12"
+      >
+        <!-- Left Column -->
+        <div class="space-y-20 lg:col-span-8">
+          <!-- Sobre o Evento -->
+          <section>
+            <h2
+              class="font-headline text-on-surface mb-8 text-3xl font-extrabold"
+            >
+              Sobre o Evento
+            </h2>
+            <div
+              class="text-on-surface-variant prose prose-stone max-w-none space-y-4 leading-relaxed"
+            >
+              <p class="text-lg">
+                A <strong>Rota das Ovelhas</strong> é mais do que uma corrida; é
+                uma imersão nas tradições e na natureza selvagem da Lajeosa do
+                Dão. Em sua edição de 2026, o percurso desafia os atletas com
+                trilhos técnicos, subidas memoráveis e a hospitalidade
+                característica da Beira Alta.
+              </p>
+              <div
+                class="bg-on-tertiary border-tertiary rounded-xl border-l-4 p-6"
+              >
+                <h4
+                  class="text-tertiary mb-2 flex items-center gap-2 font-bold"
+                >
+                  <span class="material-symbols-outlined">warning</span>
+                  Equipamento Obrigatório
+                </h4>
+                <p class="text-sm">
+                  Dorsal, telemóvel, manta térmica, apito, porta-resíduos e
+                  depósito para líquidos.
+                </p>
+              </div>
+            </div>
+          </section>
+          <!-- Provas e Distâncias (Bento Grid Style) -->
+          <section>
+            <h2
+              class="font-headline text-on-surface mb-8 text-3xl font-extrabold"
+            >
+              Provas e Distâncias
+            </h2>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <!-- Card 1: Main Trail -->
+              <div
+                class="bg-surface-container-lowest group flex flex-col justify-between gap-8 rounded-xl p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
+              >
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="bg-primary-container/10 flex h-12 w-12 items-center justify-center rounded-full"
+                    >
+                      <span
+                        class="material-symbols-outlined text-primary"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >terrain</span
+                      >
+                    </div>
+                    <h3 class="font-headline text-2xl font-bold">
+                      Trail Running
+                    </h3>
+                  </div>
+                  <div class="flex gap-6">
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Distância</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >25,7 km</span
+                      >
+                    </div>
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Desnível</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >817 m D+</span
+                      >
+                    </div>
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Início</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >08:00</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end justify-center">
+                  <span class="text-4xl font-black text-primary">15,00€</span>
+                  <span class="text-on-surface-variant text-xs font-medium"
+                    >IVA Incluído</span
+                  >
+                </div>
+              </div>
+              <!-- Card 2: Sprint Trail -->
+              <div
+                class="bg-surface-container-lowest group flex flex-col justify-between gap-8 rounded-xl p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
+              >
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="bg-primary-container/10 flex h-12 w-12 items-center justify-center rounded-full"
+                    >
+                      <span class="material-symbols-outlined text-primary"
+                        >bolt</span
+                      >
+                    </div>
+                    <h3 class="font-headline text-2xl font-bold">
+                      Sprint Trail
+                    </h3>
+                  </div>
+                  <div class="flex gap-6">
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Distância</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >13,5 km</span
+                      >
+                    </div>
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Desnível</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >428 m D+</span
+                      >
+                    </div>
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Início</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >08:10</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end justify-center">
+                  <span class="text-4xl font-black text-primary">12,00€</span>
+                  <span class="text-on-surface-variant text-xs font-medium"
+                    >IVA Incluído</span
+                  >
+                </div>
+              </div>
+              <!-- Card 3: Caminhada -->
+              <div
+                class="bg-surface-container-lowest group flex flex-col justify-between gap-8 rounded-xl p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
+              >
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="bg-primary-container/10 flex h-12 w-12 items-center justify-center rounded-full"
+                    >
+                      <span class="material-symbols-outlined text-primary"
+                        >hiking</span
+                      >
+                    </div>
+                    <h3 class="font-headline text-2xl font-bold">Caminhada</h3>
+                  </div>
+                  <div class="flex gap-6">
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Distância</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >13,5 km</span
+                      >
+                    </div>
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Tipo</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >Lazer</span
+                      >
+                    </div>
+                    <div class="flex flex-col">
+                      <span
+                        class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest"
+                        >Início</span
+                      >
+                      <span class="text-on-surface text-xl font-black"
+                        >08:20</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end justify-center">
+                  <span class="text-4xl font-black text-primary">8,00€</span>
+                  <span class="text-on-surface-variant text-xs font-medium"
+                    >IVA Incluído</span
+                  >
+                </div>
+              </div>
+            </div>
+          </section>
+          <!-- Percurso (Updated with Tabs) -->
+          <section id="percurso">
+            <div
+              class="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-end"
+            >
+              <div>
+                <h2
+                  class="font-headline text-on-surface mb-4 text-3xl font-extrabold"
+                >
+                  Percurso
+                </h2>
+                <div
+                  class="bg-surface-container-high inline-flex rounded-xl p-1"
+                >
+                  <button
+                    class="rounded-lg bg-white px-6 py-2.5 text-sm font-bold text-primary shadow-sm transition-all"
+                    id="tab-trail"
+                  >
+                    Trail Running
+                  </button>
+                  <button
+                    class="text-on-surface-variant hover:text-on-surface rounded-lg px-6 py-2.5 text-sm font-bold transition-all"
+                    id="tab-sprint"
+                  >
+                    Sprint Trail
+                  </button>
+                  <button
+                    class="text-on-surface-variant hover:text-on-surface rounded-lg px-6 py-2.5 text-sm font-bold transition-all"
+                    id="tab-caminhada"
+                  >
+                    Caminhada
+                  </button>
+                </div>
+              </div>
+              <button
+                class="border-surface-container-highest flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border bg-white px-6 py-3 font-bold text-primary shadow-sm transition-all hover:shadow-md"
+              >
+                <span class="material-symbols-outlined">download</span>
+                Download GPX
+                <span
+                  class="text-on-surface-variant ml-1 text-xs font-normal"
+                  id="gpx-type"
+                  >(Trail)</span
+                >
+              </button>
+            </div>
+            <div
+              class="bg-surface-container group relative h-[500px] w-full overflow-hidden rounded-[32px] border-4 border-white shadow-inner"
+            >
+              <img
+                alt="Map of the route"
+                class="h-full w-full object-cover transition-opacity duration-500"
+                id="route-map"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q"
+              />
+              <div
+                class="absolute right-6 top-6 flex flex-col gap-2 opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                <button
+                  class="text-on-surface-variant flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg transition-colors hover:text-primary"
+                >
+                  <span class="material-symbols-outlined">fullscreen</span>
+                </button>
+              </div>
+              <div
+                class="absolute bottom-8 left-8 right-8 flex flex-col items-end justify-between gap-4 md:flex-row md:items-center"
+              >
+                <div
+                  class="glass-panel w-full max-w-sm rounded-2xl border border-white/40 p-5"
+                >
+                  <div class="mb-3 flex items-center justify-between">
+                    <h4
+                      class="text-on-surface text-xs font-bold uppercase tracking-widest"
+                    >
+                      Elevação
+                    </h4>
+                    <span
+                      class="text-[10px] font-bold text-primary"
+                      id="elevation-stat"
+                      >Max: 482m</span
+                    >
+                  </div>
+                  <div
+                    class="relative h-16 w-full overflow-hidden rounded-lg bg-primary/10"
+                  >
+                    <div
+                      class="absolute inset-0 bg-primary/30"
+                      id="elevation-chart"
+                      style="
+                        clip-path: polygon(
+                          0 100%,
+                          10% 80%,
+                          20% 90%,
+                          30% 60%,
+                          40% 75%,
+                          50% 40%,
+                          60% 55%,
+                          70% 20%,
+                          80% 45%,
+                          90% 10%,
+                          100% 100%
+                        );
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <div
+                    class="glass-panel flex items-center gap-2 rounded-xl border border-white/40 px-4 py-2"
+                  >
+                    <span class="h-3 w-3 rounded-full bg-green-500"></span>
+                    <span class="text-on-surface text-xs font-bold">Meta</span>
+                  </div>
+                  <div
+                    class="glass-panel flex items-center gap-2 rounded-xl border border-white/40 px-4 py-2"
+                  >
+                    <span class="h-3 w-3 rounded-full bg-red-500"></span>
+                    <span class="text-on-surface text-xs font-bold"
+                      >Partida</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          <!-- FAQs -->
+          <section>
+            <h2
+              class="font-headline text-on-surface mb-8 text-3xl font-extrabold"
+            >
+              FAQs
+            </h2>
+            <div class="space-y-4">
+              <details
+                class="bg-surface-container-low group rounded-xl"
+                open=""
+              >
+                <summary
+                  class="text-on-surface flex cursor-pointer list-none items-center justify-between p-6 font-bold"
+                >
+                  Onde posso levantar o dorsal?
+                  <span
+                    class="material-symbols-outlined transition-transform group-open:rotate-180"
+                    >expand_more</span
+                  >
+                </summary>
+                <div class="text-on-surface-variant px-6 pb-6">
+                  O secretariado estará aberto no Jardim de Lajeosa do Dão no
+                  dia anterior entre as 16:00 e as 20:00, e no dia do evento a
+                  partir das 06:30.
+                </div>
+              </details>
+              <details class="bg-surface-container-low group rounded-xl">
+                <summary
+                  class="text-on-surface flex cursor-pointer list-none items-center justify-between p-6 font-bold"
+                >
+                  Existe banho no final da prova?
+                  <span
+                    class="material-symbols-outlined transition-transform group-open:rotate-180"
+                    >expand_more</span
+                  >
+                </summary>
+                <div class="text-on-surface-variant px-6 pb-6">
+                  Sim, estarão disponíveis balneários com água quente no
+                  Pavilhão Gimnodesportivo, a 500m da meta.
+                </div>
+              </details>
+            </div>
+          </section>
+        </div>
+        <!-- Right Column (Sidebar) -->
+        <aside class="space-y-8 lg:col-span-4">
+          <!-- Weather Widget -->
+          <div
+            class="rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 p-8 text-white shadow-lg"
+          >
+            <div class="mb-6 flex items-start justify-between">
+              <div>
+                <p
+                  class="text-xs font-bold uppercase tracking-wider opacity-80"
+                >
+                  Previsão para o Evento
+                </p>
+                <h4 class="text-3xl font-black">18°C</h4>
+              </div>
+              <span
+                class="material-symbols-outlined text-5xl"
+                style="font-variation-settings: &quot;FILL&quot; 1"
+                >light_mode</span
+              >
+            </div>
+            <p class="text-sm font-medium opacity-90">
+              Céu limpo com brisa suave. Condições perfeitas para trail running.
+            </p>
+          </div>
+          <!-- Location Card -->
+          <div
+            class="bg-surface-container-lowest overflow-hidden rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+          >
+            <h4
+              class="text-on-surface-variant mb-4 text-xs font-bold uppercase tracking-widest"
+            >
+              Localização
+            </h4>
+            <div
+              class="bg-surface-container relative mb-4 h-40 w-full overflow-hidden rounded-xl"
+            >
+              <img
+                alt="Mini map of Lajeosa do Dão"
+                class="h-full w-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q"
+              />
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div
+                  class="animate-bounce rounded-full bg-primary p-2 shadow-lg ring-4 ring-white/30"
+                >
+                  <span
+                    class="material-symbols-outlined text-xl text-white"
+                    style="font-variation-settings: &quot;FILL&quot; 1"
+                    >location_on</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <p class="text-on-surface text-sm font-bold">
+                  Jardim de Lajeosa do Dão
+                </p>
+                <p class="text-on-surface-variant text-xs">
+                  3460-155 Lajeosa do Dão, Portugal
+                </p>
+              </div>
+              <button
+                class="border-surface-container-high text-on-surface hover:bg-surface-container-low flex w-full items-center justify-center gap-2 rounded-xl border-2 py-3 text-sm font-bold transition-colors"
+              >
+                Como Chegar
+                <span class="material-symbols-outlined text-sm"
+                  >open_in_new</span
+                >
+              </button>
+            </div>
+          </div>
+          <!-- Participants -->
+          <div
+            class="bg-surface-container-lowest rounded-2xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+          >
+            <h4
+              class="text-on-surface-variant mb-6 text-xs font-bold uppercase tracking-widest"
+            >
+              Quem vai
+            </h4>
+            <div class="mb-6 flex -space-x-3">
+              <img
+                alt="Runner"
+                class="h-12 w-12 rounded-full border-4 border-white object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF0RJZIannwtI0ycLOVrBVB1SmlO5MhMQrrF-tf8tNF9lhX3nPm9Wly9zIiyri828kAGebzgPIT1R-RTb6UsFOcBkFZvxcQDc3FM9hXQOsoagb2655gv9aZdSPLYCpQAmuxvDQ42pIJ3N0YjgHCm8wAQr9BjUTbUXyNWO7NZcGeBuMGH5FZ-jv9v6AqzBJ8B15hVy6AxioqTkXKLMqyTZdIwIlOgly2GmWj3uts8lL6zYfhqRzFL2GZxGRkNKCd0m0d60RwzRtCG0"
+              />
+              <img
+                alt="Runner"
+                class="h-12 w-12 rounded-full border-4 border-white object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTmzYlPdAL1jbhh2iruPrx3n8QcIhAPu6I0QwRRv8ezkWagniwbEEiXDMQS8k6Shtl4hQx-GTwqVaQo5hk17HsLDKZ25xZayBoTXlwcVRGDq8Gh88ki54M4TjmD7fQUtcJ14chrQfLubgzrQRwqj9OklHeaVlWV4HDwhHu4RzNNTqkFzRx70hK7IUSUKb71oQhMNgN1t16Zyq0c-06UMxuI3N19ZQvMwPVGeUSPFm4qaxJPQ2A1NsSZ2Bze7AJEFQ6PeviYWdb720"
+              />
+              <img
+                alt="Runner"
+                class="h-12 w-12 rounded-full border-4 border-white object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB46NyZLAFLAsVkcpmRk4dtHWc0BuWDJ_pFAfjr3j1Xy9uU_hFa5ALh4CrP8IsljSSet-Z9o8mfk7TLOlD3cEofC0ZGcfgwSRZFFZdI1WrwWijif7g_PW-qg5N_gMphHvSysI_e5FmcwrAVctRLJwIz_m920sJcEeLJNvL7MJ1QOigNiYcFkChbtfG3L_r4tsoQdUD8vt0AihykAHIgAG-wUSUALQQV89Go5DCCf9GjdQ5eatHAUszk4wbGGbk1tLj1JeMO74t0GRM"
+              />
+              <img
+                alt="Runner"
+                class="h-12 w-12 rounded-full border-4 border-white object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnl5nF0M9s6vJUny_92JjJZW_PV6WmvM9j1gFhPhsKwjZJuDG2kSmU77lfSMhAeV_lyGEWOL-Gy50BCXuf2pODGDY2lcW1zyf_Oxm_OPPgPwHRz7O_0Hljlg05IMJFczLxqjq183HE-qHiv6WLsPJb3XJyYfKQbOyKt1xnVpCXvwcLDrya0m4dp8KJnrV8UofZAKYJBl9QZ0_WuS9L3xE9WsLU2bJl5dtRwGzkmlqEZt8yD7g2A7s2MLoTs_mJg_zZw6btFY8xZDY"
+              />
+              <div
+                class="bg-primary-container text-on-primary-container flex h-12 w-12 items-center justify-center rounded-full border-4 border-white text-xs font-bold"
+              >
+                +142
+              </div>
+            </div>
+            <p class="text-on-surface-variant mb-6 text-sm">
+              <strong>Ricardo</strong> e outros 4 amigos teus já se inscreveram.
+            </p>
+            <button
+              class="w-full rounded-xl border-2 border-primary py-4 font-bold text-primary transition-colors hover:bg-primary/5"
+            >
+              Convidar Amigos
+            </button>
+          </div>
+          <!-- Share & Save -->
+          <div class="flex gap-4">
+            <button
+              class="bg-surface-container-lowest text-on-surface flex flex-1 items-center justify-center gap-2 rounded-xl py-4 font-bold shadow-sm transition-all hover:bg-white"
+            >
+              <span class="material-symbols-outlined">share</span> Partilhar
+            </button>
+            <button
+              class="bg-surface-container-lowest text-on-surface flex flex-1 items-center justify-center gap-2 rounded-xl py-4 font-bold shadow-sm transition-all hover:bg-white"
+            >
+              <span class="material-symbols-outlined">bookmark</span> Guardar
+            </button>
+          </div>
+        </aside>
+      </div>
+      <!-- Community Section -->
+      <section class="bg-surface-container-low py-24">
+        <div class="mx-auto max-w-screen-2xl px-8">
+          <div class="mb-12 flex items-center justify-between">
+            <h2
+              class="font-headline text-on-surface text-5xl font-black tracking-tight"
+            >
+              Comunidade
+            </h2>
+            <button
+              class="primary-gradient text-on-primary rounded-xl px-8 py-3 font-bold shadow-lg transition-opacity hover:opacity-90"
+            >
+              Publicar Foto
+            </button>
+          </div>
+          <div
+            class="mb-12 rounded-[32px] bg-white p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+          >
+            <div class="flex gap-4">
+              <img
+                alt="Current User"
+                class="h-12 w-12 shrink-0 rounded-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx1dsSj3HGAsVkpE9Y_TLrO54EO21XuB1NK0QLWLcJReNna3Xiq41n8WbuRrcp78eZgX-qPLD4XujliLqykL4Xk-PjsheemyNBjUz-Xr_3PBy1ovY-J93JQnUaUgbMM7eUs8RRcjbl1sPwyscQ_Wm0-EHnT07jC1vto7iJY1gTzzLLA4rPbkKuOc6_00Iu0A45Z0Y8j_QoqhIx6f7ANK_Ei0xpHTXQTYBHMNeTvJ2jG4cHC346t-XFlxyHRPZk3Z69ueKP-9F_vbM"
+              />
+              <div class="flex-1">
+                <textarea
+                  aria-label="Escrever comentário"
+                  class="text-on-surface-variant placeholder:text-outline-variant font-body min-h-[100px] w-full resize-none border-0 bg-transparent focus:ring-0"
+                  placeholder="Partilha a tua experiência ou faz uma pergunta..."
+                ></textarea>
+                <div
+                  class="border-surface-container-high mt-2 flex items-center justify-between border-t pt-4"
+                >
+                  <button
+                    class="hover:bg-surface-container-low text-on-surface-variant flex items-center gap-2 rounded-full p-2 transition-colors"
+                    title="Adicionar foto"
+                  >
+                    <span class="material-symbols-outlined">image</span>
+                    <span class="text-sm font-bold">Adicionar Foto</span>
+                  </button>
+                  <button
+                    class="font-headline rounded-full bg-[#E85D04] px-8 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(232,93,4,0.3)] transition-all hover:opacity-90 active:scale-95"
+                  >
+                    Publicar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 items-start gap-8 md:grid-cols-3">
+            <!-- User Card 1 -->
+            <div
+              class="bg-surface-container-lowest rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+            >
+              <div class="mb-6 flex items-center gap-4">
+                <img
+                  alt="Pedro Silva"
+                  class="h-12 w-12 rounded-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx1dsSj3HGAsVkpE9Y_TLrO54EO21XuB1NK0QLWLcJReNna3Xiq41n8WbuRrcp78eZgX-qPLD4XujliLqykL4Xk-PjsheemyNBjUz-Xr_3PBy1ovY-J93JQnUaUgbMM7eUs8RRcjbl1sPwyscQ_Wm0-EHnT07jC1vto7iJY1gTzzLLA4rPbkKuOc6_00Iu0A45Z0Y8j_QoqhIx6f7ANK_Ei0xpHTXQTYBHMNeTvJ2jG4cHC346t-XFlxyHRPZk3Z69ueKP-9F_vbM"
+                />
+                <div>
+                  <h4 class="font-headline text-on-surface font-bold">
+                    Pedro Silva
+                  </h4>
+                  <p
+                    class="text-on-surface-variant text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    HÁ 2 DIAS
+                  </p>
+                </div>
+              </div>
+              <p class="text-on-surface-variant mb-6 leading-relaxed">
+                A subida do "Pinhal" o ano passado foi duríssima mas o reforço
+                de queijo no final compensou tudo! Ansioso pela edição 2026.
+                🐐⛰️
+              </p>
+              <div class="text-on-surface-variant flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="material-symbols-outlined text-xl"
+                    style="font-variation-settings: &quot;FILL&quot; 1"
+                    >thumb_up</span
+                  >
+                  <span class="text-sm font-bold">24</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span
+                    class="material-symbols-outlined text-xl"
+                    style="font-variation-settings: &quot;FILL&quot; 1"
+                    >chat_bubble</span
+                  >
+                  <span class="text-sm font-bold">3</span>
+                </div>
+              </div>
+            </div>
+            <!-- Featured Image Post -->
+            <div
+              class="bg-surface-container-lowest overflow-hidden rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+            >
+              <div class="p-4">
+                <img
+                  alt="Trail track"
+                  class="aspect-[3/4] h-auto w-full rounded-[24px] object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDED8vnEilddsCWCq3XuqK3f_3M8ASjhsSWj1uI5mKrZUP6lA3iPQbsWhKqX2zIzIp085lKSjSJ8VFrul770aQ656KZpcJY3zACMkw9sxBDpenQTQsSDbtlyb9toGIDVsOzrK60WrwqwtyJ_dZ00NmceEiw5cReRnhs4Hf5YL1TYALtyLmzwB5gm9v7MMuyf4KL0Q0kO2w8VHh4TiuMtY-GYX3z7s3DMy0yj3DzEaktAN1g8S7cezL1bcbpBcqqTDfF4cB_l393bjI"
+                />
+              </div>
+              <div class="px-8 pb-8 pt-4">
+                <div class="mb-4 flex items-center gap-3">
+                  <img
+                    alt="Marta Dias"
+                    class="h-10 w-10 rounded-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkI66eVdp41fuHnoJpUbT96ugBsHtAVyyVJx4cmrnWCiQnAPHTC1aEhXjGHjLzdno3weSTHdpsUlXdtqUQM_Xun5iTRRGWhkOO764gLtwlvYANzaBQfgGuPZX9IgyE6sl_pw1ybVj18sJUpFyZDmjG5JHG0QnItLZ-LqN6xNMLH38vnOF7PW6dXA0bbJwHg5dK1mkkyqZ9TiYZADEI6-pB_alJya9lo_owkCwEb1M8NX6KkzgqrmTJOvZASC0SJAX2BxFS_Aytpqs"
+                  />
+                  <h4 class="font-headline text-on-surface text-sm font-bold">
+                    Marta Dias
+                  </h4>
+                </div>
+                <p class="text-on-surface-variant text-sm leading-relaxed">
+                  Lembranças de 2024. Quem mais está pronto? #RotaDasOvelhas
+                </p>
+              </div>
+            </div>
+            <!-- User Card 2 -->
+            <div
+              class="bg-surface-container-lowest rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+            >
+              <div class="mb-6 flex items-center gap-4">
+                <img
+                  alt="João Ramos"
+                  class="h-12 w-12 rounded-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuC26evvs45Atb1bkmCw9O6i7g3wmbyKnJSROcZ9gPdXZUi6QdyrtNzSmx5adxL9Gv-PbpHurAp_Ry55eZQiaXtDnBgacCXrYXxIfjpBDGma0g-MtPtBh806nxT0VmgDFadpgev4iL1BflUUyynT_rEQn3KredJAcw2A2wOPJckkC0mxBQmSNVPZPC6ro3XbfrN7_KOJ2z3le6n95gOC6ROKdD1nIqy_qN5wh6lW7xnaW-A0TVVCU1763e0KFys6PNhkttxTL0eX0rs"
+                />
+                <div>
+                  <h4 class="font-headline text-on-surface font-bold">
+                    João Ramos
+                  </h4>
+                  <p
+                    class="text-on-surface-variant text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    HÁ 4 HORAS
+                  </p>
+                </div>
+              </div>
+              <p class="text-on-surface-variant mb-6 leading-relaxed">
+                As inscrições da caminhada costumam esgotar rápido? Queria levar
+                a família toda este ano.
+              </p>
+              <div class="text-on-surface-variant flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-xl"
+                    >thumb_up</span
+                  >
+                  <span class="text-sm font-bold">12</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-xl"
+                    >chat_bubble</span
+                  >
+                  <span class="text-sm font-bold">1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-16 text-center">
+            <button
+              class="font-headline text-lg font-extrabold text-primary transition-all hover:underline"
+            >
+              Ver mais comentários
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      const routeData = {
+        trail: {
+          map: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q",
+          elevation:
+            "polygon(0 100%, 10% 80%, 20% 90%, 30% 60%, 40% 75%, 50% 40%, 60% 55%, 70% 20%, 80% 45%, 90% 10%, 100% 100%)",
+          maxElev: "Max: 817m",
+          gpx: "(Trail)",
+        },
+        sprint: {
+          map: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q",
+          elevation:
+            "polygon(0 100%, 15% 90%, 25% 95%, 40% 70%, 55% 85%, 70% 50%, 85% 75%, 100% 100%)",
+          maxElev: "Max: 428m",
+          gpx: "(Sprint)",
+        },
+        caminhada: {
+          map: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhvq_cxQxU6LqzCG2ALP1XoMnWMA8HPRywGxsrc0LxwZuwG1rZgSOLP9ABn3SAFbAYOiShVJGCVyW8j7XUGfHJQXF2A3g3_aAbmgleSPy4j5_5_gXOP8opU_xAHCyZnMiTcb4OcyIWIIPw1Ka6TDi0WQe4OD8kojSbsD0lclDKtnH_eYIMzpxMTfEgi2mlSzHY6wyFpw5trdR7Cp_NLwQHbDsC_2_zPn6MppWBR3ck1CBf8KZj5GV8gIX4If8ziMQu7HZsoggLn7Q",
+          elevation:
+            "polygon(0 100%, 20% 95%, 40% 98%, 60% 92%, 80% 96%, 100% 100%)",
+          maxElev: "Max: 120m",
+          gpx: "(Lazer)",
+        },
+      };
 
-        const tabs = {
-            trail: document.getElementById('tab-trail'),
-            sprint: document.getElementById('tab-sprint'),
-            caminhada: document.getElementById('tab-caminhada')
-        };
+      const tabs = {
+        trail: document.getElementById("tab-trail"),
+        sprint: document.getElementById("tab-sprint"),
+        caminhada: document.getElementById("tab-caminhada"),
+      };
 
-        const mapImg = document.getElementById('route-map');
-        const elevChart = document.getElementById('elevation-chart');
-        const elevStat = document.getElementById('elevation-stat');
-        const gpxLabel = document.getElementById('gpx-type');
+      const mapImg = document.getElementById("route-map");
+      const elevChart = document.getElementById("elevation-chart");
+      const elevStat = document.getElementById("elevation-stat");
+      const gpxLabel = document.getElementById("gpx-type");
 
-        function updateRoute(key) {
-            // Update UI State
-            Object.keys(tabs).forEach(k => {
-                if(k === key) {
-                    tabs[k].className = "px-6 py-2.5 rounded-lg text-sm font-bold transition-all bg-white text-primary shadow-sm";
-                } else {
-                    tabs[k].className = "px-6 py-2.5 rounded-lg text-sm font-bold transition-all text-on-surface-variant hover:text-on-surface";
-                }
-            });
+      function updateRoute(key) {
+        // Update UI State
+        Object.keys(tabs).forEach((k) => {
+          if (k === key) {
+            tabs[k].className =
+              "px-6 py-2.5 rounded-lg text-sm font-bold transition-all bg-white text-primary shadow-sm";
+          } else {
+            tabs[k].className =
+              "px-6 py-2.5 rounded-lg text-sm font-bold transition-all text-on-surface-variant hover:text-on-surface";
+          }
+        });
 
-            // Update Map & Info with fade effect
-            mapImg.style.opacity = '0.5';
-            setTimeout(() => {
-                mapImg.src = routeData[key].map;
-                elevChart.style.clipPath = routeData[key].elevation;
-                elevStat.textContent = routeData[key].maxElev;
-                gpxLabel.textContent = routeData[key].gpx;
-                mapImg.style.opacity = '1';
-            }, 150);
-        }
+        // Update Map & Info with fade effect
+        mapImg.style.opacity = "0.5";
+        setTimeout(() => {
+          mapImg.src = routeData[key].map;
+          elevChart.style.clipPath = routeData[key].elevation;
+          elevStat.textContent = routeData[key].maxElev;
+          gpxLabel.textContent = routeData[key].gpx;
+          mapImg.style.opacity = "1";
+        }, 150);
+      }
 
-        tabs.trail.addEventListener('click', () => updateRoute('trail'));
-        tabs.sprint.addEventListener('click', () => updateRoute('sprint'));
-        tabs.caminhada.addEventListener('click', () => updateRoute('caminhada'));
+      tabs.trail.addEventListener("click", () => updateRoute("trail"));
+      tabs.sprint.addEventListener("click", () => updateRoute("sprint"));
+      tabs.caminhada.addEventListener("click", () => updateRoute("caminhada"));
     </script>
-</body></html>
+  </body>
+</html>

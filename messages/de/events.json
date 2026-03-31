@@ -57,6 +57,15 @@
     "readyToParticipate": "Bereit teilzunehmen?",
     "moreInfoDescription": "Für weitere Informationen und Anmeldungen besuchen Sie die offizielle Website der Veranstaltung.",
     "goToWebsite": "Zur offiziellen Website",
+    "manage": "Veranstaltung verwalten",
+    "registrationBar": {
+      "pricesFrom": "Preise ab {price}",
+      "openUntil": "Anmeldungen offen bis"
+    },
+    "sidebar": {
+      "whoIsGoing": "Wer kommt",
+      "save": "Speichern"
+    },
     "community": "Gemeinschaft",
     "locationTitle": "Standort",
     "openInGoogleMaps": "In Google Maps öffnen",

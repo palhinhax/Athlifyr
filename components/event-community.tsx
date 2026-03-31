@@ -1,6 +1,5 @@
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
-import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface EventCommunityProps {
@@ -37,19 +36,26 @@ export function EventCommunity({
   const t = useTranslations("events");
 
   return (
-    <div className="mt-12 border-t pt-12">
-      <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold">
-        <MessageCircle className="h-5 w-5 text-primary" />
-        {t("community")}
-      </h2>
-      <div className="space-y-4">
+    <section className="py-16 sm:py-20">
+      <div className="mb-8 flex items-center justify-between sm:mb-12">
+        <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
+          {t("community")}
+        </h2>
+      </div>
+
+      {/* Create Post Box */}
+      <div className="mb-8 rounded-2xl bg-card p-4 shadow-sm sm:mb-12 sm:p-6">
         <CreatePost eventId={eventId} />
-        {posts.length === 0 ? (
-          <p className="py-8 text-center text-muted-foreground">
-            {t("noPosts")}
-          </p>
-        ) : (
-          posts.map((post) => (
+      </div>
+
+      {/* Posts Grid */}
+      {posts.length === 0 ? (
+        <p className="py-12 text-center text-muted-foreground">
+          {t("noPosts")}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
             <PostCard
               key={post.id}
               post={{
@@ -63,9 +69,9 @@ export function EventCommunity({
               currentUserId={currentUserId}
               isAdmin={isAdmin}
             />
-          ))
-        )}
-      </div>
-    </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

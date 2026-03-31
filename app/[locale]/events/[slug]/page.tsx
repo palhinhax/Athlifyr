@@ -13,7 +13,6 @@ import {
 } from "@/lib/structured-data";
 import { StructuredData } from "@/components/structured-data";
 import { EventHeader } from "@/components/event-header";
-import { EventMetaInfo } from "@/components/event-meta-info";
 import { EventVariantsList } from "@/components/event-variants-list";
 import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
@@ -24,6 +23,7 @@ import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
 import { LiveRaceSection } from "@/components/live-race-section";
 import { LiveRaceCheckinBanner } from "@/components/live-race-checkin-banner";
+import { EventRegistrationBar } from "@/components/event-registration-bar";
 import { Language, Prisma } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -395,6 +395,27 @@ export default async function EventPage({ params }: PageProps) {
     hideRoute: t("variants.hideRoute"),
   };
 
+  // Compute min price across all variant pricing phases
+  const allPrices = event.variants.flatMap((v) =>
+    v.pricingPhases.map((p) => ({ price: p.price, currency: p.currency }))
+  );
+  const minPriceEntry =
+    allPrices.length > 0
+      ? allPrices.reduce((min, p) => (p.price < min.price ? p : min))
+      : null;
+
+  // Find earliest registration deadline from active pricing phases
+  const now = new Date();
+  const activePhaseDates = event.variants
+    .flatMap((v) => v.pricingPhases)
+    .filter((p) => new Date(p.endDate) >= now)
+    .map((p) => new Date(p.endDate))
+    .sort((a, b) => a.getTime() - b.getTime());
+  const registrationDeadline =
+    activePhaseDates.length > 0
+      ? `${t("registrationBar.openUntil")} ${formatDate(activePhaseDates[activePhaseDates.length - 1], locale)}`
+      : null;
+
   return (
     <div className="min-h-screen">
       {/* Structured Data for SEO */}
@@ -414,199 +435,168 @@ export default async function EventPage({ params }: PageProps) {
         locale={locale}
       />
 
-      {/* Event Details */}
-      <div className="container py-12">
-        <div className="grid gap-8 lg:grid-cols-[1fr,400px]">
-          {/* Main Content - Left Column */}
-          <div className="min-w-0 overflow-hidden">
-            {/* Check-in Banner — top-of-page highlight when CHECK_IN_OPEN */}
-            {event.hasLiveRace && event.liveStatus === "CHECK_IN_OPEN" && (
-              <div className="mb-6">
-                <LiveRaceCheckinBanner />
-              </div>
-            )}
+      {/* Sticky Registration Bar */}
+      <EventRegistrationBar
+        minPrice={minPriceEntry?.price ?? null}
+        currency={minPriceEntry?.currency ?? "EUR"}
+        registrationDeadline={registrationDeadline}
+        externalUrl={event.externalUrl}
+        hasRegistrations={event.hasRegistrations}
+        cancelled={event.cancelled}
+        isPastEvent={isPastEvent}
+      />
 
-            {/* Giveaway Banner - Top of Content */}
-            {!event.cancelled && (
-              <div className="mb-6">
-                <GiveawayCard eventId={event.id} />
-              </div>
-            )}
+      {/* Main Content Grid */}
+      <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-8 px-4 py-12 sm:px-8 lg:grid-cols-12 lg:gap-12 lg:py-16">
+        {/* Left Column */}
+        <div className="min-w-0 space-y-12 lg:col-span-8">
+          {/* Check-in Banner — top-of-page highlight when CHECK_IN_OPEN */}
+          {event.hasLiveRace && event.liveStatus === "CHECK_IN_OPEN" && (
+            <LiveRaceCheckinBanner />
+          )}
 
-            {/* Meta Info - Date and Location */}
-            <EventMetaInfo
-              startDate={event.startDate}
-              endDate={event.endDate}
+          {/* Giveaway Banner - Top of Content */}
+          {!event.cancelled && <GiveawayCard eventId={event.id} />}
+
+          {/* About the Event — Description */}
+          <EventMainContent
+            description={event.description}
+            pricingPhases={event.pricingPhases}
+            variants={event.variants.map((v) => ({
+              id: v.id,
+              name: v.name,
+            }))}
+            externalUrl={event.externalUrl}
+            stravaRouteEmbed={event.stravaRouteEmbed}
+            cancelled={event.cancelled}
+            hasRegistrations={event.hasRegistrations}
+            translations={{
+              aboutEvent: t("aboutEvent"),
+              readyToParticipate: t("readyToParticipate"),
+              moreInfoDescription: t("moreInfoDescription"),
+              goToWebsite: t("goToWebsite"),
+            }}
+          />
+
+          {/* Variants List with Distances (bento cards) */}
+          <EventVariantsList
+            variants={event.variants.map((v) => ({
+              ...v,
+              registrationCount:
+                v._count.registrations + v._count.participations,
+            }))}
+            labels={variantLabels}
+            eventId={event.id}
+          />
+
+          {/* LiveRace Section — visible when hasLiveRace (non check-in) */}
+          {event.hasLiveRace && event.liveStatus !== "CHECK_IN_OPEN" && (
+            <LiveRaceSection eventId={event.id} dbStatus={event.liveStatus} />
+          )}
+
+          {/* Location Map - Mobile Only */}
+          {event.latitude && event.longitude && (
+            <EventLocationMobile
+              latitude={event.latitude}
+              longitude={event.longitude}
+              title={event.title}
               city={event.city}
               country={event.country}
-              friendsGoing={friendsGoing}
-              friendsGoingCount={friendsGoingCount}
+              googleMapsUrl={event.googleMapsUrl}
+              sportTypes={event.sportTypes}
             />
+          )}
 
-            {/* Variants List with Distances (compact) */}
-            <EventVariantsList
-              variants={event.variants.map((v) => ({
-                ...v,
-                registrationCount:
-                  v._count.registrations + v._count.participations,
-              }))}
-              labels={variantLabels}
-              eventId={event.id}
+          {/* Weather Forecast - Mobile Only */}
+          {event.weather && event.weather.length > 0 && (
+            <EventWeatherMobile
+              weather={event.weather}
+              isPastEvent={isPastEvent}
             />
+          )}
 
-            {/* LiveRace Section — visible when hasLiveRace (non check-in) */}
-            {event.hasLiveRace && event.liveStatus !== "CHECK_IN_OPEN" && (
-              <div className="mt-6">
-                <LiveRaceSection
+          {/* Event Registration */}
+          {!event.cancelled && (
+            <div id="event-registration">
+              {isPastEvent ? (
+                <EventPastParticipation
                   eventId={event.id}
-                  dbStatus={event.liveStatus}
+                  variants={event.variants.map((v) => ({
+                    id: v.id,
+                    name: v.name,
+                    distanceKm: v.distanceKm,
+                    startDate: v.startDate,
+                    startTime: v.startTime,
+                  }))}
                 />
-              </div>
-            )}
+              ) : (
+                <EventRegistration
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  eventTitle={event.title}
+                  hasRegistrations={event.hasRegistrations}
+                  registrationFieldSettings={
+                    (event.registrationFieldSettings as Record<
+                      string,
+                      string
+                    >) ?? {}
+                  }
+                  variants={event.variants.map((v) => ({
+                    id: v.id,
+                    name: v.name,
+                    distanceKm: v.distanceKm,
+                    startDate: v.startDate,
+                    startTime: v.startTime,
+                    maxParticipants: v.maxParticipants,
+                    teamSize: v.teamSize,
+                    registrationCount:
+                      v._count.registrations + v._count.participations,
+                    pricingPhases: v.pricingPhases.map((p) => ({
+                      id: p.id,
+                      name: p.name,
+                      price: p.price,
+                      currency: p.currency,
+                      startDate: p.startDate,
+                      endDate: p.endDate,
+                    })),
+                  }))}
+                />
+              )}
+            </div>
+          )}
 
-            {/* Location Map - Mobile Only */}
-            {event.latitude && event.longitude && (
-              <EventLocationMobile
-                latitude={event.latitude}
-                longitude={event.longitude}
-                title={event.title}
-                city={event.city}
-                country={event.country}
-                googleMapsUrl={event.googleMapsUrl}
-                sportTypes={event.sportTypes}
-              />
-            )}
-
-            {/* Weather Forecast - Mobile Only */}
-            {event.weather && event.weather.length > 0 && (
-              <EventWeatherMobile
-                weather={event.weather}
-                isPastEvent={isPastEvent}
-              />
-            )}
-
-            {/* Event Registration */}
-            {!event.cancelled && (
-              <div className="mt-8">
-                {/* Check if event has already happened */}
-                {isPastEvent ? (
-                  <EventPastParticipation
-                    eventId={event.id}
-                    variants={event.variants.map((v) => ({
-                      id: v.id,
-                      name: v.name,
-                      distanceKm: v.distanceKm,
-                      startDate: v.startDate,
-                      startTime: v.startTime,
-                    }))}
-                  />
-                ) : (
-                  <EventRegistration
-                    eventId={event.id}
-                    eventSlug={event.slug}
-                    eventTitle={event.title}
-                    hasRegistrations={event.hasRegistrations}
-                    registrationFieldSettings={
-                      (event.registrationFieldSettings as Record<
-                        string,
-                        string
-                      >) ?? {}
-                    }
-                    variants={event.variants.map((v) => ({
-                      id: v.id,
-                      name: v.name,
-                      distanceKm: v.distanceKm,
-                      startDate: v.startDate,
-                      startTime: v.startTime,
-                      maxParticipants: v.maxParticipants,
-                      teamSize: v.teamSize,
-                      registrationCount:
-                        v._count.registrations + v._count.participations,
-                      pricingPhases: v.pricingPhases.map((p) => ({
-                        id: p.id,
-                        name: p.name,
-                        price: p.price,
-                        currency: p.currency,
-                        startDate: p.startDate,
-                        endDate: p.endDate,
-                      })),
-                    }))}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* About the Event — Description, Pricing & CTA */}
-            <EventMainContent
-              description={event.description}
-              pricingPhases={event.pricingPhases}
-              variants={event.variants.map((v) => ({
-                id: v.id,
-                name: v.name,
+          {/* FAQ Section */}
+          {event.faqs.length > 0 && (
+            <EventFAQ
+              items={event.faqs.map((f) => ({
+                question: f.question,
+                answer: f.answer,
               }))}
-              externalUrl={event.externalUrl}
-              stravaRouteEmbed={event.stravaRouteEmbed}
-              cancelled={event.cancelled}
-              hasRegistrations={event.hasRegistrations}
               translations={{
-                aboutEvent: t("aboutEvent"),
-                readyToParticipate: t("readyToParticipate"),
-                moreInfoDescription: t("moreInfoDescription"),
-                goToWebsite: t("goToWebsite"),
+                title: t("faqTitle"),
+                showAll: t("faqShowAll", { count: event.faqs.length }),
+                showLess: t("faqShowLess"),
               }}
             />
+          )}
 
-            {/* FAQ Section */}
-            {event.faqs.length > 0 && (
-              <EventFAQ
-                items={event.faqs.map((f) => ({
-                  question: f.question,
-                  answer: f.answer,
-                }))}
-                translations={{
-                  title: t("faqTitle"),
-                  showAll: t("faqShowAll", { count: event.faqs.length }),
-                  showLess: t("faqShowLess"),
-                }}
+          {/* Related Events — Mobile only */}
+          {translatedRelatedEvents.length > 0 && (
+            <div className="lg:hidden">
+              <RelatedEvents
+                events={translatedRelatedEvents}
+                title={t("relatedEvents")}
               />
-            )}
+            </div>
+          )}
+        </div>
 
-            {/* Community Section */}
-            <EventCommunity
-              eventId={event.id}
-              eventTitle={event.title}
-              eventSlug={event.slug}
-              posts={event.posts.map((post) => ({
-                id: post.id,
-                content: post.content,
-                imageUrl: post.imageUrl,
-                userId: post.userId,
-                createdAt: post.createdAt.toISOString(),
-                user: post.user,
-                likesCount: post._count.likes,
-                isLikedByUser:
-                  Array.isArray(post.likes) && post.likes.length > 0,
-                commentsCount: post._count.comments,
-              }))}
-              currentUserId={session?.user?.id}
-              isAdmin={isAdmin}
-            />
-
-            {/* Related Events — Mobile only */}
-            {translatedRelatedEvents.length > 0 && (
-              <div className="mt-12 lg:hidden">
-                <RelatedEvents
-                  events={translatedRelatedEvents}
-                  title={t("relatedEvents")}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar - Right Column (Desktop only) */}
+        {/* Sidebar - Right Column (Desktop only) */}
+        <div className="lg:col-span-4">
           <EventSidebar
             event={{
               title: event.title,
+              slug: event.slug,
               imageUrl: event.imageUrl,
               startDate: event.startDate,
               endDate: event.endDate,
@@ -620,8 +610,34 @@ export default async function EventPage({ params }: PageProps) {
               featuredVenue: event.featuredVenue,
             }}
             weather={event.weather}
+            friendsGoing={friendsGoing}
+            friendsGoingCount={friendsGoingCount}
             relatedEvents={translatedRelatedEvents}
             relatedEventsTitle={t("relatedEvents")}
+          />
+        </div>
+      </div>
+
+      {/* Community Section - Full Width */}
+      <div className="border-t bg-muted/30">
+        <div className="mx-auto max-w-screen-2xl px-4 sm:px-8">
+          <EventCommunity
+            eventId={event.id}
+            eventTitle={event.title}
+            eventSlug={event.slug}
+            posts={event.posts.map((post) => ({
+              id: post.id,
+              content: post.content,
+              imageUrl: post.imageUrl,
+              userId: post.userId,
+              createdAt: post.createdAt.toISOString(),
+              user: post.user,
+              likesCount: post._count.likes,
+              isLikedByUser: Array.isArray(post.likes) && post.likes.length > 0,
+              commentsCount: post._count.comments,
+            }))}
+            currentUserId={session?.user?.id}
+            isAdmin={isAdmin}
           />
         </div>
       </div>

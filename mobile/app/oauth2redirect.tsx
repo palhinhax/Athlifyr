@@ -62,11 +62,18 @@ export default function OAuth2RedirectScreen() {
           return;
         }
 
+        const currentPlatform =
+          Platform.OS === "ios"
+            ? "ios"
+            : Platform.OS === "android"
+              ? "android"
+              : "web";
+
         const res = await api.post("/auth/google/exchange", {
           code,
           codeVerifier,
           redirectUri,
-          platform: Platform.OS === "web" ? "web" : "android",
+          platform: currentPlatform,
         });
 
         const { token, refreshToken, user, expiresIn } = res.data;

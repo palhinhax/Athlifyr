@@ -1,0 +1,14 @@
+{
+  "forms": {
+    "submit": "Absenden",
+    "submitSuccess": "Formular erfolgreich gesendet!",
+    "submitSuccessDescription": "Deine Antwort wurde gespeichert. Vielen Dank!",
+    "formFull": "Dieses Formular nimmt keine Einsendungen mehr an.",
+    "spotsRemaining": "{count, plural, one {# Platz \u00fcbrig} other {# Pl\u00e4tze \u00fcbrig}}",
+    "errors": {
+      "loadFailed": "Formular konnte nicht geladen werden",
+      "submitFailed": "Formular konnte nicht gesendet werden",
+      "fieldRequired": "Das Feld \"{field}\" ist erforderlich"
+    }
+  }
+}

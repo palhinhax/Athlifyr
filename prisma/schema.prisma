@@ -105,28 +105,32 @@ model User {
   registrations Registration[]
 
   // LiveRace - Event Organizer / Staff / Invites
-  eventOrganizer          EventOrganizer[]     @relation("EventOrganizerUser")
-  eventOrganizerAdded     EventOrganizer[]     @relation("EventOrganizerAddedBy")
-  eventStaffMember        EventStaffMember[]   @relation("EventStaffMemberUser")
-  eventStaffMemberAdded   EventStaffMember[]   @relation("EventStaffMemberAddedBy")
-  eventInvitesSent        EventInvite[]        @relation("EventInvitedBy")
+  eventOrganizer        EventOrganizer[]   @relation("EventOrganizerUser")
+  eventOrganizerAdded   EventOrganizer[]   @relation("EventOrganizerAddedBy")
+  eventStaffMember      EventStaffMember[] @relation("EventStaffMemberUser")
+  eventStaffMemberAdded EventStaffMember[] @relation("EventStaffMemberAddedBy")
+  eventInvitesSent      EventInvite[]      @relation("EventInvitedBy")
 
   // Custom field responses (event registration extras)
-  customFieldResponses    CustomFieldResponse[]
+  customFieldResponses CustomFieldResponse[]
 
   // Venue product purchases
-  venueProductPurchases  VenueProductPurchase[]
+  venueProductPurchases VenueProductPurchase[]
 
   // GPS-tracked run activities (Free Run, etc.)
   runActivities RunActivity[]
 
   // Athlifyr Credits (wallet)
-  creditWallet          CreditWallet?
-  creditTransactions    CreditTransaction[]
+  creditWallet       CreditWallet?
+  creditTransactions CreditTransaction[]
 
   // Scoring
-  workoutScores    WorkoutScore[]    @relation("UserWorkoutScores")
-  hybridScore      UserHybridScore?
+  workoutScores WorkoutScore[]   @relation("UserWorkoutScores")
+  hybridScore   UserHybridScore?
+
+  // Dynamic Forms
+  formsCreated    Form[]           @relation("FormsCreated")
+  formSubmissions FormSubmission[] @relation("FormSubmissions")
 
   @@index([email])
   @@index([name])
@@ -223,34 +227,34 @@ model Event {
 
   // ── Feature flags ──────────────────────────────────────────────────────────
   // hasRegistrations is derived: automatically true when stripeOnboardingStatus = COMPLETE
-  hasRegistrations     Boolean                     @default(false)
+  hasRegistrations Boolean @default(false)
   // hasLiveRace can only be activated by a Platform Admin
-  hasLiveRace          Boolean                     @default(false)
+  hasLiveRace      Boolean @default(false)
 
   // ── Stripe Connect (per-event, destination charges) ────────────────────────
-  stripeAccountId          String?
-  stripeChargesEnabled     Boolean                     @default(false)
-  stripeDetailsSubmitted   Boolean                     @default(false)
-  stripePayoutsEnabled     Boolean                     @default(false)
-  stripeLastWebhookAt      DateTime?
-  stripeOnboardingStatus   EventStripeOnboardingStatus @default(NOT_STARTED)
-  commissionPercent        Float                       @default(0.0)
-  commissionFixed          Int                         @default(0) // cêntimos
+  stripeAccountId        String?
+  stripeChargesEnabled   Boolean                     @default(false)
+  stripeDetailsSubmitted Boolean                     @default(false)
+  stripePayoutsEnabled   Boolean                     @default(false)
+  stripeLastWebhookAt    DateTime?
+  stripeOnboardingStatus EventStripeOnboardingStatus @default(NOT_STARTED)
+  commissionPercent      Float                       @default(0.0)
+  commissionFixed        Int                         @default(0) // cêntimos
 
   // ── Registration settings ──────────────────────────────────────────────────
-  refundDeadline              DateTime?
-  checkInOpensAt              DateTime?
-  checkInClosesAt             DateTime?
-  registrationFieldSettings   Json       @default("{}")  // e.g. { "dateOfBirth": "required", "citizenId": "optional" }
+  refundDeadline            DateTime?
+  checkInOpensAt            DateTime?
+  checkInClosesAt           DateTime?
+  registrationFieldSettings Json      @default("{}") // e.g. { "dateOfBirth": "required", "citizenId": "optional" }
 
   // ── LiveRace settings ──────────────────────────────────────────────────────
-  liveStatus           EventLiveStatus             @default(SCHEDULED)
+  liveStatus EventLiveStatus @default(SCHEDULED)
 
   // ── Origin tracking (set when imported from scraping service) ──────────────
-  scrapingSource       String?
-  scrapedEventId       String?            @unique
-  lastImportedBy       String?            // source name that last updated this event
-  lastImportedAt       DateTime?          // when the last import happened
+  scrapingSource String?
+  scrapedEventId String?   @unique
+  lastImportedBy String? // source name that last updated this event
+  lastImportedAt DateTime? // when the last import happened
 
   @@index([sportTypes])
   @@index([startDate])
@@ -346,22 +350,22 @@ model EventVariant {
 
 /// GPX route for an event variant — one route per variant
 model EventRoute {
-  id              String             @id @default(cuid())
-  variantId       String             @unique
-  variant         EventVariant       @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  id             String            @id @default(cuid())
+  variantId      String            @unique
+  variant        EventVariant      @relation(fields: [variantId], references: [id], onDelete: Cascade)
   /// Original GPX file content (XML string)
-  gpxData         String?            @db.Text
+  gpxData        String?           @db.Text
   /// Simplified polyline points [[lat, lng], ...] — used for map rendering
-  routePoints     Json               @default("[]")
+  routePoints    Json              @default("[]")
   /// Distance in km (auto-calculated from GPX or manually set)
-  distanceKm      Float?
+  distanceKm     Float?
   /// Total elevation gain in meters (auto-calculated from GPX)
-  elevationGainM  Int?
+  elevationGainM Int?
   /// Total elevation loss in meters (auto-calculated from GPX)
-  elevationLossM  Int?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  checkpoints     RouteCheckpoint[]
+  elevationLossM Int?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  checkpoints    RouteCheckpoint[]
 
   @@index([variantId])
 }
@@ -370,26 +374,26 @@ enum CheckpointType {
   START
   FINISH
   INTERMEDIATE
-  TRANSITION   // for triathlon/multi-sport
+  TRANSITION // for triathlon/multi-sport
 }
 
 /// A gate/checkpoint that athletes must pass through
 model RouteCheckpoint {
-  id          String         @id @default(cuid())
-  routeId     String
-  route       EventRoute     @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  name        String
-  type        CheckpointType @default(INTERMEDIATE)
+  id        String         @id @default(cuid())
+  routeId   String
+  route     EventRoute     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  name      String
+  type      CheckpointType @default(INTERMEDIATE)
   /// Order of passage (0 = start, last = finish)
-  order       Int
-  latitude    Float
-  longitude   Float
+  order     Int
+  latitude  Float
+  longitude Float
   /// Optional radius in meters for geofencing detection on mobile
-  radiusM     Int            @default(50)
+  radiusM   Int            @default(50)
   /// Optional cutoff time from race start in minutes
-  cutoffMin   Int?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  cutoffMin Int?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
   @@index([routeId])
   @@index([routeId, order])
@@ -447,17 +451,17 @@ model PricingPhase {
 }
 
 model Participation {
-  id             String        @id @default(cuid())
-  userId         String
-  eventId        String
-  variantId      String?
-  status         String        @default("going")
-  completionTime Int?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  event          Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  variant        EventVariant? @relation(fields: [variantId], references: [id])
+  id                   String                @id @default(cuid())
+  userId               String
+  eventId              String
+  variantId            String?
+  status               String                @default("going")
+  completionTime       Int?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  event                Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant              EventVariant?         @relation(fields: [variantId], references: [id])
   customFieldResponses CustomFieldResponse[]
 
   @@unique([userId, eventId])
@@ -473,7 +477,7 @@ model Registration {
   status      RegistrationStatus @default(PENDING)
   bibNumber   String? // Dorsal (opcional, atribuído pelo organizador)
   checkedInAt DateTime? // Timestamp do check-in
-  ticketNonce String    @default(cuid()) // Rotated on ticket revocation; invalidates old JWTs
+  ticketNonce String             @default(cuid()) // Rotated on ticket revocation; invalidates old JWTs
 
   // Stripe
   paymentProvider         String   @default("STRIPE")
@@ -488,9 +492,9 @@ model Registration {
   // All members of a team share the same teamGroupId.
   // The person who paid has teamRole = LEADER; others are MEMBER.
   // For individual registrations both fields are null.
-  teamGroupId      String?
-  teamRole         TeamRole?
-  teamMemberIndex  Int       @default(0) // 0 = leader/individual, 1+ = team members
+  teamGroupId     String?
+  teamRole        TeamRole?
+  teamMemberIndex Int       @default(0) // 0 = leader/individual, 1+ = team members
 
   // Guest data — populated for team members that are NOT registered users.
   // When the team leader registers, they provide this data for each member.
@@ -528,19 +532,19 @@ model Registration {
 /// A custom field defined by the organizer for an event.
 /// Examples: "T-shirt size", "Lunch", "Engraved medal"
 model EventCustomField {
-  id          String              @id @default(cuid())
-  eventId     String
-  label       String              // e.g. "T-shirt size"
-  type        CustomFieldType     @default(SELECT) // SELECT = pick one, BOOLEAN = yes/no
-  options     String[]            // e.g. ["S", "M", "L", "XL"]  (only for SELECT type)
-  required    Boolean             @default(false)
-  priceCents  Int                 @default(0)      // additional cost in cents (0 = free)
-  currency    Currency            @default(EUR)
-  order       Int                 @default(0)       // display order
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id         String          @id @default(cuid())
+  eventId    String
+  label      String // e.g. "T-shirt size"
+  type       CustomFieldType @default(SELECT) // SELECT = pick one, BOOLEAN = yes/no
+  options    String[] // e.g. ["S", "M", "L", "XL"]  (only for SELECT type)
+  required   Boolean         @default(false)
+  priceCents Int             @default(0) // additional cost in cents (0 = free)
+  currency   Currency        @default(EUR)
+  order      Int             @default(0) // display order
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
-  event     Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event     Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
   responses CustomFieldResponse[]
 
   @@index([eventId])
@@ -550,20 +554,20 @@ model EventCustomField {
 /// A participant's response to one custom field.
 /// participantIndex 0 = main registrant, 1 = team member #2, 2 = team member #3, etc.
 model CustomFieldResponse {
-  id               String           @id @default(cuid())
+  id               String   @id @default(cuid())
   customFieldId    String
   registrationId   String?
   participationId  String?
   userId           String
-  participantIndex Int              @default(0) // 0 = main, 1+ = team members
-  value            String           // e.g. "M", "true", "false"
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  participantIndex Int      @default(0) // 0 = main, 1+ = team members
+  value            String // e.g. "M", "true", "false"
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  customField    EventCustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
-  registration   Registration?    @relation(fields: [registrationId], references: [id], onDelete: Cascade)
-  participation  Participation?   @relation(fields: [participationId], references: [id], onDelete: Cascade)
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customField   EventCustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+  registration  Registration?    @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  participation Participation?   @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([customFieldId, registrationId, participantIndex])
   @@unique([customFieldId, participationId, participantIndex])
@@ -574,8 +578,8 @@ model CustomFieldResponse {
 }
 
 enum CustomFieldType {
-  SELECT   // Pick from options list (e.g. S/M/L)
-  BOOLEAN  // Yes / No
+  SELECT // Pick from options list (e.g. S/M/L)
+  BOOLEAN // Yes / No
 }
 
 // ============================================================================
@@ -688,33 +692,33 @@ model Comment {
 }
 
 model Post {
-  id         String        @id @default(cuid())
-  userId     String
-  eventId    String?
-  content    String
-  imageUrl   String?
-  mediaUrls  String[]      // Additional media URLs (carousel)
-  mediaType  String?       @default("image") // "image" or "video"
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  isAutoPost Boolean       @default(false)
-  venueId    String?
-  isPublic   Boolean       @default(false)
+  id             String        @id @default(cuid())
+  userId         String
+  eventId        String?
+  content        String
+  imageUrl       String?
+  mediaUrls      String[] // Additional media URLs (carousel)
+  mediaType      String?       @default("image") // "image" or "video"
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  isAutoPost     Boolean       @default(false)
+  venueId        String?
+  isPublic       Boolean       @default(false)
   // WOD Post fields
-  workoutId  String? // Reference to workout for WOD posts
-  sessionId  String? // Reference to venue session (optional context)
-  postType   PostType      @default(STANDARD) // Type of post (STANDARD, WOD, etc.)
+  workoutId      String? // Reference to workout for WOD posts
+  sessionId      String? // Reference to venue session (optional context)
+  postType       PostType      @default(STANDARD) // Type of post (STANDARD, WOD, etc.)
   // Score snapshot — frozen at post-creation time so it is stable even
   // if the scoring algorithm changes later.
-  workoutLogId      String? // Link to the workout log (for WOD / ACHIEVEMENT posts)
-  scoreSnapshot     Int?    // Frozen total workout score at time of post
-  scoreBreakdown    Json?   @db.JsonB // Frozen WorkoutScoreBreakdown
-  event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue      Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  workout    Workout?      @relation(fields: [workoutId], references: [id], onDelete: SetNull)
-  comments   PostComment[]
-  likes      PostLike[]
+  workoutLogId   String? // Link to the workout log (for WOD / ACHIEVEMENT posts)
+  scoreSnapshot  Int? // Frozen total workout score at time of post
+  scoreBreakdown Json?         @db.JsonB // Frozen WorkoutScoreBreakdown
+  event          Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue          Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  workout        Workout?      @relation(fields: [workoutId], references: [id], onDelete: SetNull)
+  comments       PostComment[]
+  likes          PostLike[]
 
   @@index([userId])
   @@index([eventId])
@@ -981,7 +985,7 @@ model Venue {
   productPurchases VenueProductPurchase[]
 
   // Athlifyr Credits (venue ledger)
-  venueLedgerEntries   VenueLedgerEntry[]
+  venueLedgerEntries     VenueLedgerEntry[]
   venueSettlementBatches VenueSettlementBatch[]
 
   @@index([slug])
@@ -1118,30 +1122,30 @@ model VenuePlanVenue {
 }
 
 model VenueSubscription {
-  id                       String         @id @default(cuid())
-  venueId                  String
-  userId                   String
-  planId                   String
-  status                   String         @default("PENDING")
-  paymentStatus            PaymentStatus  @default(PENDING_PAYMENT)
-  activatedByUserId        String?
-  activatedAt              DateTime?
-  paymentMethod            String?
-  paymentAmount            Float?
-  paymentNote              String?
-  paymentConfirmedAt       DateTime?
-  startsAt                 DateTime       @default(now())
-  endsAt                   DateTime?
-  createdAt                DateTime       @default(now())
-  updatedAt                DateTime       @updatedAt
+  id                     String         @id @default(cuid())
+  venueId                String
+  userId                 String
+  planId                 String
+  status                 String         @default("PENDING")
+  paymentStatus          PaymentStatus  @default(PENDING_PAYMENT)
+  activatedByUserId      String?
+  activatedAt            DateTime?
+  paymentMethod          String?
+  paymentAmount          Float?
+  paymentNote            String?
+  paymentConfirmedAt     DateTime?
+  startsAt               DateTime       @default(now())
+  endsAt                 DateTime?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
   // Stripe Billing (recurring subscriptions)
-  stripeSubscriptionId     String?        @unique
-  stripePriceId            String?
-  stripeCurrentPeriodEnd   DateTime?
-  plan                     VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user                     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue                    Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  bookings                 VenueBooking[]
+  stripeSubscriptionId   String?        @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  plan                   VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user                   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue                  Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings               VenueBooking[]
 
   @@index([venueId])
   @@index([userId])
@@ -1282,7 +1286,7 @@ model VenueProduct {
   description String?
   price       Float
   currency    Currency               @default(EUR)
-  stock       Int?                   // null = unlimited
+  stock       Int? // null = unlimited
   isActive    Boolean                @default(true)
   createdAt   DateTime               @default(now())
   updatedAt   DateTime               @updatedAt
@@ -1551,23 +1555,23 @@ enum EventStripeOnboardingStatus {
 enum EventLiveStatus {
   SCHEDULED
   CHECK_IN_OPEN
-  WARMUP     // Live room prepared, athletes/spectators can connect; race not started yet
-  LIVE       // Race officially started — leaderboard active
+  WARMUP // Live room prepared, athletes/spectators can connect; race not started yet
+  LIVE // Race officially started — leaderboard active
   PAUSED
-  FINISHED   // Race ended — results persisted
+  FINISHED // Race ended — results persisted
   CANCELLED
 }
 
 enum EventOrganizerRole {
-  OWNER   // Full control — edits event, manages team, configures Stripe
-  ADMIN   // Edit event, manage staff — cannot touch Stripe
+  OWNER // Full control — edits event, manages team, configures Stripe
+  ADMIN // Edit event, manage staff — cannot touch Stripe
   FINANCE // View financial reports only
 }
 
 enum EventStaffRole {
-  STAFF        // General day-of operations access
+  STAFF // General day-of operations access
   CHECKIN_ONLY // Can only use check-in scanner
-  STREAM_ONLY  // Can only control live stream
+  STREAM_ONLY // Can only control live stream
 }
 
 enum EventInviteType {
@@ -2301,8 +2305,8 @@ model UserHybridScore {
   engineScore    Int @default(0)
 
   // Metadata
-  confidence   String @default("LOW") // LOW, MEDIUM, HIGH
-  scoreVersion Int    @default(1)
+  confidence   String   @default("LOW") // LOW, MEDIUM, HIGH
+  scoreVersion Int      @default(1)
   calculatedAt DateTime @default(now())
 
   createdAt DateTime @default(now())
@@ -2747,11 +2751,11 @@ model RunActivity {
   startedAt      DateTime
   finishedAt     DateTime
   durationMs     Int
-  distanceM      Int       // total distance in meters
-  avgPaceMinKm   Float?    // avg pace in min/km
+  distanceM      Int // total distance in meters
+  avgPaceMinKm   Float? // avg pace in min/km
   maxSpeedKmh    Float?
-  elevationGainM Int       @default(0)
-  elevationLossM Int       @default(0)
+  elevationGainM Int      @default(0)
+  elevationLossM Int      @default(0)
 
   // GPS track stored as JSON array of {lat, lng, timestamp, altitude?, speed?, accuracy?}
   track Json @db.JsonB
@@ -2831,59 +2835,59 @@ enum VenueSettlementStatus {
 
 // User's credit wallet (1 per user)
 model CreditWallet {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  balanceCents  Int      @default(0) // Current balance in cents (960 = 9.60 credits)
-  totalTopUpCents    Int  @default(0) // Lifetime top-up amount (gross)
-  totalSpentCents    Int  @default(0) // Lifetime spent
-  totalRewardedCents Int  @default(0) // Lifetime rewards received
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  balanceCents       Int      @default(0) // Current balance in cents (960 = 9.60 credits)
+  totalTopUpCents    Int      @default(0) // Lifetime top-up amount (gross)
+  totalSpentCents    Int      @default(0) // Lifetime spent
+  totalRewardedCents Int      @default(0) // Lifetime rewards received
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 // Individual credit transaction (ledger entry for user wallet)
 model CreditTransaction {
-  id                     String                  @id @default(cuid())
-  userId                 String
-  type                   CreditTransactionType
-  source                 CreditTransactionSource
-  amountCents            Int                     // Positive for credits in, negative for credits out
-  balanceAfterCents      Int                     // Running balance after this transaction
-  description            String?
+  id                      String                  @id @default(cuid())
+  userId                  String
+  type                    CreditTransactionType
+  source                  CreditTransactionSource
+  amountCents             Int // Positive for credits in, negative for credits out
+  balanceAfterCents       Int // Running balance after this transaction
+  description             String?
   // Top-up specific fields
-  grossAmountCents       Int?                    // Amount user paid (before fee)
-  platformFeeCents       Int?                    // Platform fee deducted
-  netCreditedCents       Int?                    // Amount actually credited
-  stripePaymentIntentId  String?
+  grossAmountCents        Int? // Amount user paid (before fee)
+  platformFeeCents        Int? // Platform fee deducted
+  netCreditedCents        Int? // Amount actually credited
+  stripePaymentIntentId   String?
   stripeCheckoutSessionId String?
   // Purchase specific fields
-  venueId                String?
-  venueProductId         String?
-  venueProductPurchaseId String?
+  venueId                 String?
+  venueProductId          String?
+  venueProductPurchaseId  String?
   // Reward/gamification fields
-  rewardCampaignId       String?
-  challengeId            String?
-  giveawayId             String?
-  referralId             String?
+  rewardCampaignId        String?
+  challengeId             String?
+  giveawayId              String?
+  referralId              String?
   // Refund fields
-  refundedTransactionId  String?
+  refundedTransactionId   String?
   // Settlement reference
-  settlementBatchId      String?
+  settlementBatchId       String?
   // Admin fields
-  adminUserId            String?
-  adminNote              String?
+  adminUserId             String?
+  adminNote               String?
   // Expiration (future)
-  expiresAt              DateTime?
+  expiresAt               DateTime?
   // Audit
-  idempotencyKey         String?                @unique
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
+  idempotencyKey          String?                 @unique
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
 
-  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venueLedgerEntry       VenueLedgerEntry?
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venueLedgerEntry VenueLedgerEntry?
 
   @@index([userId])
   @@index([type])
@@ -2900,9 +2904,9 @@ model CreditTransaction {
 model CreditTopUp {
   id                      String            @id @default(cuid())
   userId                  String
-  grossAmountCents        Int               // What the user paid (e.g. 1000 = 10€)
-  platformFeeCents        Int               // Platform fee (e.g. 40 = 0.40€)
-  netCreditedCents        Int               // What was credited (e.g. 960 = 9.60 credits)
+  grossAmountCents        Int // What the user paid (e.g. 1000 = 10€)
+  platformFeeCents        Int // Platform fee (e.g. 40 = 0.40€)
+  netCreditedCents        Int // What was credited (e.g. 960 = 9.60 credits)
   feePercentage           Int               @default(4) // Fee percent applied (4 = 4%)
   currency                Currency          @default(EUR)
   status                  CreditTopUpStatus @default(PENDING)
@@ -2926,20 +2930,20 @@ model CreditTopUp {
 
 // Venue ledger entry (tracks money owed to a venue from credit purchases)
 model VenueLedgerEntry {
-  id                   String                  @id @default(cuid())
-  venueId              String
-  creditTransactionId  String                  @unique
-  amountCents          Int                     // Amount owed to venue (positive)
-  currency             Currency                @default(EUR)
-  status               VenueLedgerEntryStatus  @default(PENDING)
-  settlementBatchId    String?
-  description          String?
-  createdAt            DateTime                @default(now())
-  updatedAt            DateTime                @updatedAt
+  id                  String                 @id @default(cuid())
+  venueId             String
+  creditTransactionId String                 @unique
+  amountCents         Int // Amount owed to venue (positive)
+  currency            Currency               @default(EUR)
+  status              VenueLedgerEntryStatus @default(PENDING)
+  settlementBatchId   String?
+  description         String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
 
-  venue                Venue                   @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  creditTransaction    CreditTransaction       @relation(fields: [creditTransactionId], references: [id], onDelete: Cascade)
-  settlementBatch      VenueSettlementBatch?   @relation(fields: [settlementBatchId], references: [id])
+  venue             Venue                 @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  creditTransaction CreditTransaction     @relation(fields: [creditTransactionId], references: [id], onDelete: Cascade)
+  settlementBatch   VenueSettlementBatch? @relation(fields: [settlementBatchId], references: [id])
 
   @@index([venueId])
   @@index([status])
@@ -2949,26 +2953,26 @@ model VenueLedgerEntry {
 
 // Settlement batch (groups payouts to a venue)
 model VenueSettlementBatch {
-  id                   String                  @id @default(cuid())
-  venueId              String
-  totalAmountCents     Int                     // Total payout amount
-  currency             Currency                @default(EUR)
-  status               VenueSettlementStatus   @default(PENDING)
-  entriesCount         Int                     @default(0)
-  stripeTransferId     String?                 @unique
-  stripePayoutId       String?
-  periodStart          DateTime                // Start of settlement period
-  periodEnd            DateTime                // End of settlement period
-  processedAt          DateTime?
-  failedAt             DateTime?
-  failureReason        String?
-  retryCount           Int                     @default(0)
-  idempotencyKey       String                  @unique
-  createdAt            DateTime                @default(now())
-  updatedAt            DateTime                @updatedAt
+  id               String                @id @default(cuid())
+  venueId          String
+  totalAmountCents Int // Total payout amount
+  currency         Currency              @default(EUR)
+  status           VenueSettlementStatus @default(PENDING)
+  entriesCount     Int                   @default(0)
+  stripeTransferId String?               @unique
+  stripePayoutId   String?
+  periodStart      DateTime // Start of settlement period
+  periodEnd        DateTime // End of settlement period
+  processedAt      DateTime?
+  failedAt         DateTime?
+  failureReason    String?
+  retryCount       Int                   @default(0)
+  idempotencyKey   String                @unique
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
 
-  venue                Venue                   @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  entries              VenueLedgerEntry[]
+  venue   Venue              @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  entries VenueLedgerEntry[]
 
   @@index([venueId])
   @@index([status])
@@ -2982,28 +2986,28 @@ model VenueSettlementBatch {
 // Instagram auto-posting system with admin workflow (draft → review → publish)
 
 model SocialPost {
-  id              String           @id @default(cuid())
-  platform        SocialPlatform   @default(INSTAGRAM)
-  type            SocialPostType
-  status          SocialPostStatus @default(DRAFT)
-  title           String           // Internal title for admin reference
-  caption         String           @db.Text
-  hashtags        String[]         // Array of hashtag strings (without #)
-  callToAction    String?          // e.g. "Inscreve-te em athlifyr.com"
-  imageUrl        String?          // Primary image URL (from event or uploaded)
-  mediaUrls       String[]         // Additional media URLs (carousel)
-  scheduledFor    DateTime?        // When to publish
-  publishedAt     DateTime?        // When actually published
-  externalPostId  String?          // Instagram/platform post ID after publishing
-  externalUrl     String?          // Permalink on Instagram
-  errorMessage    String?          @db.Text // Last error if failed
-  retryCount      Int              @default(0)
-  metadata        Json?            // Flexible: event IDs, generation params, etc.
-  createdById     String?          // Admin who created/approved
-  createdBy       User?            @relation("SocialPostCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  logs            SocialPostLog[]
+  id             String           @id @default(cuid())
+  platform       SocialPlatform   @default(INSTAGRAM)
+  type           SocialPostType
+  status         SocialPostStatus @default(DRAFT)
+  title          String // Internal title for admin reference
+  caption        String           @db.Text
+  hashtags       String[] // Array of hashtag strings (without #)
+  callToAction   String? // e.g. "Inscreve-te em athlifyr.com"
+  imageUrl       String? // Primary image URL (from event or uploaded)
+  mediaUrls      String[] // Additional media URLs (carousel)
+  scheduledFor   DateTime? // When to publish
+  publishedAt    DateTime? // When actually published
+  externalPostId String? // Instagram/platform post ID after publishing
+  externalUrl    String? // Permalink on Instagram
+  errorMessage   String?          @db.Text // Last error if failed
+  retryCount     Int              @default(0)
+  metadata       Json? // Flexible: event IDs, generation params, etc.
+  createdById    String? // Admin who created/approved
+  createdBy      User?            @relation("SocialPostCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  logs           SocialPostLog[]
 
   @@index([status])
   @@index([type])
@@ -3014,12 +3018,12 @@ model SocialPost {
 }
 
 model SocialPostLog {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   postId    String
   post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  action    String     // e.g. "created", "scheduled", "published", "failed", "cancelled", "edited"
-  details   Json?      // Extra context (error messages, old/new values, etc.)
-  userId    String?    // Who performed the action (null for system actions)
+  action    String // e.g. "created", "scheduled", "published", "failed", "cancelled", "edited"
+  details   Json? // Extra context (error messages, old/new values, etc.)
+  userId    String? // Who performed the action (null for system actions)
   createdAt DateTime   @default(now())
 
   @@index([postId])
@@ -3032,11 +3036,11 @@ enum SocialPlatform {
 }
 
 enum SocialPostType {
-  EVENT           // Single event promotion
-  WEEKLY_ROUNDUP  // Weekly events compilation
-  LAST_CALL       // Registration closing soon
-  RESULTS         // Race results
-  CUSTOM          // Manual/custom post
+  EVENT // Single event promotion
+  WEEKLY_ROUNDUP // Weekly events compilation
+  LAST_CALL // Registration closing soon
+  RESULTS // Race results
+  CUSTOM // Manual/custom post
 }
 
 enum SocialPostStatus {
@@ -3046,4 +3050,121 @@ enum SocialPostStatus {
   PUBLISHED
   FAILED
   CANCELLED
+}
+
+// ============================================================================
+// DYNAMIC FORMS (Form Builder)
+// ============================================================================
+
+/// A form created by an admin. Users receive a link and fill it in.
+model Form {
+  id          String     @id @default(cuid())
+  /// Admin who created the form
+  createdById String
+  createdBy   User       @relation("FormsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  status      FormStatus @default(DRAFT)
+  /// Unique slug for the public URL  (/forms/{slug})
+  slug        String     @unique
+  /// Optional: close the form after this date
+  closesAt    DateTime?
+  /// Optional: maximum number of submissions allowed (null = unlimited)
+  maxSubmissions Int?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  fields      FormField[]
+  submissions FormSubmission[]
+
+  @@index([createdById])
+  @@index([status])
+  @@index([slug])
+}
+
+enum FormStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+/// A single field inside a Form.
+model FormField {
+  id          String        @id @default(cuid())
+  formId      String
+  form        Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
+  /// Display label shown to the user
+  label       String
+  /// Optional placeholder text
+  placeholder String?
+  /// Field type determines the UI input
+  type        FormFieldType
+  /// Whether the field must be filled
+  required    Boolean       @default(false)
+  /// Display order (ascending)
+  order       Int           @default(0)
+  /// JSON-encoded options for SELECT / RADIO / CHECKBOX_GROUP
+  /// e.g. ["S","M","L","XL"] or ["Male","Female"]
+  options     String[]
+  /// Optional section/group heading (e.g. "Emergency Contact", "Address")
+  section     String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  values FormFieldValue[]
+
+  @@index([formId])
+  @@index([order])
+}
+
+enum FormFieldType {
+  TEXT
+  EMAIL
+  PHONE
+  NUMBER
+  DATE
+  TEXTAREA
+  SELECT
+  RADIO
+  CHECKBOX
+  CHECKBOX_GROUP
+  TIME
+  COUNTRY
+  URL
+}
+
+/// A single submission (one user filling in a form).
+model FormSubmission {
+  id          String   @id @default(cuid())
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  /// Optional: if the submitter is a logged-in user
+  submittedBy String?
+  user        User?    @relation("FormSubmissions", fields: [submittedBy], references: [id], onDelete: SetNull)
+  /// Name entered on the form (for anonymous submissions)
+  name        String?
+  /// Email entered on the form
+  email       String?
+  createdAt   DateTime @default(now())
+
+  values FormFieldValue[]
+
+  @@index([formId])
+  @@index([submittedBy])
+  @@index([createdAt])
+}
+
+/// A single field value within a submission.
+model FormFieldValue {
+  id           String         @id @default(cuid())
+  submissionId String
+  submission   FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  fieldId      String
+  field        FormField      @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  /// The value as text (all types stored as string)
+  value        String
+
+  @@unique([submissionId, fieldId])
+  @@index([submissionId])
+  @@index([fieldId])
 }

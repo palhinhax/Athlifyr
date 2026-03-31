@@ -9,7 +9,7 @@ interface EventMetaInfoProps {
   endDate: string | Date | null;
   city: string;
   country: string;
-  followingGoingCount?: number;
+  friendsGoingCount?: number;
 }
 
 export function EventMetaInfo({
@@ -17,7 +17,7 @@ export function EventMetaInfo({
   endDate,
   city,
   country,
-  followingGoingCount = 0,
+  friendsGoingCount = 0,
 }: EventMetaInfoProps) {
   const { t, i18n } = useTranslation();
 
@@ -49,16 +49,16 @@ export function EventMetaInfo({
         </View>
       </View>
 
-      {/* Following Going */}
-      {followingGoingCount > 0 && (
+      {/* Friends Going */}
+      {friendsGoingCount > 0 && (
         <View style={styles.metaRow}>
           <View style={styles.iconContainer}>
             <Users size={20} color={theme.colors.primary} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.label}>{t("events.meta.followingGoing")}</Text>
+            <Text style={styles.label}>{t("events.meta.friendsGoing")}</Text>
             <Text style={styles.value}>
-              {t("events.meta.person", { count: followingGoingCount })}
+              {t("events.meta.friend", { count: friendsGoingCount })}
             </Text>
           </View>
         </View>

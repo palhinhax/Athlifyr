@@ -50,21 +50,47 @@ export async function GET(request: Request) {
       take: 10,
     });
 
-    // Get follow status for each user (current user follows them)
-    const follows = await prisma.friendship.findMany({
+    // Get friendship status for each user
+    const friendships = await prisma.friendship.findMany({
       where: {
-        senderId: user.id,
-        receiverId: { in: users.map((u) => u.id) },
-        status: "ACCEPTED",
+        OR: [
+          {
+            senderId: user.id,
+            receiverId: { in: users.map((u) => u.id) },
+          },
+          {
+            receiverId: user.id,
+            senderId: { in: users.map((u) => u.id) },
+          },
+        ],
       },
     });
 
-    const followedIds = new Set(follows.map((f) => f.receiverId));
+    const usersWithStatus = users.map((foundUser) => {
+      const friendship = friendships.find(
+        (f) =>
+          (f.senderId === user.id && f.receiverId === foundUser.id) ||
+          (f.receiverId === user.id && f.senderId === foundUser.id)
+      );
 
-    const usersWithStatus = users.map((foundUser) => ({
-      ...foundUser,
-      isFollowing: followedIds.has(foundUser.id),
-    }));
+      let friendshipStatus: string | null = null;
+      if (friendship) {
+        if (friendship.status === "ACCEPTED") {
+          friendshipStatus = "friends";
+        } else if (friendship.status === "PENDING") {
+          friendshipStatus =
+            friendship.senderId === user.id
+              ? "request_sent"
+              : "request_received";
+        }
+      }
+
+      return {
+        ...foundUser,
+        friendshipStatus,
+        friendshipId: friendship?.id,
+      };
+    });
 
     return NextResponse.json(usersWithStatus);
   } catch (error) {

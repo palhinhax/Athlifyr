@@ -2,7 +2,6 @@ import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
-import i18n from "i18next";
 import { getIntegrityToken } from "@/src/lib/integrity";
 
 export const API_URL =
@@ -48,10 +47,6 @@ const PROTECTED_METHODS = new Set(["post", "put", "patch", "delete"]);
 api.interceptors.request.use(
   async (config) => {
     try {
-      // Add locale header so the backend returns content in the user's language
-      const lang = i18n.language || "en";
-      config.headers["Accept-Language"] = lang;
-
       // Add auth token
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
       if (token) {

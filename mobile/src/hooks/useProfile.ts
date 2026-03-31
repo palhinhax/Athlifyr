@@ -31,8 +31,7 @@ export interface ProfileParticipation {
 export interface ProfileStats {
   upcomingEvents: number;
   pastEvents: number;
-  followersCount: number;
-  followingCount: number;
+  friendsCount: number;
 }
 
 export interface ProfileUser {
@@ -46,7 +45,8 @@ export interface ProfileData {
   user: ProfileUser;
   stats: ProfileStats;
   participations: ProfileParticipation[];
-  isFollowing: boolean;
+  friendshipStatus: string | null;
+  friendshipId: string | undefined;
   isOwnProfile: boolean;
 }
 
@@ -99,12 +99,7 @@ export function useProfile(userId: string | undefined) {
 
   return {
     profile: data,
-    stats: data?.stats ?? {
-      upcomingEvents: 0,
-      pastEvents: 0,
-      followersCount: 0,
-      followingCount: 0,
-    },
+    stats: data?.stats ?? { upcomingEvents: 0, pastEvents: 0, friendsCount: 0 },
     upcomingEvents,
     pastEvents,
     isLoading,

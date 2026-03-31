@@ -1,16 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import { Language, SportType, Prisma } from "@prisma/client";
-
-const SUPPORTED_LOCALES = new Set<string>(["pt", "en", "es", "fr", "de", "it"]);
-
-function getLocaleFromRequest(request: NextRequest): Language | null {
-  const acceptLanguage = request.headers.get("accept-language");
-  if (!acceptLanguage) return null;
-  const lang = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
-  return lang && SUPPORTED_LOCALES.has(lang) ? (lang as Language) : null;
-}
+import { SportType, Prisma } from "@prisma/client";
 
 function buildLocationFilter(
   lat: string | null,
@@ -52,10 +43,6 @@ function buildLocationFilter(
 // GET - List all events with filters and pagination
 export async function GET(request: NextRequest) {
   try {
-    const locale = getLocaleFromRequest(request);
-    console.log(
-      `[events/list] Accept-Language: "${request.headers.get("accept-language")}", resolved locale: ${locale}`
-    );
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1");
@@ -266,10 +253,8 @@ export async function GET(request: NextRequest) {
     const events = await prisma.event.findMany({
       where,
       include: {
-        translations: locale ? { where: { language: locale } } : false,
         variants: {
           include: {
-            translations: locale ? { where: { language: locale } } : false,
             triathlonSegments: {
               orderBy: { order: "asc" },
             },
@@ -309,38 +294,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Overlay translated fields when a locale was requested
-    const resolvedEvents = locale
-      ? sortedEvents.map((event) => {
-          const t = Array.isArray(event.translations)
-            ? event.translations[0]
-            : undefined;
-          const variants = event.variants.map((v) => {
-            const vt = Array.isArray(v.translations)
-              ? v.translations[0]
-              : undefined;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { translations: _vt, ...variantRest } = v;
-            return {
-              ...variantRest,
-              ...(vt?.name ? { name: vt.name } : {}),
-              ...(vt?.description ? { description: vt.description } : {}),
-            };
-          });
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { translations: _t, ...eventRest } = event;
-          return {
-            ...eventRest,
-            ...(t?.title ? { title: t.title } : {}),
-            ...(t?.description ? { description: t.description } : {}),
-            ...(t?.city ? { city: t.city } : {}),
-            variants,
-          };
-        })
-      : sortedEvents;
-
     return NextResponse.json({
-      events: resolvedEvents,
+      events: sortedEvents,
       pagination: {
         page,
         pageSize,

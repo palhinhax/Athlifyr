@@ -185,23 +185,34 @@ export default async function UserProfilePage({ params }: PageProps) {
   const pastEvents = user.participations.filter(
     (p) => p.event.startDate <= new Date()
   );
-  // Followers = people who follow this user (receiverId = this user)
-  const followersCount = user.receivedFriendships.length;
-  // Following = people this user follows (senderId = this user)
-  const followingCount = user.sentFriendships.length;
+  const friendsCount =
+    user.sentFriendships.length + user.receivedFriendships.length;
 
-  // Check if current user follows this profile
-  let isFollowing = false;
+  // Check friendship status
+  let friendshipStatus: string | null = null;
+  let friendshipId: string | undefined = undefined;
 
   if (session?.user?.id) {
-    const follow = await prisma.friendship.findFirst({
+    const friendship = await prisma.friendship.findFirst({
       where: {
-        senderId: session.user.id,
-        receiverId: id,
-        status: "ACCEPTED",
+        OR: [
+          { senderId: session.user.id, receiverId: id },
+          { senderId: id, receiverId: session.user.id },
+        ],
       },
     });
-    isFollowing = !!follow;
+
+    if (friendship) {
+      if (friendship.status === "ACCEPTED") {
+        friendshipStatus = "friends";
+      } else if (friendship.status === "PENDING") {
+        friendshipStatus =
+          friendship.senderId === session.user.id
+            ? "request_sent"
+            : "request_received";
+      }
+      friendshipId = friendship.id;
+    }
   }
 
   return (
@@ -217,10 +228,10 @@ export default async function UserProfilePage({ params }: PageProps) {
         stats={{
           upcomingEvents: upcomingEvents.length,
           pastEvents: pastEvents.length,
-          followersCount,
-          followingCount,
+          friendsCount,
         }}
-        isFollowing={isFollowing}
+        friendshipStatus={friendshipStatus}
+        friendshipId={friendshipId}
         isLoggedIn={!!session?.user}
       />
 

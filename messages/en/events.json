@@ -109,7 +109,8 @@
     "selectVariant": "Select a variant",
     "noPosts": "No posts yet. Be the first to share something!",
     "viewMoreComments": "View more comments",
-    "addPhoto": "Add Photo",
+    "addPhoto": "Photo",
+    "addVideo": "Video",
     "addMedia": "Photo/Video",
     "publish": "Publish",
     "share": {

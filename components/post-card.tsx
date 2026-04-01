@@ -5,8 +5,17 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { pt, enUS, es, fr, de, it } from "date-fns/locale";
-import { useLocale } from "next-intl";
+import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
+import { useTranslations, useLocale } from "next-intl";
+
+const localeMap: Record<string, Locale> = {
+  pt,
+  en: enUS,
+  es,
+  fr,
+  de,
+  it,
+};
 import {
   Heart,
   Trash2,
@@ -140,9 +149,9 @@ function CommentsList({
   readonly currentUserId?: string;
   readonly isAdmin?: boolean;
   readonly onDeleteComment: (commentId: string) => void;
-  readonly locale: string;
+  readonly locale?: string;
 }) {
-  const dateLocale = dateLocaleMap[locale] || enUS;
+  const dateLocale = localeMap[locale || "en"] || enUS;
   if (!comments || comments.length === 0) {
     return (
       <div className="py-4 text-center text-sm text-muted-foreground">
@@ -198,15 +207,6 @@ function CommentsList({
   );
 }
 
-const dateLocaleMap: Record<string, typeof enUS> = {
-  pt,
-  en: enUS,
-  es,
-  fr,
-  de,
-  it,
-};
-
 export function PostCard({
   post,
   currentUserId,
@@ -216,7 +216,8 @@ export function PostCard({
 }: PostCardProps) {
   const router = useRouter();
   const locale = useLocale();
-  const dateLocale = dateLocaleMap[locale] || enUS;
+  const t = useTranslations("feed.post");
+  const dateLocale = localeMap[locale] || enUS;
   const [isLiked, setIsLiked] = useState(post.isLikedByUser);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [isLiking, setIsLiking] = useState(false);
@@ -430,275 +431,278 @@ export function PostCard({
 
   return (
     <>
-      <div className="overflow-hidden rounded-[32px] bg-surface-container-lowest shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
-        {/* Media (Image, Video or Carousel) — top of card if present */}
-        {post.imageUrl && (
-          <div className="p-4 pb-0">
-            <div
-              className={`relative w-full overflow-hidden rounded-[24px] ${
-                post.mediaType === "video"
-                  ? "flex items-center justify-center bg-black"
-                  : "bg-gradient-to-br from-muted/50 to-muted"
-              }`}
-            >
-              {post.mediaType === "video" ? (
-                <video
-                  src={post.imageUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  controls
-                  className="aspect-[3/4] w-full cursor-pointer object-cover"
-                  preload="auto"
-                  onClick={(e) => {
-                    const video = e.currentTarget;
-                    if (video.paused) {
-                      video.play();
-                    } else {
-                      video.pause();
-                    }
-                  }}
-                />
-              ) : hasCarousel ? (
-                <div className="relative">
-                  <PostImage
-                    imageUrl={carouselImages[carouselIdx]}
-                    imageError={imageError}
-                    onImageError={() => {
-                      console.error(
-                        "Failed to load image:",
-                        carouselImages[carouselIdx]
-                      );
-                      setImageError(true);
-                    }}
-                  />
-                  <button
-                    onClick={() =>
-                      setCarouselIdx((i) =>
-                        i === 0 ? carouselImages.length - 1 : i - 1
-                      )
-                    }
-                    aria-label="Imagem anterior"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
-                  >
-                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      setCarouselIdx((i) =>
-                        i === carouselImages.length - 1 ? 0 : i + 1
-                      )
-                    }
-                    aria-label="Próxima imagem"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
-                  >
-                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                  </button>
-                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                    {carouselImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCarouselIdx(idx)}
-                        aria-label={`Imagem ${idx + 1} de ${carouselImages.length}`}
-                        aria-current={idx === carouselIdx ? "true" : undefined}
-                        className={`h-2 w-2 rounded-full transition-colors ${
-                          idx === carouselIdx ? "bg-white" : "bg-white/50"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <PostImage
-                  imageUrl={post.imageUrl}
-                  imageError={imageError}
-                  onImageError={() => {
-                    console.error("Failed to load image:", post.imageUrl);
-                    setImageError(true);
-                  }}
-                />
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Body */}
-        <div className={post.imageUrl ? "px-8 pb-8 pt-4" : "p-8"}>
-          {/* Header */}
-          <div className="mb-6 flex items-center gap-4">
+      <article className="overflow-hidden rounded-xl bg-card shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
             <Link
               href={`/user/${post.userId}`}
-              className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted"
+              className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted"
             >
               {post.user.image ? (
                 <Image
                   src={post.user.image}
                   alt={post.user.name || "User"}
                   fill
-                  sizes="48px"
+                  sizes="40px"
                   className="object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
+                <div className="flex h-full w-full items-center justify-center text-sm font-bold text-muted-foreground">
                   {post.user.name?.[0]?.toUpperCase() || "U"}
                 </div>
               )}
             </Link>
-            <div className="min-w-0 flex-1">
+            <div>
               <Link
                 href={`/user/${post.userId}`}
-                className="block font-headline font-bold hover:underline"
+                className="block text-sm font-bold hover:underline"
               >
                 {post.user.name}
               </Link>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <p className="text-[10px] font-medium text-muted-foreground">
                 {formatDistanceToNow(createdAt, {
                   addSuffix: true,
                   locale: dateLocale,
                 })}
+                {post.event && (
+                  <>
+                    {" • "}
+                    <Link
+                      href={`/events/${post.event.slug}`}
+                      className="text-primary hover:underline"
+                    >
+                      {post.event.title}
+                    </Link>
+                  </>
+                )}
+                {post.venue && (
+                  <>
+                    {" • "}
+                    <Link
+                      href={`/venues/${post.venue.slug}`}
+                      className="text-primary hover:underline"
+                    >
+                      {post.venue.name}
+                    </Link>
+                  </>
+                )}
               </p>
             </div>
-            {canDelete && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-11 w-11"
-                    aria-label="Opções da publicação"
-                  >
-                    <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {currentUserId === post.userId && (
-                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Editar publicação
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Apagar publicação
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
           </div>
+          {canDelete && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {currentUserId === post.userId && (
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Editar publicação
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Apagar publicação
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
 
-          {/* Content */}
-          <div className="mb-6">
-            {isEditing ? (
-              <div className="space-y-2">
-                <textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  aria-label="Editar publicação"
-                  className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        {/* Content */}
+        <div className="px-4 pb-3">
+          {isEditing ? (
+            <div className="space-y-2">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm"
+                disabled={isUpdating}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleUpdatePost}
+                  disabled={isUpdating || !editContent.trim()}
+                >
+                  <Save className="mr-2 h-4 w-4" /> Guardar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelEdit}
                   disabled={isUpdating}
+                >
+                  <XIcon className="mr-2 h-4 w-4" /> Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="prose prose-sm min-w-0 max-w-none text-sm leading-relaxed [overflow-wrap:anywhere] dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:my-1 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-pre:overflow-x-auto prose-ol:my-1 prose-ul:my-1 prose-li:my-0 prose-img:hidden">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {post.content}
+              </ReactMarkdown>
+            </div>
+          )}
+        </div>
+
+        {/* Media — after content, full-width */}
+        {post.imageUrl && (
+          <div className="relative aspect-[4/3] bg-muted">
+            {post.mediaType === "video" ? (
+              <video
+                src={post.imageUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="h-full w-full cursor-pointer object-cover"
+                preload="auto"
+                onClick={(e) => {
+                  const v = e.currentTarget;
+                  if (v.paused) {
+                    v.play();
+                  } else {
+                    v.pause();
+                  }
+                }}
+              />
+            ) : hasCarousel ? (
+              <div className="relative h-full">
+                <PostImage
+                  imageUrl={carouselImages[carouselIdx]}
+                  imageError={imageError}
+                  onImageError={() => {
+                    setImageError(true);
+                  }}
                 />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleUpdatePost}
-                    disabled={isUpdating || !editContent.trim()}
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    Guardar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleCancelEdit}
-                    disabled={isUpdating}
-                  >
-                    <XIcon className="mr-2 h-4 w-4" />
-                    Cancelar
-                  </Button>
+                <button
+                  onClick={() =>
+                    setCarouselIdx((i) =>
+                      i === 0 ? carouselImages.length - 1 : i - 1
+                    )
+                  }
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() =>
+                    setCarouselIdx((i) =>
+                      i === carouselImages.length - 1 ? 0 : i + 1
+                    )
+                  }
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                  {carouselImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCarouselIdx(idx)}
+                      className={`h-2 w-2 rounded-full transition-colors ${idx === carouselIdx ? "bg-white" : "bg-white/50"}`}
+                    />
+                  ))}
                 </div>
               </div>
             ) : (
-              <div className="prose prose-sm min-w-0 max-w-none leading-relaxed text-muted-foreground [overflow-wrap:anywhere] dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:my-1 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-pre:overflow-x-auto prose-ol:my-1 prose-ul:my-1 prose-li:my-0 prose-img:hidden">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {post.content}
-                </ReactMarkdown>
-              </div>
+              <PostImage
+                imageUrl={post.imageUrl}
+                imageError={imageError}
+                onImageError={() => {
+                  setImageError(true);
+                }}
+              />
             )}
           </div>
+        )}
 
-          {/* Shared Event Card */}
-          {post.event?.city && post.event?.sportTypes && (
-            <div className="mb-6">
-              <FeaturedEventCard
-                event={{
-                  id: post.event.id,
-                  title: post.event.title,
-                  slug: post.event.slug,
-                  description: post.event.description,
-                  startDate: post.event.startDate || new Date(),
-                  endDate: post.event.endDate,
-                  city: post.event.city,
-                  country: post.event.country || "",
-                  imageUrl: post.event.imageUrl,
-                  isFeatured: post.event.isFeatured,
-                  sportTypes: post.event.sportTypes,
-                  variants: post.event.variants,
-                }}
-                showDescription={false}
-                showStats={false}
-                showVariants={true}
-                showFriendsGoing={false}
-                linkToEvent={true}
-                className="border-none shadow-none"
-              />
+        {/* Shared Event Card */}
+        {post.event?.city && post.event?.sportTypes && (
+          <div className="px-4 pt-3">
+            <FeaturedEventCard
+              event={{
+                id: post.event.id,
+                title: post.event.title,
+                slug: post.event.slug,
+                description: post.event.description,
+                startDate: post.event.startDate || new Date(),
+                endDate: post.event.endDate,
+                city: post.event.city,
+                country: post.event.country || "",
+                imageUrl: post.event.imageUrl,
+                isFeatured: post.event.isFeatured,
+                sportTypes: post.event.sportTypes,
+                variants: post.event.variants,
+              }}
+              showDescription={false}
+              showStats={false}
+              showVariants={true}
+              showFriendsGoing={false}
+              linkToEvent={true}
+              className="border-none shadow-none"
+            />
+          </div>
+        )}
+
+        {/* Actions + Comments */}
+        <div className="p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex gap-4">
+              <button
+                onClick={handleLike}
+                disabled={!currentUserId || isLiking}
+                className={`group flex items-center gap-1 ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
+              >
+                <Heart
+                  className={`h-5 w-5 transition-transform group-active:scale-125 ${isLiked ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                />
+                <span className="text-xs font-bold">{likesCount}</span>
+              </button>
+              <button
+                onClick={handleToggleComments}
+                className="group flex items-center gap-1"
+              >
+                <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs font-medium">{commentsCount}</span>
+              </button>
             </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center gap-6 text-muted-foreground">
-            <button
-              onClick={handleLike}
-              disabled={!currentUserId || isLiking}
-              aria-label={
-                isLiked
-                  ? `Retirar gosto (${likesCount})`
-                  : `Dar gosto (${likesCount})`
-              }
-              aria-pressed={isLiked}
-              className={`flex items-center gap-2 transition-colors ${
-                isLiked
-                  ? "text-red-500"
-                  : "text-muted-foreground hover:text-red-500"
-              } ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
-            >
-              <Heart
-                className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`}
-                aria-hidden="true"
-              />
-              <span className="text-sm font-bold" aria-hidden="true">
-                {likesCount}
-              </span>
-            </button>
-            <button
-              onClick={handleToggleComments}
-              aria-label={`${showComments ? "Ocultar" : "Ver"} comentários (${commentsCount})`}
-              aria-expanded={showComments}
-              className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <MessageCircle className="h-5 w-5" aria-hidden="true" />
-              <span className="text-sm font-bold" aria-hidden="true">
-                {commentsCount}
-              </span>
-            </button>
           </div>
 
-          {/* Comments Section */}
+          {/* Inline comment hint */}
+          {currentUserId && !showComments && (
+            <button
+              type="button"
+              onClick={handleToggleComments}
+              className="flex w-full items-center gap-2 text-left"
+            >
+              <div className="relative h-6 w-6 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                {post.user.image && (
+                  <Image
+                    src={post.user.image}
+                    alt=""
+                    fill
+                    sizes="24px"
+                    className="object-cover"
+                  />
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {t("addComment")}...
+              </span>
+            </button>
+          )}
+
           {showComments && (
-            <div className="mt-6 border-t border-surface-container-high pt-4">
+            <div className="border-t border-muted pt-4">
               {currentUserId && (
                 <form
                   onSubmit={(e) => {
@@ -717,10 +721,9 @@ export function PostCard({
                   <Button
                     type="submit"
                     size="icon"
-                    aria-label="Enviar comentário"
                     disabled={!newComment.trim() || isSubmittingComment}
                   >
-                    <Send className="h-4 w-4" aria-hidden="true" />
+                    <Send className="h-4 w-4" />
                   </Button>
                 </form>
               )}
@@ -740,7 +743,7 @@ export function PostCard({
             </div>
           )}
         </div>
-      </div>
+      </article>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

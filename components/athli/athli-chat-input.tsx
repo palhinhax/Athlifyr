@@ -61,6 +61,7 @@ export function AthliChatInput({
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           placeholder={placeholder || t("inputPlaceholder")}
+          aria-label={placeholder || t("inputPlaceholder")}
           disabled={isLoading}
           rows={1}
           className="flex-1 resize-none rounded-xl border bg-muted/50 px-3.5 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20 disabled:opacity-50"

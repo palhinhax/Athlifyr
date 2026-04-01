@@ -5,7 +5,8 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { pt } from "date-fns/locale";
+import { pt, enUS, es, fr, de, it } from "date-fns/locale";
+import { useLocale } from "next-intl";
 import {
   Heart,
   Trash2,
@@ -133,12 +134,15 @@ function CommentsList({
   currentUserId,
   isAdmin,
   onDeleteComment,
+  locale,
 }: {
   readonly comments: Comment[];
   readonly currentUserId?: string;
   readonly isAdmin?: boolean;
   readonly onDeleteComment: (commentId: string) => void;
+  readonly locale: string;
 }) {
+  const dateLocale = dateLocaleMap[locale] || enUS;
   if (!comments || comments.length === 0) {
     return (
       <div className="py-4 text-center text-sm text-muted-foreground">
@@ -175,7 +179,7 @@ function CommentsList({
               <span>
                 {formatDistanceToNow(new Date(comment.createdAt), {
                   addSuffix: true,
-                  locale: pt,
+                  locale: dateLocale,
                 })}
               </span>
               {(currentUserId === comment.user.id || isAdmin) && (
@@ -194,6 +198,15 @@ function CommentsList({
   );
 }
 
+const dateLocaleMap: Record<string, typeof enUS> = {
+  pt,
+  en: enUS,
+  es,
+  fr,
+  de,
+  it,
+};
+
 export function PostCard({
   post,
   currentUserId,
@@ -202,6 +215,8 @@ export function PostCard({
   hideVenueBadge: _hideVenueBadge = false, // Default to showing badge
 }: PostCardProps) {
   const router = useRouter();
+  const locale = useLocale();
+  const dateLocale = dateLocaleMap[locale] || enUS;
   const [isLiked, setIsLiked] = useState(post.isLikedByUser);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [isLiking, setIsLiking] = useState(false);
@@ -433,6 +448,7 @@ export function PostCard({
                   loop
                   muted
                   playsInline
+                  controls
                   className="aspect-[3/4] w-full cursor-pointer object-cover"
                   preload="auto"
                   onClick={(e) => {
@@ -463,9 +479,10 @@ export function PostCard({
                         i === 0 ? carouselImages.length - 1 : i - 1
                       )
                     }
+                    aria-label="Imagem anterior"
                     className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
                   </button>
                   <button
                     onClick={() =>
@@ -473,15 +490,18 @@ export function PostCard({
                         i === carouselImages.length - 1 ? 0 : i + 1
                       )
                     }
+                    aria-label="Próxima imagem"
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
                   </button>
                   <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
                     {carouselImages.map((_, idx) => (
                       <button
                         key={idx}
                         onClick={() => setCarouselIdx(idx)}
+                        aria-label={`Imagem ${idx + 1} de ${carouselImages.length}`}
+                        aria-current={idx === carouselIdx ? "true" : undefined}
                         className={`h-2 w-2 rounded-full transition-colors ${
                           idx === carouselIdx ? "bg-white" : "bg-white/50"
                         }`}
@@ -535,15 +555,20 @@ export function PostCard({
               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 {formatDistanceToNow(createdAt, {
                   addSuffix: true,
-                  locale: pt,
+                  locale: dateLocale,
                 })}
               </p>
             </div>
             {canDelete && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-11 w-11"
+                    aria-label="Opções da publicação"
+                  >
+                    <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -572,6 +597,7 @@ export function PostCard({
                 <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
+                  aria-label="Editar publicação"
                   className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   disabled={isUpdating}
                 />
@@ -637,21 +663,36 @@ export function PostCard({
             <button
               onClick={handleLike}
               disabled={!currentUserId || isLiking}
+              aria-label={
+                isLiked
+                  ? `Retirar gosto (${likesCount})`
+                  : `Dar gosto (${likesCount})`
+              }
+              aria-pressed={isLiked}
               className={`flex items-center gap-2 transition-colors ${
                 isLiked
                   ? "text-red-500"
                   : "text-muted-foreground hover:text-red-500"
               } ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
             >
-              <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
-              <span className="text-sm font-bold">{likesCount}</span>
+              <Heart
+                className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`}
+                aria-hidden="true"
+              />
+              <span className="text-sm font-bold" aria-hidden="true">
+                {likesCount}
+              </span>
             </button>
             <button
               onClick={handleToggleComments}
+              aria-label={`${showComments ? "Ocultar" : "Ver"} comentários (${commentsCount})`}
+              aria-expanded={showComments}
               className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
             >
-              <MessageCircle className="h-5 w-5" />
-              <span className="text-sm font-bold">{commentsCount}</span>
+              <MessageCircle className="h-5 w-5" aria-hidden="true" />
+              <span className="text-sm font-bold" aria-hidden="true">
+                {commentsCount}
+              </span>
             </button>
           </div>
 
@@ -676,9 +717,10 @@ export function PostCard({
                   <Button
                     type="submit"
                     size="icon"
+                    aria-label="Enviar comentário"
                     disabled={!newComment.trim() || isSubmittingComment}
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </form>
               )}
@@ -692,6 +734,7 @@ export function PostCard({
                   currentUserId={currentUserId}
                   isAdmin={isAdmin}
                   onDeleteComment={handleDeleteComment}
+                  locale={locale}
                 />
               )}
             </div>

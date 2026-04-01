@@ -32,15 +32,19 @@ const dateLocales: Record<string, Locale> = {
   it: it,
 };
 
-export const metadata: Metadata = {
-  title: "Activity Feed",
-  description:
-    "See the latest updates from your events. Follow posts, photos, and results from the sports community.",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "feed" });
+  return {
+    title: t("title"),
+    description: t("description"),
+    robots: { index: false, follow: false },
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -441,7 +445,7 @@ export default async function FeedPage({
                         <div className="mt-1 text-xs text-muted-foreground">
                           {formatDistanceToNow(activity.date, {
                             addSuffix: true,
-                            locale: pt,
+                            locale: dateLocale,
                           })}
                         </div>
                       </div>

@@ -69,6 +69,58 @@
           "cookies": "Wir verwenden Cookies (verwaltbar in den Einstellungen)",
           "protected": "Ihre Daten sind geschützt"
         }
+      },
+      "badge": "Transparenz & Leistung",
+      "highlights": {
+        "title": "Hauptmerkmale",
+        "privacyByDesign": "Datenschutz durch Design",
+        "privacyByDesignDesc": "Datenschutz ist in die Architektur jeder Funktion integriert.",
+        "totalControl": "Volle Kontrolle",
+        "totalControlDesc": "Du entscheidest, was du mit der Gemeinschaft und Trainern teilst.",
+        "encryption": "Erstklassige Verschlüsselung",
+        "encryptionDesc": "Sensible Daten durch Ende-zu-Ende-Verschlüsselung geschützt."
+      },
+      "questions": {
+        "title": "Fragen zu Ihren Daten?",
+        "description": "Unser Compliance-Team steht bereit, um jeden Punkt zu klären.",
+        "cta": "DPO kontaktieren"
+      },
+      "table": {
+        "title": "Datennutzungsübersicht",
+        "category": "Datenkategorie",
+        "purpose": "Hauptzweck",
+        "retention": "Aufbewahrungszeitraum",
+        "thirdParties": "Beteiligte Dritte",
+        "rows": {
+          "profile": {
+            "name": "Benutzerprofil",
+            "detail": "E-Mail, Name, Passwort",
+            "purpose": "Authentifizierung und Kontoverwaltung",
+            "retention": "Bis zur Kontoschließung",
+            "thirdParties": "Keine"
+          },
+          "vitals": {
+            "name": "Vitalzeichen",
+            "detail": "HF, Schlaf, Stress",
+            "purpose": "Athleten-Regenerationsanalyse",
+            "retention": "5 Jahre (Historisch)",
+            "thirdParties": "Wearable Sync API"
+          },
+          "geo": {
+            "name": "Geolokalisierung",
+            "detail": "GPS-Strecken, Karten",
+            "purpose": "Routenkartierung",
+            "retention": "Solange im Dienst aktiv",
+            "thirdParties": "Map Provider (Anonym)"
+          },
+          "transactions": {
+            "name": "Transaktionen",
+            "detail": "Rechnungen, Abonnements",
+            "purpose": "Zahlungsabwicklung",
+            "retention": "10 Jahre (Gesetzlich)",
+            "thirdParties": "Stripe"
+          }
+        }
       }
     },
     "terms": {
@@ -127,6 +179,7 @@
       }
     },
     "cookies": {
+      "badge": "Datenschutz & Transparenz",
       "title": "Cookie-Richtlinie",
       "lastUpdated": "Letzte Aktualisierung: {date}",
       "intro": "Wir verwenden Cookies, um Ihre Erfahrung auf Athlifyr zu verbessern. Diese Seite erklärt, was Cookies sind und wie wir sie verwenden.",

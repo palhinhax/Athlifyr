@@ -112,8 +112,9 @@ export function AthliFloatingChat() {
                     className="h-8 w-8 text-white hover:bg-white/20"
                     onClick={() => setShowHistory(true)}
                     title={t("history")}
+                    aria-label={t("history")}
                   >
-                    <History className="h-4 w-4" />
+                    <History className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 )}
                 <Button

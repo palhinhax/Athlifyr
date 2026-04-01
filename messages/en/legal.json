@@ -69,12 +69,79 @@
           "cookies": "We use cookies (you can manage in settings)",
           "protected": "Your data is protected"
         }
+      },
+      "badge": "Transparency & Performance",
+      "highlights": {
+        "title": "Key Highlights",
+        "privacyByDesign": "Privacy by Design",
+        "privacyByDesignDesc": "Privacy is built into the architecture of every feature.",
+        "totalControl": "Total Control",
+        "totalControlDesc": "You decide what to share with the community and coaches.",
+        "encryption": "Elite Encryption",
+        "encryptionDesc": "Sensitive data protected by end-to-end encryption."
+      },
+      "questions": {
+        "title": "Data questions?",
+        "description": "Our compliance team is available to clarify any point.",
+        "cta": "Contact DPO"
+      },
+      "table": {
+        "title": "Data Usage Summary",
+        "category": "Data Category",
+        "purpose": "Primary Purpose",
+        "retention": "Retention Period",
+        "thirdParties": "Third Parties Involved",
+        "rows": {
+          "profile": {
+            "name": "User Profile",
+            "detail": "Email, Name, Password",
+            "purpose": "Authentication and Account Management",
+            "retention": "Until account closure",
+            "thirdParties": "None"
+          },
+          "vitals": {
+            "name": "Vital Signs",
+            "detail": "HR, Sleep, Stress",
+            "purpose": "Athlete Recovery Analysis",
+            "retention": "5 years (Historical)",
+            "thirdParties": "Wearable Sync API"
+          },
+          "geo": {
+            "name": "Geolocation",
+            "detail": "GPS Tracks, Maps",
+            "purpose": "Route Mapping",
+            "retention": "While active on service",
+            "thirdParties": "Map Provider (Anonymous)"
+          },
+          "transactions": {
+            "name": "Transactions",
+            "detail": "Billing, Subscriptions",
+            "purpose": "Payment Processing",
+            "retention": "10 years (Legal)",
+            "thirdParties": "Stripe"
+          }
+        }
       }
     },
     "terms": {
+      "badge": "Terms & Conditions",
       "title": "Terms of Service",
       "lastUpdated": "Last updated: {date}",
       "intro": "By using Athlifyr, you agree to these terms. Please read them carefully.",
+      "summary": {
+        "title": "Quick Summary",
+        "excellence": "Commitment to Excellence",
+        "excellenceDesc": "We guarantee the best practices and methodologies for our community.",
+        "security": "Data Security",
+        "securityDesc": "Your data is protected and encrypted.",
+        "community": "Community Respect",
+        "communityDesc": "Zero tolerance for toxic behavior."
+      },
+      "questions": {
+        "title": "Questions?",
+        "description": "Our support team is ready to help you.",
+        "cta": "Contact Support"
+      },
       "sections": {
         "acceptance": {
           "title": "1. Acceptance of Terms",
@@ -127,6 +194,7 @@
       }
     },
     "cookies": {
+      "badge": "Privacy & Transparency",
       "title": "Cookie Policy",
       "lastUpdated": "Last updated: {date}",
       "intro": "We use cookies to improve your experience on Athlifyr. This page explains what cookies are and how we use them.",

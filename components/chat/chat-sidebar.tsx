@@ -523,7 +523,7 @@ export function ChatSidebar({
                         >
                           {(lastMessage.sender?.id ?? lastMessage.senderId) ===
                           currentUserId
-                            ? "You: "
+                            ? t("you")
                             : ""}
                           {lastMessage.content}
                         </p>

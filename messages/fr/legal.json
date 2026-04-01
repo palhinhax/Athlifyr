@@ -69,12 +69,79 @@
           "cookies": "Nous utilisons des cookies (gérables dans les paramètres)",
           "protected": "Vos données sont protégées"
         }
+      },
+      "badge": "Transparence & Performance",
+      "highlights": {
+        "title": "Points Clés",
+        "privacyByDesign": "Confidentialité par Conception",
+        "privacyByDesignDesc": "La confidentialité est intégrée dans l'architecture de chaque fonctionnalité.",
+        "totalControl": "Contrôle Total",
+        "totalControlDesc": "Vous décidez ce que vous partagez avec la communauté et les entraîneurs.",
+        "encryption": "Chiffrement d'Élite",
+        "encryptionDesc": "Données sensibles protégées par un chiffrement de bout en bout."
+      },
+      "questions": {
+        "title": "Questions sur vos données ?",
+        "description": "Notre équipe de conformité est disponible pour clarifier tout point.",
+        "cta": "Contacter le DPO"
+      },
+      "table": {
+        "title": "Résumé d'Utilisation des Données",
+        "category": "Catégorie de Donnée",
+        "purpose": "Objectif Principal",
+        "retention": "Période de Conservation",
+        "thirdParties": "Tiers Impliqués",
+        "rows": {
+          "profile": {
+            "name": "Profil Utilisateur",
+            "detail": "Email, Nom, Mot de passe",
+            "purpose": "Authentification et Gestion de Compte",
+            "retention": "Jusqu'à la fermeture du compte",
+            "thirdParties": "Aucun"
+          },
+          "vitals": {
+            "name": "Signes Vitaux",
+            "detail": "FC, Sommeil, Stress",
+            "purpose": "Analyse de Récupération Athlète",
+            "retention": "5 ans (Historique)",
+            "thirdParties": "Wearable Sync API"
+          },
+          "geo": {
+            "name": "Géolocalisation",
+            "detail": "Trajets GPS, Cartes",
+            "purpose": "Cartographie des Parcours",
+            "retention": "Tant que actif sur le service",
+            "thirdParties": "Map Provider (Anonyme)"
+          },
+          "transactions": {
+            "name": "Transactions",
+            "detail": "Facturation, Abonnements",
+            "purpose": "Traitement des Paiements",
+            "retention": "10 ans (Légal)",
+            "thirdParties": "Stripe"
+          }
+        }
       }
     },
     "terms": {
+      "badge": "Termes & Conditions",
       "title": "Conditions d'Utilisation",
       "lastUpdated": "Dernière mise à jour : {date}",
-      "intro": "En utilisant Athlifyr, vous acceptez ces conditions. Lisez-les attentivement.",
+      "intro": "En utilisant Athlifyr, vous acceptez ces conditions. Veuillez les lire attentivement.",
+      "summary": {
+        "title": "Résumé Rapide",
+        "excellence": "Engagement d'Excellence",
+        "excellenceDesc": "Nous garantissons les meilleures pratiques et méthodologies pour notre communauté.",
+        "security": "Sécurité des Données",
+        "securityDesc": "Vos données sont protégées et chiffrées.",
+        "community": "Respect de la Communauté",
+        "communityDesc": "Tolérance zéro pour les comportements toxiques."
+      },
+      "questions": {
+        "title": "Des Questions ?",
+        "description": "Notre équipe de support est prête à vous aider.",
+        "cta": "Contacter le Support"
+      },
       "sections": {
         "acceptance": {
           "title": "1. Acceptation des Conditions",
@@ -127,6 +194,7 @@
       }
     },
     "cookies": {
+      "badge": "Confidentialité & Transparence",
       "title": "Politique de Cookies",
       "lastUpdated": "Dernière mise à jour : {date}",
       "intro": "Nous utilisons des cookies pour améliorer votre expérience sur Athlifyr. Cette page explique ce que sont les cookies et comment nous les utilisons.",

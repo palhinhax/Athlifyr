@@ -42,6 +42,7 @@ export function CreatePost({
   // Use correct namespace based on context
   const t = useTranslations(venueId ? "venues.posts" : "events");
   const tAdmin = useTranslations("admin.posts.toast");
+  const tCommon = useTranslations("common");
   const [content, setContent] = useState("");
   const [mediaUrl, setMediaUrl] = useState<string>("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
@@ -270,6 +271,7 @@ export function CreatePost({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={placeholderText}
+              aria-label={placeholderText}
               className="min-h-[100px] w-full resize-none border-0 bg-transparent text-sm placeholder:text-muted-foreground focus:ring-0"
               disabled={isSubmitting || isUploading}
             />
@@ -298,10 +300,11 @@ export function CreatePost({
                 <button
                   type="button"
                   onClick={handleRemoveMedia}
+                  aria-label={tCommon("close")}
                   className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white shadow-lg transition-all hover:scale-110 hover:bg-black/90"
                   disabled={isSubmitting || isUploading}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
             )}

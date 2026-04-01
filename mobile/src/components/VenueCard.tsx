@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { MapPin, Users, Building2 } from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
@@ -15,6 +16,7 @@ interface VenueCardProps {
 export function VenueCard({ venue }: VenueCardProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const handlePress = () => {
     // Pre-fetch venue detail and sessions in parallel for instant navigation
@@ -47,14 +49,26 @@ export function VenueCard({ venue }: VenueCardProps) {
     router.push(`/venues/${venue.slug}` as const);
   };
 
+  const locationStr = [venue.city, venue.country].filter(Boolean).join(", ");
+  const cardLabel = t("venues.a11y.venueCard", {
+    name: venue.name,
+    location: locationStr,
+  });
+
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={handlePress}
       activeOpacity={0.7}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel}
     >
       {/* Venue Image */}
-      <View style={styles.imageContainer}>
+      <View
+        style={styles.imageContainer}
+        importantForAccessibility="no-hide-descendants"
+      >
         {venue.coverImage ? (
           <CachedImage
             uri={venue.coverImage}
@@ -89,7 +103,10 @@ export function VenueCard({ venue }: VenueCardProps) {
       </View>
 
       {/* Venue Details */}
-      <View style={styles.content}>
+      <View
+        style={styles.content}
+        importantForAccessibility="no-hide-descendants"
+      >
         {/* Name */}
         <Text style={styles.name} numberOfLines={2}>
           {venue.name}
@@ -99,9 +116,9 @@ export function VenueCard({ venue }: VenueCardProps) {
           {/* Location */}
           {venue.city && (
             <View style={styles.infoRow}>
-              <MapPin size={16} color={theme.colors.mutedForeground} />
-              <Text style={styles.infoText} numberOfLines={1}>
-                {venue.city}, {venue.country}
+              <MapPin size={16} color={theme.colors.primary} />
+              <Text style={styles.infoTextBold} numberOfLines={1}>
+                {locationStr}
               </Text>
             </View>
           )}
@@ -109,10 +126,12 @@ export function VenueCard({ venue }: VenueCardProps) {
           {/* Members Count */}
           {venue._count && venue._count.members > 0 && (
             <View style={styles.infoRow}>
-              <Users size={16} color={theme.colors.mutedForeground} />
-              <Text style={styles.infoText}>
+              <Users size={16} color={theme.colors.primary} />
+              <Text style={styles.infoTextBold}>
                 {venue._count.members}{" "}
-                {venue._count.members === 1 ? "member" : "members"}
+                {venue._count.members === 1
+                  ? t("venues.member")
+                  : t("venues.members")}
               </Text>
             </View>
           )}
@@ -222,6 +241,12 @@ const styles = StyleSheet.create({
     color: theme.colors.mutedForeground,
     flex: 1,
   },
+  infoTextBold: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.colors.text,
+    flex: 1,
+  },
   servicesRow: {
     marginTop: theme.spacing.sm,
   },
@@ -231,7 +256,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   serviceChip: {
-    backgroundColor: theme.colors.primary + "20",
+    backgroundColor: theme.colors.secondary + "20",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: theme.borderRadius.sm,
@@ -239,7 +264,7 @@ const styles = StyleSheet.create({
   serviceChipText: {
     fontSize: 12,
     fontWeight: "500",
-    color: theme.colors.primaryDark,
+    color: theme.colors.secondaryDark,
     textTransform: "capitalize",
   },
 });

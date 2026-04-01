@@ -25,12 +25,8 @@ export function EventRegistration(props: Readonly<EventRegistrationProps>) {
   const isAuthenticated = !!session.data?.user;
 
   return (
-    <div className="rounded-lg border bg-card p-6">
-      <EventRegistrationHeader
-        hasRegistrations={hasRegistrations}
-        participantsCount={state.participantsCount}
-        interestedCount={state.interestedCount}
-      />
+    <div>
+      <EventRegistrationHeader hasRegistrations={hasRegistrations} />
 
       {hasRegistrations ? (
         <EventRegistrationPaid

@@ -1,16 +1,15 @@
 "use client";
 
-import { Share2, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  PremiumModal,
+  PremiumModalHeader,
+  PremiumModalBody,
+  PremiumModalFooter,
+  PremiumModalAction,
+  PremiumModalCancel,
+} from "@/components/ui/premium-modal";
 
 interface EventRegistrationShareDialogProps {
   open: boolean;
@@ -32,43 +31,35 @@ export function EventRegistrationShareDialog({
   const t = useTranslations("events.registration");
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
-            {t("shareDialogTitle")}
-          </DialogTitle>
-          <DialogDescription>{t("shareDialogDesc")}</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3">
-          <textarea
-            value={shareContent}
-            onChange={(e) => onShareContentChange(e.target.value)}
-            className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            maxLength={500}
-          />
-          <p className="text-right text-xs text-muted-foreground">
-            {shareContent.length}/500
-          </p>
-        </div>
-        <DialogFooter className="flex-row gap-2 sm:justify-end">
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={isSharing}
-          >
-            {t("shareSkip")}
-          </Button>
-          <Button
-            onClick={onShare}
-            disabled={isSharing || !shareContent.trim()}
-          >
-            <Send className="mr-2 h-4 w-4" />
-            {isSharing ? t("sharePublishing") : t("sharePublish")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <PremiumModal open={open} onOpenChange={onOpenChange} size="max-w-md">
+      <PremiumModalHeader
+        title={t("shareDialogTitle")}
+        description={t("shareDialogDesc")}
+      />
+      <PremiumModalBody className="space-y-3">
+        <textarea
+          value={shareContent}
+          onChange={(e) => onShareContentChange(e.target.value)}
+          className="min-h-[120px] w-full resize-none rounded-xl border-none bg-surface-container-low p-4 text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
+          maxLength={500}
+          placeholder={t("shareDialogDesc")}
+        />
+        <p className="text-right text-xs text-muted-foreground">
+          {shareContent.length}/500
+        </p>
+      </PremiumModalBody>
+      <PremiumModalFooter>
+        <PremiumModalCancel disabled={isSharing}>
+          {t("shareSkip")}
+        </PremiumModalCancel>
+        <PremiumModalAction
+          onClick={onShare}
+          disabled={isSharing || !shareContent.trim()}
+        >
+          <Send className="h-4 w-4" />
+          {isSharing ? t("sharePublishing") : t("sharePublish")}
+        </PremiumModalAction>
+      </PremiumModalFooter>
+    </PremiumModal>
   );
 }

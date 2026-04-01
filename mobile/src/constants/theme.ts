@@ -1,17 +1,19 @@
 // Color palettes (for shade access)
+// Primary palette — around #E85D04 (HSL 23, 97%, 46%)
 export const primaryPalette = {
-  50: "#fef3e8",
-  100: "#fde3c9",
-  200: "#f9c48f",
-  300: "#f5a455",
-  400: "#ef8d35",
-  500: "#e57b2a",
-  600: "#c96621",
-  700: "#a5501a",
-  800: "#823d15",
-  900: "#5e2c10",
+  50: "#fff2eb",
+  100: "#ffd6b7",
+  200: "#ffaa72",
+  300: "#f57d35",
+  400: "#ee6a14",
+  500: "#E85D04",
+  600: "#c44e03",
+  700: "#9b3e02",
+  800: "#722d01",
+  900: "#4a1d01",
 };
 
+// Neutral palette — grey scale for surfaces, borders, muted text
 export const secondaryPalette = {
   50: "#f8f9fa",
   100: "#f3f5f6",
@@ -27,12 +29,14 @@ export const secondaryPalette = {
 
 // Colors matching the web app theme (synced with globals.css)
 export const colors = {
-  // Primary & secondary — from CSS --p-brand: 26 78% 53%
-  primary: "#e57b2a",
-  primaryLight: "#fde3c9",
-  primaryDark: "#a5501a",
-  secondary: "#67717e",
-  secondaryLight: "#f3f5f6",
+  // Primary — from CSS --p-brand: 23 97% 46%
+  primary: "#E85D04",
+  primaryLight: "#ffd6b7",
+  primaryDark: "#9b3e02",
+
+  // Secondary — brand secondary for chips, badges, secondary actions
+  secondary: "#FF8A3D",
+  secondaryLight: "#fff2eb",
   secondaryDark: "#1f252e",
 
   // Accent — from CSS --p-golden: 41 89% 65%
@@ -46,7 +50,7 @@ export const colors = {
   info: "#aadeee",
 
   // UI colors — from CSS :root variables
-  background: "#ffffff",
+  background: "#F8F9FA",
   backgroundSecondary: "#f3f5f6",
   foreground: "#131820",
   surface: "#ffffff",
@@ -78,8 +82,8 @@ export const darkColors: typeof colors = {
   cardForeground: "#f0f2f5",
   white: "#ffffff",
 
-  primaryLight: "#5e2c10",
-  secondaryLight: "#242d38",
+  primaryLight: "#4a1d01",
+  secondaryLight: "#3a1e00",
   secondaryDark: "#c8cdd4",
   accentForeground: "#f0f2f5",
 
@@ -92,9 +96,15 @@ export const darkColors: typeof colors = {
 // Typography
 export const typography = {
   fontFamily: {
-    regular: "System",
-    medium: "System",
-    bold: "System",
+    // Body text & labels — Inter
+    regular: "Inter_400Regular",
+    medium: "Inter_500Medium",
+    semibold: "Inter_600SemiBold",
+    bold: "Inter_700Bold",
+    // Headlines — Plus Jakarta Sans
+    headline: "PlusJakartaSans_700Bold",
+    headlineSemibold: "PlusJakartaSans_600SemiBold",
+    headlineExtrabold: "PlusJakartaSans_800ExtraBold",
   },
   fontSize: {
     xs: 12,

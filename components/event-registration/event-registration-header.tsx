@@ -1,48 +1,19 @@
 "use client";
 
-import { Users, Target, Ticket } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface EventRegistrationHeaderProps {
   hasRegistrations: boolean;
-  participantsCount: number;
-  interestedCount: number;
 }
 
 export function EventRegistrationHeader({
   hasRegistrations,
-  participantsCount,
-  interestedCount,
 }: EventRegistrationHeaderProps) {
   const t = useTranslations("events.registration");
 
   return (
-    <div className="mb-4 flex items-center justify-between">
-      <h3 className="flex items-center gap-2 text-xl font-semibold">
-        <Ticket className="h-5 w-5 text-primary" />
-        {hasRegistrations ? t("registerTitle") : t("willYouGo")}
-      </h3>
-      {(participantsCount >= 5 || interestedCount > 0) && (
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          {participantsCount >= 5 && (
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span>
-                {participantsCount}{" "}
-                {t("participants", { count: participantsCount })}
-              </span>
-            </div>
-          )}
-          {interestedCount > 0 && (
-            <div className="flex items-center gap-1">
-              <Target className="h-4 w-4" />
-              <span>
-                {interestedCount} {t("interestedCount")}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    <h4 className="text-on-surface-variant mb-6 text-xs font-bold uppercase tracking-widest">
+      {hasRegistrations ? t("registerTitle") : t("willYouGo")}
+    </h4>
   );
 }

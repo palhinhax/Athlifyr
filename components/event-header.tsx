@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { SportType } from "@prisma/client";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
-import { SportBadge } from "@/components/sport-badge";
-import { HeroBackground } from "@/components/hero-background";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Ban, Settings2 } from "lucide-react";
+import { ArrowLeft, Ban, Calendar, MapPin, Settings2 } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
 import { useTranslations } from "next-intl";
+import { formatDate } from "@/lib/event-utils";
 
 interface EventHeaderProps {
   title: string;
@@ -76,6 +76,7 @@ export function EventHeader({
 
   const t = useTranslations("events");
   const tCommon = useTranslations("common");
+  const tSports = useTranslations("sports");
 
   // Construct the full event URL for sharing
   const baseUrl =
@@ -84,18 +85,26 @@ export function EventHeader({
 
   return (
     <>
-      <HeroBackground
-        image={safeImageUrl || "/placeholder-event.jpg"}
-        height="custom"
-        customHeight="280px"
-        clickable={hasImage}
-        onImageClick={() => hasImage && setIsLightboxOpen(true)}
-        overlayOpacity="medium"
-        className="relative flex flex-col"
-      >
+      {/* Full-height Hero Section */}
+      <section className="relative h-[60vh] w-full overflow-hidden sm:h-[70vh] lg:h-[80vh]">
+        {/* Background Image */}
+        <Image
+          src={safeImageUrl || "/placeholder-event.jpg"}
+          alt={title}
+          fill
+          className="object-cover"
+          priority
+          sizes="100vw"
+          quality={80}
+          onClick={() => hasImage && setIsLightboxOpen(true)}
+          style={{ cursor: hasImage ? "pointer" : "default" }}
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
         {/* Top Navigation Buttons */}
-        <div className="z-30 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="absolute left-0 right-0 top-0 z-30 px-4 py-4 sm:px-8">
+          <div className="mx-auto flex max-w-screen-2xl flex-wrap items-center justify-between gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -118,7 +127,7 @@ export function EventHeader({
                 >
                   <Link href={`/events/${event.slug}/manage`}>
                     <Settings2 className="mr-2 h-4 w-4" />
-                    Gerir evento
+                    {t("manage")}
                   </Link>
                 </Button>
               )}
@@ -133,23 +142,46 @@ export function EventHeader({
           </div>
         </div>
 
-        {/* Bottom Content - Title and Badges */}
-        <div className="z-10 mt-auto pb-6 sm:pb-8">
-          <div className="mb-3 flex flex-wrap gap-2 sm:mb-4">
-            {sportTypes.map((sportType) => (
-              <SportBadge
-                key={sportType}
-                sportType={sportType}
-                size="lg"
-                className="shadow-lg"
-              />
-            ))}
+        {/* Bottom Content - Sport Badges, Title, Date & Location */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-12 sm:px-8 sm:pb-16 lg:pb-24">
+          <div className="mx-auto max-w-screen-2xl">
+            {/* Sport Type Badges */}
+            <div className="mb-6 flex flex-wrap gap-3">
+              {sportTypes.map((sportType) => (
+                <span
+                  key={sportType}
+                  className="glass-panel rounded-full px-4 py-1 text-xs font-bold uppercase tracking-widest text-foreground"
+                >
+                  {tSports(sportType)}
+                </span>
+              ))}
+            </div>
+
+            {/* Event Title */}
+            <h1 className="mb-4 font-headline text-5xl font-black leading-tight tracking-tighter text-white sm:text-6xl md:text-7xl lg:text-8xl">
+              {title}
+            </h1>
+
+            {/* Date & Location */}
+            {event && (
+              <div className="flex flex-wrap items-center gap-4 text-white/90 sm:gap-6">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary-container" />
+                  <span className="font-medium">
+                    {formatDate(event.startDate, locale)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary-container" />
+                  <span className="font-medium">
+                    {event.city}, {event.country}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-          <h1 className="text-3xl font-bold text-white [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl">
-            {title}
-          </h1>
         </div>
-      </HeroBackground>
+      </section>
 
       {/* Cancelled Event Warning Banner */}
       {event?.cancelled && (

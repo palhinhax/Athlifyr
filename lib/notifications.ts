@@ -141,6 +141,24 @@ const notificationTranslations: Record<
     it: "Motivo: {reason}",
   },
 
+  // Event invite notifications
+  "event.invite.title": {
+    en: "🏁 Event Invitation",
+    pt: "🏁 Convite para Evento",
+    es: "🏁 Invitación al Evento",
+    fr: "🏁 Invitation à l'Événement",
+    de: "🏁 Veranstaltungseinladung",
+    it: "🏁 Invito all'Evento",
+  },
+  "event.invite.body": {
+    en: '{inviter} invited you to participate in "{event}"',
+    pt: '{inviter} convidou-te para participar em "{event}"',
+    es: '{inviter} te invitó a participar en "{event}"',
+    fr: '{inviter} vous a invité à participer à "{event}"',
+    de: '{inviter} hat dich eingeladen, an "{event}" teilzunehmen',
+    it: '{inviter} ti ha invitato a partecipare a "{event}"',
+  },
+
   // Event community notifications
   "event.newPost.title": {
     en: "📝 New Post in Event",
@@ -503,6 +521,7 @@ function getDefaultChannelId(type: NotificationType): string {
     case NotificationType.EVENT_CANCELLED:
     case NotificationType.EVENT_NEW_POST:
     case NotificationType.EVENT_POST_COMMENT:
+    case NotificationType.EVENT_INVITE:
       return "event-updates";
     case NotificationType.FRIEND_REQUEST:
     case NotificationType.FRIEND_ACCEPTED:
@@ -866,6 +885,50 @@ export async function notifyVenueInvite(params: {
       senderName: inviterName,
       route: `/venues/${venueSlug}`,
       screen: "venue",
+    },
+  });
+}
+
+/**
+ * Send event invite notification to a friend
+ */
+export async function notifyEventInvite(params: {
+  userId: string;
+  eventId: string;
+  eventSlug: string;
+  eventTitle: string;
+  inviterName: string;
+  inviterImage?: string | null;
+  inviterId: string;
+}): Promise<void> {
+  const {
+    userId,
+    eventId,
+    eventSlug,
+    eventTitle,
+    inviterName,
+    inviterImage,
+    inviterId,
+  } = params;
+  const locale = await getUserLocale(userId);
+
+  await createNotification({
+    userId,
+    type: NotificationType.EVENT_INVITE,
+    title: t("event.invite.title", locale),
+    body: t("event.invite.body", locale, {
+      inviter: inviterName,
+      event: eventTitle,
+    }),
+    data: {
+      eventId,
+      eventSlug,
+      eventTitle,
+      senderId: inviterId,
+      senderName: inviterName,
+      senderImage: inviterImage ?? undefined,
+      route: `/events/${eventSlug}`,
+      screen: "event",
     },
   });
 }

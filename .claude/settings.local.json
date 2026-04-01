@@ -4,7 +4,9 @@
       "WebFetch(domain:localhost)",
       "Bash(ls:*)",
       "Bash(npm install:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

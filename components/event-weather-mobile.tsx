@@ -133,11 +133,10 @@ export function EventWeatherMobile({
   if (!weather || weather.length === 0) return null;
 
   return (
-    <div className="rounded-lg border bg-card p-4 lg:hidden">
-      <h3 className="mb-3 flex items-center gap-2 font-semibold">
-        <CloudSun className="h-5 w-5 text-primary" />
+    <div className="rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)] lg:hidden">
+      <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
         {isPastEvent ? t("weather.titlePast") : t("weather.title")}
-      </h3>
+      </h4>
 
       <div className="space-y-3">
         {weather.map((w, index) => {
@@ -146,7 +145,7 @@ export function EventWeatherMobile({
           return (
             <div
               key={index}
-              className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
+              className="flex items-center justify-between border-b border-surface-container-high pb-3 last:border-0 last:pb-0"
             >
               {/* Left side: Icon and Date */}
               <div className="flex items-center gap-3">
@@ -154,7 +153,7 @@ export function EventWeatherMobile({
                   {getWeatherIcon(w.condition)}
                 </div>
                 <div>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-bold">
                     {new Date(w.date).toLocaleDateString("pt-PT", {
                       weekday: "long",
                       day: "2-digit",
@@ -171,34 +170,30 @@ export function EventWeatherMobile({
 
               {/* Right side: Temperature and Stats */}
               <div className="flex items-center gap-4 text-sm">
-                <span className="text-lg font-semibold">
+                <span className="font-headline text-lg font-black">
                   {Math.round(w.temperature)}°C
                 </span>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  {w.humidity !== null && (
-                    <div className="flex items-center gap-1">
-                      <Droplets className="h-3 w-3" />
-                      <span className="text-xs">{w.humidity}%</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  {w.windSpeed !== null && (
-                    <div className="flex items-center gap-1">
-                      <Wind className="h-3 w-3" />
-                      <span className="text-xs">
-                        {Math.round(w.windSpeed)} m/s
-                      </span>
-                    </div>
-                  )}
-                </div>
+                {w.humidity !== null && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Droplets className="h-3 w-3" />
+                    <span className="text-xs">{w.humidity}%</span>
+                  </div>
+                )}
+                {w.windSpeed !== null && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Wind className="h-3 w-3" />
+                    <span className="text-xs">
+                      {Math.round(w.windSpeed)} m/s
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      <p className="mt-3 text-xs text-muted-foreground">
+      <p className="mt-4 text-center text-xs text-muted-foreground">
         Powered by{" "}
         <a
           href="https://openweathermap.org/"

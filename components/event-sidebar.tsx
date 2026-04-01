@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Bookmark } from "lucide-react";
-import { EventLocationMap } from "./event-location-map";
+import Image from "next/image";
+import { EventInviteFriendsModal } from "@/components/event-invite-friends-modal";
+import { EventLocationCard } from "./event-location-card";
 import { StravaRouteEmbed } from "./strava-route-embed";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
 import { EventWeather } from "@/components/event-weather";
 import { EventFeaturedVenue } from "@/components/event-featured-venue";
+import { EventParticipationCard } from "@/components/event-participation-card";
 import { RelatedEvents } from "@/components/related-events";
-import { FriendsGoing } from "@/components/friends-going";
+import type { EventRegistrationProps } from "@/components/event-registration/event-registration-types";
 import { SportType } from "@prisma/client";
 import { useTranslations } from "next-intl";
 
@@ -40,6 +42,7 @@ interface RelatedEvent {
 
 interface EventSidebarProps {
   readonly event: {
+    readonly id: string;
     readonly title: string;
     readonly slug: string;
     readonly imageUrl: string | null;
@@ -52,8 +55,16 @@ interface EventSidebarProps {
     readonly googleMapsUrl: string | null;
     readonly stravaRouteEmbed: string | null;
     readonly sportTypes: string[];
+    readonly cancelled: boolean;
     readonly featuredVenue?: FeaturedVenue | null;
   };
+  readonly variants?: Array<{
+    id: string;
+    name: string;
+    distanceKm: number | null;
+    startDate?: Date | string | null;
+    startTime?: string | null;
+  }>;
   readonly weather?: Array<{
     date: Date;
     temperature: number;
@@ -68,20 +79,28 @@ interface EventSidebarProps {
     image: string | null;
   }>;
   readonly friendsGoingCount?: number;
+  readonly hasRegistrations?: boolean;
+  readonly registrationVariants?: EventRegistrationProps["variants"];
+  readonly registrationFieldSettings?: Record<string, string>;
   readonly relatedEvents?: RelatedEvent[];
   readonly relatedEventsTitle?: string;
 }
 
 export function EventSidebar({
   event,
+  variants = [],
   weather,
   friendsGoing = [],
   friendsGoingCount = 0,
+  hasRegistrations = false,
+  registrationVariants = [],
+  registrationFieldSettings,
   relatedEvents = [],
   relatedEventsTitle,
 }: EventSidebarProps) {
   const t = useTranslations("events");
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const hasImage =
     event.imageUrl && event.imageUrl !== "/placeholder-event.jpg";
 
@@ -93,49 +112,23 @@ export function EventSidebar({
   return (
     <>
       <aside className="hidden lg:block">
-        <div className="sticky top-20 space-y-6">
+        <div className="sticky top-[7.5rem] space-y-8">
           {/* Weather Widget Card */}
           {weather && weather.length > 0 && (
-            <div className="overflow-hidden rounded-2xl shadow-sm">
-              <EventWeather weather={weather} isPastEvent={isPastEvent} />
-            </div>
+            <EventWeather weather={weather} isPastEvent={isPastEvent} />
           )}
 
           {/* Location Card */}
           {event.latitude && event.longitude && (
-            <div className="overflow-hidden rounded-2xl bg-card p-6 shadow-sm">
-              <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {t("locationTitle")}
-              </h4>
-              <div className="relative mb-4 h-40 w-full overflow-hidden rounded-xl">
-                <EventLocationMap
-                  latitude={event.latitude}
-                  longitude={event.longitude}
-                  title={event.title}
-                  sportTypes={event.sportTypes}
-                />
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-bold">{event.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {event.city}, {event.country}
-                  </p>
-                </div>
-                <a
-                  href={
-                    event.googleMapsUrl ||
-                    `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-border py-3 text-sm font-bold transition-colors hover:bg-muted"
-                >
-                  {t("openInGoogleMaps")}
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              </div>
-            </div>
+            <EventLocationCard
+              latitude={event.latitude}
+              longitude={event.longitude}
+              title={event.title}
+              city={event.city}
+              country={event.country}
+              googleMapsUrl={event.googleMapsUrl}
+              sportTypes={event.sportTypes}
+            />
           )}
 
           {/* Featured Venue Card */}
@@ -143,37 +136,87 @@ export function EventSidebar({
             <EventFeaturedVenue venue={event.featuredVenue} />
           )}
 
-          {/* Who's Going / Friends Going */}
-          {friendsGoingCount > 0 && (
-            <div className="rounded-2xl bg-card p-6 shadow-sm sm:p-8">
-              <h4 className="mb-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {t("sidebar.whoIsGoing")}
-              </h4>
-              <FriendsGoing
-                friends={friendsGoing}
-                totalCount={friendsGoingCount}
-              />
-            </div>
+          {/* Participation Card */}
+          <EventParticipationCard
+            eventId={event.id}
+            eventSlug={event.slug}
+            eventTitle={event.title}
+            hasRegistrations={hasRegistrations}
+            variants={variants}
+            registrationVariants={registrationVariants}
+            cancelled={event.cancelled}
+            isPastEvent={isPastEvent}
+            registrationFieldSettings={registrationFieldSettings}
+          />
+
+          {/* Related Events Carousel */}
+          {relatedEvents.length > 0 && (
+            <RelatedEvents events={relatedEvents} title={relatedEventsTitle} />
           )}
+
+          {/* Who's Going + Invite Friends */}
+          <div className="rounded-2xl bg-surface-container-lowest p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+            <h4 className="text-on-surface-variant mb-6 text-xs font-bold uppercase tracking-widest">
+              {t("sidebar.whoIsGoing")}
+            </h4>
+
+            {friendsGoingCount > 0 && (
+              <>
+                {/* Avatar stack */}
+                <div className="mb-6 flex -space-x-3">
+                  {friendsGoing.slice(0, 4).map((friend) => (
+                    <div
+                      key={friend.id}
+                      className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-4 border-white"
+                    >
+                      {friend.image ? (
+                        <Image
+                          src={friend.image}
+                          alt={friend.name || ""}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="text-on-primary-container flex h-full w-full items-center justify-center bg-primary-container text-xs font-bold">
+                          {friend.name?.[0]?.toUpperCase() || "?"}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {friendsGoingCount > 4 && (
+                    <div className="text-on-primary-container flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-4 border-white bg-primary-container text-xs font-bold">
+                      +{friendsGoingCount - 4}
+                    </div>
+                  )}
+                </div>
+
+                {/* Friend mention text */}
+                <p className="text-on-surface-variant mb-6 text-sm">
+                  <strong>{friendsGoing[0]?.name}</strong>{" "}
+                  {friendsGoingCount === 1
+                    ? t("sidebar.friendSignedUpSuffix")
+                    : t("sidebar.friendsSignedUpSuffix", {
+                        count: friendsGoingCount - 1,
+                      })}
+                </p>
+              </>
+            )}
+
+            {/* Invite Friends button */}
+            <button
+              onClick={() => setIsInviteOpen(true)}
+              className="w-full rounded-xl border-2 border-primary py-4 font-bold text-primary transition-colors hover:bg-primary/5"
+            >
+              {t("sidebar.inviteFriends")}
+            </button>
+          </div>
 
           {/* Strava Route Embed */}
           {event.stravaRouteEmbed && (
             <div className="overflow-hidden rounded-2xl">
               <StravaRouteEmbed embedCode={event.stravaRouteEmbed} />
             </div>
-          )}
-
-          {/* Share & Save Buttons */}
-          <div className="flex gap-4">
-            <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-card py-4 font-bold shadow-sm transition-all hover:bg-muted">
-              <Bookmark className="h-5 w-5" />
-              {t("sidebar.save")}
-            </button>
-          </div>
-
-          {/* Related Events Carousel */}
-          {relatedEvents.length > 0 && (
-            <RelatedEvents events={relatedEvents} title={relatedEventsTitle} />
           )}
         </div>
       </aside>
@@ -186,6 +229,15 @@ export function EventSidebar({
           onClose={() => setIsLightboxOpen(false)}
         />
       )}
+
+      {/* Invite Friends Modal */}
+      <EventInviteFriendsModal
+        open={isInviteOpen}
+        onOpenChange={setIsInviteOpen}
+        eventId={event.id}
+        eventTitle={event.title}
+        eventSlug={event.slug}
+      />
     </>
   );
 }

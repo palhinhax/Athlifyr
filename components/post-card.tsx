@@ -19,7 +19,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -200,7 +199,7 @@ export function PostCard({
   currentUserId,
   isAdmin,
   onPostDeleted,
-  hideVenueBadge = false, // Default to showing badge
+  hideVenueBadge: _hideVenueBadge = false, // Default to showing badge
 }: PostCardProps) {
   const router = useRouter();
   const [isLiked, setIsLiked] = useState(post.isLikedByUser);
@@ -416,310 +415,289 @@ export function PostCard({
 
   return (
     <>
-      <Card className="overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-3 p-4 pb-3">
-          <Link
-            href={`/user/${post.userId}`}
-            className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted"
-          >
-            {post.user.image ? (
-              <Image
-                src={post.user.image}
-                alt={post.user.name || "User"}
-                fill
-                sizes="40px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
-                {post.user.name?.[0]?.toUpperCase() || "U"}
-              </div>
-            )}
-          </Link>
-          <div className="min-w-0 flex-1 overflow-hidden">
+      <div className="overflow-hidden rounded-[32px] bg-surface-container-lowest shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+        {/* Media (Image, Video or Carousel) — top of card if present */}
+        {post.imageUrl && (
+          <div className="p-4 pb-0">
+            <div
+              className={`relative w-full overflow-hidden rounded-[24px] ${
+                post.mediaType === "video"
+                  ? "flex items-center justify-center bg-black"
+                  : "bg-gradient-to-br from-muted/50 to-muted"
+              }`}
+            >
+              {post.mediaType === "video" ? (
+                <video
+                  src={post.imageUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="aspect-[3/4] w-full cursor-pointer object-cover"
+                  preload="auto"
+                  onClick={(e) => {
+                    const video = e.currentTarget;
+                    if (video.paused) {
+                      video.play();
+                    } else {
+                      video.pause();
+                    }
+                  }}
+                />
+              ) : hasCarousel ? (
+                <div className="relative">
+                  <PostImage
+                    imageUrl={carouselImages[carouselIdx]}
+                    imageError={imageError}
+                    onImageError={() => {
+                      console.error(
+                        "Failed to load image:",
+                        carouselImages[carouselIdx]
+                      );
+                      setImageError(true);
+                    }}
+                  />
+                  <button
+                    onClick={() =>
+                      setCarouselIdx((i) =>
+                        i === 0 ? carouselImages.length - 1 : i - 1
+                      )
+                    }
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setCarouselIdx((i) =>
+                        i === carouselImages.length - 1 ? 0 : i + 1
+                      )
+                    }
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                    {carouselImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCarouselIdx(idx)}
+                        className={`h-2 w-2 rounded-full transition-colors ${
+                          idx === carouselIdx ? "bg-white" : "bg-white/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <PostImage
+                  imageUrl={post.imageUrl}
+                  imageError={imageError}
+                  onImageError={() => {
+                    console.error("Failed to load image:", post.imageUrl);
+                    setImageError(true);
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Body */}
+        <div className={post.imageUrl ? "px-8 pb-8 pt-4" : "p-8"}>
+          {/* Header */}
+          <div className="mb-6 flex items-center gap-4">
             <Link
               href={`/user/${post.userId}`}
-              className="block truncate font-semibold hover:underline"
+              className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted"
             >
-              {post.user.name}
+              {post.user.image ? (
+                <Image
+                  src={post.user.image}
+                  alt={post.user.name || "User"}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
+                  {post.user.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
             </Link>
-            <div className="min-w-0 flex-wrap items-center gap-x-2 overflow-hidden text-xs text-muted-foreground">
-              <span className="shrink-0 whitespace-nowrap">
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/user/${post.userId}`}
+                className="block font-headline font-bold hover:underline"
+              >
+                {post.user.name}
+              </Link>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 {formatDistanceToNow(createdAt, {
                   addSuffix: true,
                   locale: pt,
                 })}
-              </span>
-              {post.event && (
-                <>
-                  <span className="shrink-0">•</span>
-                  <Link
-                    href={`/events/${post.event.slug}`}
-                    className="block min-w-0 hover:text-accent hover:underline"
-                  >
-                    {post.event.title}
-                  </Link>
-                </>
-              )}
-              {post.venue && !hideVenueBadge && (
-                <>
-                  <Link
-                    href={`/venues/${post.venue.slug}`}
-                    className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-white/20 bg-black/20 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-black/30"
-                  >
-                    <span>{post.venue.name}</span>
-                  </Link>
-                </>
-              )}
+              </p>
             </div>
-          </div>
-          {canDelete && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {currentUserId === post.userId && (
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Editar publicação
+            {canDelete && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {currentUserId === post.userId && (
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Editar publicação
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Apagar publicação
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Apagar publicação
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
 
-        {/* Content */}
-        <div className="overflow-hidden px-4 pb-3">
-          {isEditing ? (
-            <div className="space-y-2">
-              <textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                disabled={isUpdating}
-              />
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={handleUpdatePost}
-                  disabled={isUpdating || !editContent.trim()}
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Guardar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCancelEdit}
+          {/* Content */}
+          <div className="mb-6">
+            {isEditing ? (
+              <div className="space-y-2">
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   disabled={isUpdating}
-                >
-                  <XIcon className="mr-2 h-4 w-4" />
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="prose prose-sm min-w-0 max-w-none [overflow-wrap:anywhere] dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:my-1 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-pre:overflow-x-auto prose-ol:my-1 prose-ul:my-1 prose-li:my-0 prose-img:hidden">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {post.content}
-              </ReactMarkdown>
-            </div>
-          )}
-        </div>
-
-        {/* Media (Image, Video or Carousel) */}
-        {post.imageUrl && (
-          <div
-            className={`relative w-full overflow-hidden ${
-              post.mediaType === "video"
-                ? "flex items-center justify-center bg-black"
-                : "max-h-[850px] bg-gradient-to-br from-muted/50 to-muted"
-            }`}
-          >
-            {post.mediaType === "video" ? (
-              <video
-                src={post.imageUrl}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="max-h-[850px] w-auto max-w-full cursor-pointer"
-                preload="auto"
-                onClick={(e) => {
-                  const video = e.currentTarget;
-                  if (video.paused) {
-                    video.play();
-                  } else {
-                    video.pause();
-                  }
-                }}
-              />
-            ) : hasCarousel ? (
-              <div className="relative">
-                <PostImage
-                  imageUrl={carouselImages[carouselIdx]}
-                  imageError={imageError}
-                  onImageError={() => {
-                    console.error(
-                      "Failed to load image:",
-                      carouselImages[carouselIdx]
-                    );
-                    setImageError(true);
-                  }}
                 />
-                <button
-                  onClick={() =>
-                    setCarouselIdx((i) =>
-                      i === 0 ? carouselImages.length - 1 : i - 1
-                    )
-                  }
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() =>
-                    setCarouselIdx((i) =>
-                      i === carouselImages.length - 1 ? 0 : i + 1
-                    )
-                  }
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-                <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                  {carouselImages.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCarouselIdx(idx)}
-                      className={`h-2 w-2 rounded-full transition-colors ${
-                        idx === carouselIdx ? "bg-white" : "bg-white/50"
-                      }`}
-                    />
-                  ))}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleUpdatePost}
+                    disabled={isUpdating || !editContent.trim()}
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Guardar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    disabled={isUpdating}
+                  >
+                    <XIcon className="mr-2 h-4 w-4" />
+                    Cancelar
+                  </Button>
                 </div>
               </div>
             ) : (
-              <PostImage
-                imageUrl={post.imageUrl}
-                imageError={imageError}
-                onImageError={() => {
-                  console.error("Failed to load image:", post.imageUrl);
-                  setImageError(true);
-                }}
-              />
-            )}
-          </div>
-        )}
-
-        {/* Shared Event Card - Show when post has full event data */}
-        {post.event?.city && post.event?.sportTypes && (
-          <div className="px-4 pb-3">
-            <FeaturedEventCard
-              event={{
-                id: post.event.id,
-                title: post.event.title,
-                slug: post.event.slug,
-                description: post.event.description,
-                startDate: post.event.startDate || new Date(),
-                endDate: post.event.endDate,
-                city: post.event.city,
-                country: post.event.country || "",
-                imageUrl: post.event.imageUrl,
-                isFeatured: post.event.isFeatured,
-                sportTypes: post.event.sportTypes,
-                variants: post.event.variants,
-              }}
-              showDescription={false}
-              showStats={false}
-              showVariants={true}
-              showFriendsGoing={false}
-              linkToEvent={true}
-              className="border-none shadow-none"
-            />
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center gap-4 border-t px-4 py-3">
-          <button
-            onClick={handleLike}
-            disabled={!currentUserId || isLiking}
-            className={`flex items-center gap-1.5 text-sm transition-colors ${
-              isLiked
-                ? "text-red-500"
-                : "text-muted-foreground hover:text-red-500"
-            } ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
-          >
-            <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
-            <span>{likesCount}</span>
-          </button>
-          <button
-            onClick={handleToggleComments}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-p-info"
-          >
-            <MessageCircle className="h-5 w-5" />
-            <span>{commentsCount}</span>
-          </button>
-        </div>
-
-        {/* Comments Section */}
-        {showComments && (
-          <div className="border-t px-4 py-3">
-            {/* Comment Input */}
-            {currentUserId && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmitComment();
-                }}
-                className="mb-3 flex gap-2"
-              >
-                <Input
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Escreve um comentário..."
-                  className="flex-1"
-                  disabled={isSubmittingComment}
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={!newComment.trim() || isSubmittingComment}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
-            )}
-
-            {/* Comments List */}
-            {isLoadingComments ? (
-              <div className="py-4 text-center text-sm text-muted-foreground">
-                A carregar comentários...
+              <div className="prose prose-sm min-w-0 max-w-none leading-relaxed text-muted-foreground [overflow-wrap:anywhere] dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:my-1 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-pre:overflow-x-auto prose-ol:my-1 prose-ul:my-1 prose-li:my-0 prose-img:hidden">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {post.content}
+                </ReactMarkdown>
               </div>
-            ) : (
-              <CommentsList
-                comments={comments}
-                currentUserId={currentUserId}
-                isAdmin={isAdmin}
-                onDeleteComment={handleDeleteComment}
-              />
             )}
           </div>
-        )}
-      </Card>
+
+          {/* Shared Event Card */}
+          {post.event?.city && post.event?.sportTypes && (
+            <div className="mb-6">
+              <FeaturedEventCard
+                event={{
+                  id: post.event.id,
+                  title: post.event.title,
+                  slug: post.event.slug,
+                  description: post.event.description,
+                  startDate: post.event.startDate || new Date(),
+                  endDate: post.event.endDate,
+                  city: post.event.city,
+                  country: post.event.country || "",
+                  imageUrl: post.event.imageUrl,
+                  isFeatured: post.event.isFeatured,
+                  sportTypes: post.event.sportTypes,
+                  variants: post.event.variants,
+                }}
+                showDescription={false}
+                showStats={false}
+                showVariants={true}
+                showFriendsGoing={false}
+                linkToEvent={true}
+                className="border-none shadow-none"
+              />
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center gap-6 text-muted-foreground">
+            <button
+              onClick={handleLike}
+              disabled={!currentUserId || isLiking}
+              className={`flex items-center gap-2 transition-colors ${
+                isLiked
+                  ? "text-red-500"
+                  : "text-muted-foreground hover:text-red-500"
+              } ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
+            >
+              <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
+              <span className="text-sm font-bold">{likesCount}</span>
+            </button>
+            <button
+              onClick={handleToggleComments}
+              className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-sm font-bold">{commentsCount}</span>
+            </button>
+          </div>
+
+          {/* Comments Section */}
+          {showComments && (
+            <div className="mt-6 border-t border-surface-container-high pt-4">
+              {currentUserId && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmitComment();
+                  }}
+                  className="mb-3 flex gap-2"
+                >
+                  <Input
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Escreve um comentário..."
+                    className="flex-1"
+                    disabled={isSubmittingComment}
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!newComment.trim() || isSubmittingComment}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </form>
+              )}
+              {isLoadingComments ? (
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  A carregar comentários...
+                </div>
+              ) : (
+                <CommentsList
+                  comments={comments}
+                  currentUserId={currentUserId}
+                  isAdmin={isAdmin}
+                  onDeleteComment={handleDeleteComment}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

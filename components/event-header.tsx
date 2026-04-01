@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { SportType } from "@prisma/client";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
-import { SportBadge } from "@/components/sport-badge";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Ban, Calendar, MapPin, Settings2 } from "lucide-react";
@@ -77,6 +76,7 @@ export function EventHeader({
 
   const t = useTranslations("events");
   const tCommon = useTranslations("common");
+  const tSports = useTranslations("sports");
 
   // Construct the full event URL for sharing
   const baseUrl =
@@ -86,7 +86,7 @@ export function EventHeader({
   return (
     <>
       {/* Full-height Hero Section */}
-      <section className="relative h-[50vh] w-full overflow-hidden sm:h-[60vh] lg:h-[70vh]">
+      <section className="relative h-[60vh] w-full overflow-hidden sm:h-[70vh] lg:h-[80vh]">
         {/* Background Image */}
         <Image
           src={safeImageUrl || "/placeholder-event.jpg"}
@@ -143,22 +143,22 @@ export function EventHeader({
         </div>
 
         {/* Bottom Content - Sport Badges, Title, Date & Location */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-8 sm:px-8 sm:pb-12 lg:pb-16">
+        <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-12 sm:px-8 sm:pb-16 lg:pb-24">
           <div className="mx-auto max-w-screen-2xl">
             {/* Sport Type Badges */}
-            <div className="mb-4 flex flex-wrap gap-3">
+            <div className="mb-6 flex flex-wrap gap-3">
               {sportTypes.map((sportType) => (
-                <SportBadge
+                <span
                   key={sportType}
-                  sportType={sportType}
-                  size="lg"
-                  className="!bg-white/70 !text-foreground shadow-lg backdrop-blur-md"
-                />
+                  className="glass-panel rounded-full px-4 py-1 text-xs font-bold uppercase tracking-widest text-foreground"
+                >
+                  {tSports(sportType)}
+                </span>
               ))}
             </div>
 
             {/* Event Title */}
-            <h1 className="mb-4 text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="mb-4 font-headline text-5xl font-black leading-tight tracking-tighter text-white sm:text-6xl md:text-7xl lg:text-8xl">
               {title}
             </h1>
 
@@ -166,13 +166,13 @@ export function EventHeader({
             {event && (
               <div className="flex flex-wrap items-center gap-4 text-white/90 sm:gap-6">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
+                  <Calendar className="h-5 w-5 text-primary-container" />
                   <span className="font-medium">
                     {formatDate(event.startDate, locale)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
+                  <MapPin className="h-5 w-5 text-primary-container" />
                   <span className="font-medium">
                     {event.city}, {event.country}
                   </span>

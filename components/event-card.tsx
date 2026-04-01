@@ -229,7 +229,7 @@ export function EventCard({
             </div>
 
             {/* Title */}
-            <h3 className="font-headline line-clamp-2 text-base font-extrabold leading-tight text-white">
+            <h3 className="line-clamp-2 font-headline text-base font-extrabold leading-tight text-white">
               {event.title}
             </h3>
 

@@ -1,16 +1,9 @@
 "use client";
 
 import { Link } from "@/i18n/routing";
-import {
-  Calendar,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  CalendarHeart,
-} from "lucide-react";
-import { SportBadge } from "./sport-badge";
+import { Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { SportType } from "@prisma/client";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 
@@ -26,8 +19,8 @@ interface RelatedEvent {
 }
 
 interface RelatedEventsProps {
-  events: RelatedEvent[];
-  title?: string;
+  readonly events: RelatedEvent[];
+  readonly title?: string;
 }
 
 export function RelatedEvents({
@@ -35,6 +28,7 @@ export function RelatedEvents({
   title = "Eventos Relacionados",
 }: RelatedEventsProps) {
   const locale = useLocale();
+  const tSports = useTranslations("sports");
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -58,113 +52,100 @@ export function RelatedEvents({
   const event = events[current];
 
   return (
-    <section
-      className="overflow-hidden rounded-lg border bg-card shadow-sm"
-      aria-label={title}
+    <div
+      className="rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="p-4 pb-2">
-        <h3 className="flex items-center gap-2 font-semibold">
-          <CalendarHeart className="h-5 w-5 text-primary" />
-          {title}
-        </h3>
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            {title}
+          </h4>
+        </div>
+        {events.length > 1 && (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={prev}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+              aria-label="Previous event"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+              aria-label="Next event"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Slide */}
-      <Link href={`/events/${event.slug}`} className="group block">
-        {event.imageUrl && event.imageUrl !== "null" ? (
-          <div className="relative h-36 w-full bg-muted">
+      {/* Event Card */}
+      <Link
+        href={`/events/${event.slug}`}
+        className="group cursor-pointer"
+        aria-label={event.title}
+      >
+        {/* Image */}
+        <div className="relative mb-4 aspect-video overflow-hidden rounded-xl">
+          {event.imageUrl && event.imageUrl !== "null" ? (
             <Image
               src={event.imageUrl}
               alt={event.title}
               fill
-              className="object-cover transition-transform group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
-          </div>
-        ) : (
-          <div className="flex h-36 w-full items-center justify-center bg-muted">
-            <Calendar className="h-8 w-8 text-muted-foreground" />
-          </div>
-        )}
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-surface-container">
+              <Calendar className="h-8 w-8 text-muted-foreground" />
+            </div>
+          )}
+          {event.sportTypes.length > 0 && (
+            <div className="absolute left-3 top-3 flex gap-2">
+              {event.sportTypes.slice(0, 3).map((sport) => (
+                <span
+                  key={sport}
+                  className="glass-panel rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white"
+                >
+                  {tSports(sport)}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <div className="p-3">
-          <h4 className="mb-1.5 line-clamp-2 text-sm font-semibold group-hover:text-primary">
-            {event.title}
-          </h4>
+        {/* Title */}
+        <h5 className="mb-2 font-headline font-bold transition-colors group-hover:text-primary">
+          {event.title}
+        </h5>
 
-          <div className="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">
+        {/* Meta */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-primary-container" />
+            <span>
               {event.city}, {event.country}
             </span>
           </div>
-
-          <div className="mb-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3 flex-shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-primary-container" />
             <span>
               {new Date(event.startDate).toLocaleDateString(locale, {
                 day: "numeric",
-                month: "short",
+                month: "long",
                 year: "numeric",
               })}
             </span>
           </div>
-
-          <div className="flex flex-wrap gap-1">
-            {event.sportTypes.slice(0, 2).map((sport) => (
-              <div key={sport} className="origin-left scale-[0.85]">
-                <SportBadge sportType={sport} />
-              </div>
-            ))}
-            {event.sportTypes.length > 2 && (
-              <span className="self-center text-[10px] text-muted-foreground">
-                +{event.sportTypes.length - 2}
-              </span>
-            )}
-          </div>
         </div>
       </Link>
-
-      {/* Navigation */}
-      {events.length > 1 && (
-        <div className="flex items-center justify-between border-t px-3 py-2">
-          <button
-            type="button"
-            onClick={prev}
-            className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="Previous event"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-
-          {/* Dots */}
-          <div className="flex gap-1">
-            {events.map((_, i) => (
-              <button
-                key={events[i].id}
-                type="button"
-                onClick={() => setCurrent(i)}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === current
-                    ? "w-4 bg-primary"
-                    : "w-1.5 bg-muted-foreground/30"
-                }`}
-                aria-label={`Go to event ${i + 1}`}
-              />
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={next}
-            className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="Next event"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-    </section>
+    </div>
   );
 }

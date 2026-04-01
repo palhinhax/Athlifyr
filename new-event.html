@@ -111,8 +111,59 @@
     class="bg-surface font-body text-on-background selection:bg-secondary-container antialiased"
   >
     <!-- TopNavBar -->
-
-    <main class="">
+    <header
+      class="fixed top-0 z-50 w-full bg-white/80 shadow-[0_8px_32px_rgba(232,93,4,0.06)] backdrop-blur-xl dark:bg-stone-900/80"
+    >
+      <nav
+        class="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-8"
+      >
+        <div
+          class="font-headline text-2xl font-black tracking-tighter text-stone-900 dark:text-white"
+        >
+          Athlifyr
+        </div>
+        <div class="hidden items-center gap-8 md:flex">
+          <a
+            class="border-b-2 border-orange-600 pb-1 font-headline font-semibold tracking-tight text-orange-600 dark:text-orange-500"
+            href="#"
+            >Events</a
+          >
+          <a
+            class="font-headline font-semibold tracking-tight text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
+            href="#"
+            >Leagues</a
+          >
+          <a
+            class="font-headline font-semibold tracking-tight text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
+            href="#"
+            >Training</a
+          >
+          <a
+            class="font-headline font-semibold tracking-tight text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
+            href="#"
+            >Community</a
+          >
+        </div>
+        <div class="flex items-center gap-4">
+          <button
+            class="rounded-full p-2 transition-all hover:bg-stone-50 active:scale-95 dark:hover:bg-stone-800/50"
+          >
+            <span class="material-symbols-outlined text-stone-600"
+              >notifications</span
+            >
+          </button>
+          <button
+            class="rounded-full p-2 transition-all hover:bg-stone-50 active:scale-95 dark:hover:bg-stone-800/50"
+          >
+            <span class="material-symbols-outlined text-stone-600"
+              >account_circle</span
+            >
+          </button>
+        </div>
+      </nav>
+      <div class="h-px w-full bg-stone-100 dark:bg-stone-800"></div>
+    </header>
+    <main class="pt-20">
       <!-- Hero Section -->
       <section class="relative h-[819px] w-full overflow-hidden">
         <img
@@ -137,7 +188,7 @@
             >
           </div>
           <h1
-            class="font-headline mb-4 text-6xl font-black leading-tight tracking-tighter text-white md:text-8xl"
+            class="mb-4 font-headline text-6xl font-black leading-tight tracking-tighter text-white md:text-8xl"
           >
             Rota das Ovelhas <span class="text-primary-container">2026</span>
           </h1>
@@ -161,7 +212,7 @@
       </section>
       <!-- Registration Bar -->
       <div
-        class="bg-surface-container-lowest/80 border-surface-container sticky top-0 z-40 border-b shadow-sm backdrop-blur-md"
+        class="sticky top-20 z-40 border-b border-surface-container bg-surface-container-lowest/80 shadow-sm backdrop-blur-md"
       >
         <div
           class="mx-auto flex max-w-screen-2xl items-center justify-between px-8 py-4"
@@ -177,7 +228,7 @@
             </p>
           </div>
           <button
-            class="primary-gradient text-on-primary font-headline rounded-xl px-12 py-4 text-lg font-bold shadow-[0_8px_24px_rgba(158,60,0,0.2)] transition-transform active:scale-95"
+            class="primary-gradient text-on-primary rounded-xl px-12 py-4 font-headline text-lg font-bold shadow-[0_8px_24px_rgba(158,60,0,0.2)] transition-transform active:scale-95"
           >
             Abrir Website
           </button>
@@ -192,7 +243,7 @@
           <!-- Sobre o Evento -->
           <section>
             <h2
-              class="font-headline text-on-surface mb-8 text-3xl font-extrabold"
+              class="text-on-surface mb-8 font-headline text-3xl font-extrabold"
             >
               Sobre o Evento
             </h2>
@@ -225,19 +276,19 @@
           <!-- Provas e Distâncias (Bento Grid Style) -->
           <section>
             <h2
-              class="font-headline text-on-surface mb-8 text-3xl font-extrabold"
+              class="text-on-surface mb-8 font-headline text-3xl font-extrabold"
             >
               Provas e Distâncias
             </h2>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <!-- Card 1: Main Trail -->
               <div
-                class="bg-surface-container-lowest group flex flex-col justify-between gap-8 rounded-xl p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
+                class="group flex flex-col justify-between gap-8 rounded-xl bg-surface-container-lowest p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
               >
                 <div class="space-y-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="bg-primary-container/10 flex h-12 w-12 items-center justify-center rounded-full"
+                      class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container/10"
                     >
                       <span
                         class="material-symbols-outlined text-primary"
@@ -288,12 +339,12 @@
               </div>
               <!-- Card 2: Sprint Trail -->
               <div
-                class="bg-surface-container-lowest group flex flex-col justify-between gap-8 rounded-xl p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
+                class="group flex flex-col justify-between gap-8 rounded-xl bg-surface-container-lowest p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
               >
                 <div class="space-y-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="bg-primary-container/10 flex h-12 w-12 items-center justify-center rounded-full"
+                      class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container/10"
                     >
                       <span class="material-symbols-outlined text-primary"
                         >bolt</span
@@ -342,12 +393,12 @@
               </div>
               <!-- Card 3: Caminhada -->
               <div
-                class="bg-surface-container-lowest group flex flex-col justify-between gap-8 rounded-xl p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
+                class="group flex flex-col justify-between gap-8 rounded-xl bg-surface-container-lowest p-8 shadow-[0_8px_32px_rgba(158,60,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(158,60,0,0.1)] md:col-span-2 md:flex-row"
               >
                 <div class="space-y-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="bg-primary-container/10 flex h-12 w-12 items-center justify-center rounded-full"
+                      class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container/10"
                     >
                       <span class="material-symbols-outlined text-primary"
                         >hiking</span
@@ -401,12 +452,12 @@
             >
               <div>
                 <h2
-                  class="font-headline text-on-surface mb-4 text-3xl font-extrabold"
+                  class="text-on-surface mb-4 font-headline text-3xl font-extrabold"
                 >
                   Percurso
                 </h2>
                 <div
-                  class="bg-surface-container-high inline-flex rounded-xl p-1"
+                  class="inline-flex rounded-xl bg-surface-container-high p-1"
                 >
                   <button
                     class="rounded-lg bg-white px-6 py-2.5 text-sm font-bold text-primary shadow-sm transition-all"
@@ -429,7 +480,7 @@
                 </div>
               </div>
               <button
-                class="border-surface-container-highest flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border bg-white px-6 py-3 font-bold text-primary shadow-sm transition-all hover:shadow-md"
+                class="flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-surface-container-highest bg-white px-6 py-3 font-bold text-primary shadow-sm transition-all hover:shadow-md"
               >
                 <span class="material-symbols-outlined">download</span>
                 Download GPX
@@ -441,7 +492,7 @@
               </button>
             </div>
             <div
-              class="bg-surface-container group relative h-[500px] w-full overflow-hidden rounded-[32px] border-4 border-white shadow-inner"
+              class="group relative h-[500px] w-full overflow-hidden rounded-[32px] border-4 border-white bg-surface-container shadow-inner"
             >
               <img
                 alt="Map of the route"
@@ -522,13 +573,13 @@
           <!-- FAQs -->
           <section>
             <h2
-              class="font-headline text-on-surface mb-8 text-3xl font-extrabold"
+              class="text-on-surface mb-8 font-headline text-3xl font-extrabold"
             >
               FAQs
             </h2>
             <div class="space-y-4">
               <details
-                class="bg-surface-container-low group rounded-xl"
+                class="group rounded-xl bg-surface-container-low"
                 open=""
               >
                 <summary
@@ -546,7 +597,7 @@
                   partir das 06:30.
                 </div>
               </details>
-              <details class="bg-surface-container-low group rounded-xl">
+              <details class="group rounded-xl bg-surface-container-low">
                 <summary
                   class="text-on-surface flex cursor-pointer list-none items-center justify-between p-6 font-bold"
                 >
@@ -591,7 +642,7 @@
           </div>
           <!-- Location Card -->
           <div
-            class="bg-surface-container-lowest overflow-hidden rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+            class="overflow-hidden rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
           >
             <h4
               class="text-on-surface-variant mb-4 text-xs font-bold uppercase tracking-widest"
@@ -599,7 +650,7 @@
               Localização
             </h4>
             <div
-              class="bg-surface-container relative mb-4 h-40 w-full overflow-hidden rounded-xl"
+              class="relative mb-4 h-40 w-full overflow-hidden rounded-xl bg-surface-container"
             >
               <img
                 alt="Mini map of Lajeosa do Dão"
@@ -628,7 +679,7 @@
                 </p>
               </div>
               <button
-                class="border-surface-container-high text-on-surface hover:bg-surface-container-low flex w-full items-center justify-center gap-2 rounded-xl border-2 py-3 text-sm font-bold transition-colors"
+                class="text-on-surface flex w-full items-center justify-center gap-2 rounded-xl border-2 border-surface-container-high py-3 text-sm font-bold transition-colors hover:bg-surface-container-low"
               >
                 Como Chegar
                 <span class="material-symbols-outlined text-sm"
@@ -637,9 +688,125 @@
               </button>
             </div>
           </div>
+          <div
+            class="rounded-2xl bg-surface-container-lowest p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+          >
+            <h4
+              class="text-on-surface-variant mb-6 text-xs font-bold uppercase tracking-widest"
+            >
+              Vais participar?
+            </h4>
+            <div class="space-y-4">
+              <div>
+                <label
+                  class="text-on-surface-variant mb-2 block text-xs font-bold uppercase tracking-tight"
+                  for="variant-select"
+                  >Escolher Distância</label
+                >
+                <select
+                  class="text-on-surface w-full rounded-xl border-2 border-surface-container-high bg-surface-container-lowest px-4 py-3 text-sm font-bold focus:border-primary focus:ring-0"
+                  id="variant-select"
+                >
+                  <option>Trail Running (25,7 km)</option>
+                  <option>Sprint Trail (13,5 km)</option>
+                  <option>Caminhada (13,5 km)</option>
+                </select>
+              </div>
+              <button
+                class="w-full rounded-xl bg-[#E85D04] py-4 font-headline text-base font-bold text-white shadow-[0_8px_24px_rgba(232,93,4,0.2)] transition-all hover:opacity-90 active:scale-[0.98]"
+              >
+                Marcar como Vou
+              </button>
+              <button
+                class="text-on-surface flex w-full items-center justify-center gap-2 rounded-xl border-2 border-surface-container-high py-4 text-sm font-bold transition-colors hover:bg-surface-container-low"
+              >
+                <span class="material-symbols-outlined text-xl">star</span>
+                Interessado
+              </button>
+            </div>
+          </div>
+          <!-- Related Events -->
+          <div
+            class="rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+          >
+            <div class="mb-6 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-xl text-primary"
+                  >calendar_today</span
+                >
+                <h4
+                  class="text-on-surface-variant text-xs font-bold uppercase tracking-widest"
+                >
+                  Eventos Relacionados
+                </h4>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  class="text-on-surface-variant flex h-8 w-8 items-center justify-center rounded-full bg-surface-container transition-colors hover:bg-primary/10 hover:text-primary"
+                >
+                  <span class="material-symbols-outlined text-lg"
+                    >chevron_left</span
+                  >
+                </button>
+                <button
+                  class="text-on-surface-variant flex h-8 w-8 items-center justify-center rounded-full bg-surface-container transition-colors hover:bg-primary/10 hover:text-primary"
+                >
+                  <span class="material-symbols-outlined text-lg"
+                    >chevron_right</span
+                  >
+                </button>
+              </div>
+            </div>
+            <div class="group cursor-pointer">
+              <div
+                class="relative mb-4 aspect-video overflow-hidden rounded-xl"
+              >
+                <img
+                  alt="Zela Ultra Marathon"
+                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTmzYlPdAL1jbhh2iruPrx3n8QcIhAPu6I0QwRRv8ezkWagniwbEEiXDMQS8k6Shtl4hQx-GTwqVaQo5hk17HsLDKZ25xZayBoTXlwcVRGDq8Gh88ki54M4TjmD7fQUtcJ14chrQfLubgzrQRwqj9OklHeaVlWV4HDwhHu4RzNNTqkFzRx70hK7IUSUKb71oQhMNgN1t16Zyq0c-06UMxuI3N19ZQvMwPVGeUSPFm4qaxJPQ2A1NsSZ2Bze7AJEFQ6PeviYWdb720"
+                />
+                <div class="absolute left-3 top-3 flex gap-2">
+                  <span
+                    class="glass-panel text-on-surface rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                    >Trail</span
+                  >
+                  <span
+                    class="glass-panel text-on-surface rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                    >Caminhada</span
+                  >
+                </div>
+              </div>
+              <h5
+                class="text-on-surface mb-2 font-headline font-bold transition-colors group-hover:text-primary"
+              >
+                Zela Ultra Marathon 2026
+              </h5>
+              <div class="space-y-2">
+                <div
+                  class="text-on-surface-variant flex items-center gap-2 text-xs"
+                >
+                  <span
+                    class="material-symbols-outlined text-sm text-primary-container"
+                    >location_on</span
+                  >
+                  <span>Vouzela, Portugal</span>
+                </div>
+                <div
+                  class="text-on-surface-variant flex items-center gap-2 text-xs"
+                >
+                  <span
+                    class="material-symbols-outlined text-sm text-primary-container"
+                    >calendar_today</span
+                  >
+                  <span>15 de Maio de 2026</span>
+                </div>
+              </div>
+            </div>
+          </div>
           <!-- Participants -->
           <div
-            class="bg-surface-container-lowest rounded-2xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+            class="rounded-2xl bg-surface-container-lowest p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
           >
             <h4
               class="text-on-surface-variant mb-6 text-xs font-bold uppercase tracking-widest"
@@ -668,7 +835,7 @@
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnl5nF0M9s6vJUny_92JjJZW_PV6WmvM9j1gFhPhsKwjZJuDG2kSmU77lfSMhAeV_lyGEWOL-Gy50BCXuf2pODGDY2lcW1zyf_Oxm_OPPgPwHRz7O_0Hljlg05IMJFczLxqjq183HE-qHiv6WLsPJb3XJyYfKQbOyKt1xnVpCXvwcLDrya0m4dp8KJnrV8UofZAKYJBl9QZ0_WuS9L3xE9WsLU2bJl5dtRwGzkmlqEZt8yD7g2A7s2MLoTs_mJg_zZw6btFY8xZDY"
               />
               <div
-                class="bg-primary-container text-on-primary-container flex h-12 w-12 items-center justify-center rounded-full border-4 border-white text-xs font-bold"
+                class="text-on-primary-container flex h-12 w-12 items-center justify-center rounded-full border-4 border-white bg-primary-container text-xs font-bold"
               >
                 +142
               </div>
@@ -685,12 +852,12 @@
           <!-- Share & Save -->
           <div class="flex gap-4">
             <button
-              class="bg-surface-container-lowest text-on-surface flex flex-1 items-center justify-center gap-2 rounded-xl py-4 font-bold shadow-sm transition-all hover:bg-white"
+              class="text-on-surface flex flex-1 items-center justify-center gap-2 rounded-xl bg-surface-container-lowest py-4 font-bold shadow-sm transition-all hover:bg-white"
             >
               <span class="material-symbols-outlined">share</span> Partilhar
             </button>
             <button
-              class="bg-surface-container-lowest text-on-surface flex flex-1 items-center justify-center gap-2 rounded-xl py-4 font-bold shadow-sm transition-all hover:bg-white"
+              class="text-on-surface flex flex-1 items-center justify-center gap-2 rounded-xl bg-surface-container-lowest py-4 font-bold shadow-sm transition-all hover:bg-white"
             >
               <span class="material-symbols-outlined">bookmark</span> Guardar
             </button>
@@ -702,15 +869,10 @@
         <div class="mx-auto max-w-screen-2xl px-8">
           <div class="mb-12 flex items-center justify-between">
             <h2
-              class="font-headline text-on-surface text-5xl font-black tracking-tight"
+              class="text-on-surface font-headline text-5xl font-black tracking-tight"
             >
               Comunidade
             </h2>
-            <button
-              class="primary-gradient text-on-primary rounded-xl px-8 py-3 font-bold shadow-lg transition-opacity hover:opacity-90"
-            >
-              Publicar Foto
-            </button>
           </div>
           <div
             class="mb-12 rounded-[32px] bg-white p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
@@ -724,21 +886,21 @@
               <div class="flex-1">
                 <textarea
                   aria-label="Escrever comentário"
-                  class="text-on-surface-variant placeholder:text-outline-variant font-body min-h-[100px] w-full resize-none border-0 bg-transparent focus:ring-0"
+                  class="text-on-surface-variant font-body min-h-[100px] w-full resize-none border-0 bg-transparent placeholder:text-outline-variant focus:ring-0"
                   placeholder="Partilha a tua experiência ou faz uma pergunta..."
                 ></textarea>
                 <div
-                  class="border-surface-container-high mt-2 flex items-center justify-between border-t pt-4"
+                  class="mt-2 flex items-center justify-between border-t border-surface-container-high pt-4"
                 >
                   <button
-                    class="hover:bg-surface-container-low text-on-surface-variant flex items-center gap-2 rounded-full p-2 transition-colors"
+                    class="text-on-surface-variant flex items-center gap-2 rounded-full p-2 transition-colors hover:bg-surface-container-low"
                     title="Adicionar foto"
                   >
                     <span class="material-symbols-outlined">image</span>
                     <span class="text-sm font-bold">Adicionar Foto</span>
                   </button>
                   <button
-                    class="font-headline rounded-full bg-[#E85D04] px-8 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(232,93,4,0.3)] transition-all hover:opacity-90 active:scale-95"
+                    class="rounded-full bg-[#E85D04] px-8 py-2.5 font-headline text-sm font-bold text-white shadow-[0_4px_12px_rgba(232,93,4,0.3)] transition-all hover:opacity-90 active:scale-95"
                   >
                     Publicar
                   </button>
@@ -749,7 +911,7 @@
           <div class="grid grid-cols-1 items-start gap-8 md:grid-cols-3">
             <!-- User Card 1 -->
             <div
-              class="bg-surface-container-lowest rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+              class="rounded-[32px] bg-surface-container-lowest p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
             >
               <div class="mb-6 flex items-center gap-4">
                 <img
@@ -758,7 +920,7 @@
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx1dsSj3HGAsVkpE9Y_TLrO54EO21XuB1NK0QLWLcJReNna3Xiq41n8WbuRrcp78eZgX-qPLD4XujliLqykL4Xk-PjsheemyNBjUz-Xr_3PBy1ovY-J93JQnUaUgbMM7eUs8RRcjbl1sPwyscQ_Wm0-EHnT07jC1vto7iJY1gTzzLLA4rPbkKuOc6_00Iu0A45Z0Y8j_QoqhIx6f7ANK_Ei0xpHTXQTYBHMNeTvJ2jG4cHC346t-XFlxyHRPZk3Z69ueKP-9F_vbM"
                 />
                 <div>
-                  <h4 class="font-headline text-on-surface font-bold">
+                  <h4 class="text-on-surface font-headline font-bold">
                     Pedro Silva
                   </h4>
                   <p
@@ -794,7 +956,7 @@
             </div>
             <!-- Featured Image Post -->
             <div
-              class="bg-surface-container-lowest overflow-hidden rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+              class="overflow-hidden rounded-[32px] bg-surface-container-lowest shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
             >
               <div class="p-4">
                 <img
@@ -810,7 +972,7 @@
                     class="h-10 w-10 rounded-full object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkI66eVdp41fuHnoJpUbT96ugBsHtAVyyVJx4cmrnWCiQnAPHTC1aEhXjGHjLzdno3weSTHdpsUlXdtqUQM_Xun5iTRRGWhkOO764gLtwlvYANzaBQfgGuPZX9IgyE6sl_pw1ybVj18sJUpFyZDmjG5JHG0QnItLZ-LqN6xNMLH38vnOF7PW6dXA0bbJwHg5dK1mkkyqZ9TiYZADEI6-pB_alJya9lo_owkCwEb1M8NX6KkzgqrmTJOvZASC0SJAX2BxFS_Aytpqs"
                   />
-                  <h4 class="font-headline text-on-surface text-sm font-bold">
+                  <h4 class="text-on-surface font-headline text-sm font-bold">
                     Marta Dias
                   </h4>
                 </div>
@@ -821,7 +983,7 @@
             </div>
             <!-- User Card 2 -->
             <div
-              class="bg-surface-container-lowest rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+              class="rounded-[32px] bg-surface-container-lowest p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
             >
               <div class="mb-6 flex items-center gap-4">
                 <img
@@ -830,7 +992,7 @@
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuC26evvs45Atb1bkmCw9O6i7g3wmbyKnJSROcZ9gPdXZUi6QdyrtNzSmx5adxL9Gv-PbpHurAp_Ry55eZQiaXtDnBgacCXrYXxIfjpBDGma0g-MtPtBh806nxT0VmgDFadpgev4iL1BflUUyynT_rEQn3KredJAcw2A2wOPJckkC0mxBQmSNVPZPC6ro3XbfrN7_KOJ2z3le6n95gOC6ROKdD1nIqy_qN5wh6lW7xnaW-A0TVVCU1763e0KFys6PNhkttxTL0eX0rs"
                 />
                 <div>
-                  <h4 class="font-headline text-on-surface font-bold">
+                  <h4 class="text-on-surface font-headline font-bold">
                     João Ramos
                   </h4>
                   <p
@@ -870,6 +1032,38 @@
         </div>
       </section>
     </main>
+    <!-- Footer -->
+    <footer
+      class="bg-stone-50 font-['Inter'] text-sm tracking-wide dark:bg-stone-950"
+    >
+      <div
+        class="mx-auto flex max-w-screen-2xl flex-col items-center justify-between gap-6 px-8 py-12 md:flex-row"
+      >
+        <div class="text-xl font-bold text-stone-900 dark:text-white">
+          Athlifyr
+        </div>
+        <div class="flex flex-wrap justify-center gap-8">
+          <a
+            class="text-stone-500 underline underline-offset-4 transition-all hover:text-orange-500 dark:text-stone-400 dark:hover:text-orange-400"
+            href="#"
+            >Terms of Service</a
+          >
+          <a
+            class="text-stone-500 underline underline-offset-4 transition-all hover:text-orange-500 dark:text-stone-400 dark:hover:text-orange-400"
+            href="#"
+            >Privacy Policy</a
+          >
+          <a
+            class="text-stone-500 underline underline-offset-4 transition-all hover:text-orange-500 dark:text-stone-400 dark:hover:text-orange-400"
+            href="#"
+            >Support</a
+          >
+        </div>
+        <div class="text-stone-500 dark:text-stone-400">
+          © 2024 Athlifyr. Golden Hour Performance.
+        </div>
+      </div>
+    </footer>
     <script>
       const routeData = {
         trail: {

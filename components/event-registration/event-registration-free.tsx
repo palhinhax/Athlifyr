@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, X, Target } from "lucide-react";
+import { Check, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -51,25 +51,21 @@ export function EventRegistrationFree({
     if (!userParticipation) {
       return (
         <>
-          <Button
+          <button
             onClick={onRegister}
             disabled={isLoading || selectedVariantSoldOut}
-            className="flex-1"
-            size="sm"
+            className="w-full rounded-xl bg-[#E85D04] py-4 font-headline text-base font-bold text-white shadow-[0_8px_24px_rgba(232,93,4,0.2)] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
           >
-            <Check className="mr-2 h-4 w-4" />
             {t("markAsGoing")}
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={onMarkInterested}
             disabled={isLoading}
-            variant="outline"
-            className="flex-1"
-            size="sm"
+            className="text-on-surface flex w-full items-center justify-center gap-2 rounded-xl border-2 border-surface-container-high py-4 text-sm font-bold transition-colors hover:bg-surface-container-low disabled:opacity-50"
           >
-            <Target className="mr-2 h-4 w-4" />
+            <Star className="h-5 w-5" />
             {t("markAsInterested")}
-          </Button>
+          </button>
         </>
       );
     }
@@ -77,40 +73,34 @@ export function EventRegistrationFree({
     if (userParticipation.status === "interested") {
       return (
         <>
-          <Button
+          <button
             onClick={onRegister}
             disabled={isLoading}
-            className="flex-1"
-            size="sm"
+            className="w-full rounded-xl bg-[#E85D04] py-4 font-headline text-base font-bold text-white shadow-[0_8px_24px_rgba(232,93,4,0.2)] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
           >
-            <Check className="mr-2 h-4 w-4" />
             {t("markAsGoing")}
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={onUnregister}
             disabled={isLoading}
-            variant="outline"
-            className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
-            size="sm"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-amber-500 py-4 text-sm font-bold text-amber-600 transition-colors hover:bg-amber-50 disabled:opacity-50 dark:text-amber-400 dark:hover:bg-amber-950"
           >
-            <X className="mr-2 h-4 w-4" />
+            <X className="h-5 w-5" />
             {t("removeInterest")}
-          </Button>
+          </button>
         </>
       );
     }
 
     return (
-      <Button
+      <button
         onClick={onUnregister}
         disabled={isLoading}
-        variant="outline"
-        className="flex-1"
-        size="sm"
+        className="text-on-surface flex w-full items-center justify-center gap-2 rounded-xl border-2 border-surface-container-high py-4 text-sm font-bold transition-colors hover:bg-surface-container-low disabled:opacity-50"
       >
-        <X className="mr-2 h-4 w-4" />
+        <X className="h-5 w-5" />
         {t("cancelParticipation")}
-      </Button>
+      </button>
     );
   };
 
@@ -197,7 +187,7 @@ export function EventRegistrationFree({
       {userParticipation?.status === "interested" && (
         <div className="rounded-md bg-amber-500/10 p-3 text-sm">
           <div className="mb-1 flex items-center gap-2 font-medium text-amber-600 dark:text-amber-400">
-            <Target className="h-4 w-4" />
+            <Star className="h-4 w-4" />
             {t("markedAsInterested")}
           </div>
           <p className="text-muted-foreground">{t("interestedDesc")}</p>
@@ -205,9 +195,7 @@ export function EventRegistrationFree({
       )}
 
       {/* Action Buttons */}
-      {!allVariantsSoldOut && (
-        <div className="flex gap-3">{renderActionButtons()}</div>
-      )}
+      {!allVariantsSoldOut && renderActionButtons()}
     </div>
   );
 }

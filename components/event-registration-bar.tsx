@@ -48,7 +48,7 @@ export function EventRegistrationBar({
   };
 
   return (
-    <div className="sticky top-0 z-40 border-b border-border/50 bg-background/80 shadow-sm backdrop-blur-md">
+    <div className="sticky top-16 z-40 border-b border-surface-container bg-surface-container-lowest/80 shadow-sm backdrop-blur-md">
       <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3 sm:px-8 sm:py-4">
         <div className="hidden md:block">
           {registrationDeadline && (
@@ -64,7 +64,7 @@ export function EventRegistrationBar({
         </div>
         <button
           onClick={handleCTAClick}
-          className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3 text-lg font-bold text-primary-foreground shadow-lg transition-transform active:scale-95 sm:px-12 sm:py-4"
+          className="primary-gradient inline-flex items-center gap-2 rounded-xl px-8 py-3 font-headline text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgba(232,93,4,0.2)] transition-transform active:scale-95 sm:px-12 sm:py-4"
         >
           {externalUrl && !hasRegistrations ? (
             <>

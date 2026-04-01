@@ -50,13 +50,19 @@
     "moreInfo": "Más Información",
     "backToEvents": "Volver a Eventos",
     "aboutEvent": "Sobre el Evento",
+    "route": {
+      "title": "Recorrido",
+      "elevation": "Elevación",
+      "start": "Salida",
+      "finish": "Meta"
+    },
     "faqTitle": "Preguntas Frecuentes",
     "faqShowAll": "Ver todas las {count} preguntas",
     "faqShowLess": "Mostrar menos",
     "relatedEvents": "Eventos Relacionados",
     "readyToParticipate": "¿Listo para participar?",
-    "moreInfoDescription": "Para más información e inscripción, visita el sitio web oficial del evento.",
-    "goToWebsite": "Ir al Sitio Web Oficial",
+    "moreInfoDescription": "Para más información e inscripción, visita el sitio web del evento.",
+    "goToWebsite": "Ir al Sitio Web",
     "manage": "Gestionar evento",
     "registrationBar": {
       "pricesFrom": "Precios desde {price}",
@@ -64,7 +70,32 @@
     },
     "sidebar": {
       "whoIsGoing": "Quién va",
-      "save": "Guardar"
+      "inviteFriends": "Invitar Amigos",
+      "friendsSignedUpSuffix": "y otros {count} amigos tuyos ya se inscribieron.",
+      "friendSignedUpSuffix": "ya se inscribió.",
+      "share": "Compartir",
+      "save": "Guardar",
+      "willYouParticipate": "¿Vas a participar?",
+      "chooseDistance": "Elegir Distancia",
+      "markAsGoing": "Marcar como Voy",
+      "interested": "Interesado"
+    },
+    "inviteModal": {
+      "title": "Invitar Amigos a {event}",
+      "searchPlaceholder": "Buscar amigos por nombre...",
+      "recentConnections": "Conexiones Recientes",
+      "selectAll": "Seleccionar Todos",
+      "deselectAll": "Deseleccionar Todos",
+      "noResults": "No se encontraron amigos",
+      "noFriends": "Aún no tienes amigos para invitar",
+      "eventLink": "Enlace Único del Evento",
+      "copy": "Copiar",
+      "copied": "¡Copiado!",
+      "quickShare": "Compartir Rápido",
+      "sendInvites": "Enviar {count} Invitación(es)",
+      "selectFriends": "Selecciona amigos para invitar",
+      "sending": "Enviando...",
+      "sent": "¡Invitaciones enviadas! ✓"
     },
     "community": "Comunidad",
     "locationTitle": "Ubicación",
@@ -77,6 +108,7 @@
     "participantsCount": "{count} participantes",
     "selectVariant": "Selecciona una variante",
     "noPosts": "Aún no hay publicaciones. ¡Sé el primero en compartir algo!",
+    "viewMoreComments": "Ver más comentarios",
     "addPhoto": "Agregar Foto",
     "addMedia": "Foto/Vídeo",
     "publish": "Publicar",
@@ -361,7 +393,9 @@
       "mist": "Neblina",
       "fog": "Niebla",
       "haze": "Bruma",
-      "thunderstorm": "Tormenta"
+      "thunderstorm": "Tormenta",
+      "wind": "Viento",
+      "humidity": "Humedad"
     },
     "giveaway": {
       "badge": "Sorteo",

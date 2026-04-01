@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/event-utils";
 import type { Metadata } from "next";
-import { EventRegistration } from "@/components/event-registration";
-import { EventPastParticipation } from "@/components/event-past-participation";
 import { GiveawayCard } from "@/components/giveaway-card";
 import { auth } from "@/lib/auth";
 import {
@@ -16,14 +14,15 @@ import { EventHeader } from "@/components/event-header";
 import { EventVariantsList } from "@/components/event-variants-list";
 import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
-import { EventLocationMobile } from "@/components/event-location-mobile";
-import { EventWeatherMobile } from "@/components/event-weather-mobile";
+import { EventLocationCard } from "@/components/event-location-card";
+import { EventWeather } from "@/components/event-weather";
 import { EventMainContent } from "@/components/event-main-content";
 import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
 import { LiveRaceSection } from "@/components/live-race-section";
 import { LiveRaceCheckinBanner } from "@/components/live-race-checkin-banner";
 import { EventRegistrationBar } from "@/components/event-registration-bar";
+import { EventRouteSection } from "@/components/event-route-section";
 import { Language, Prisma } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -417,7 +416,7 @@ export default async function EventPage({ params }: PageProps) {
       : null;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Structured Data for SEO */}
       <StructuredData data={sportsEventSchema} />
       {faqSchema && <StructuredData data={faqSchema} />}
@@ -447,9 +446,9 @@ export default async function EventPage({ params }: PageProps) {
       />
 
       {/* Main Content Grid */}
-      <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-8 px-4 py-12 sm:px-8 lg:grid-cols-12 lg:gap-12 lg:py-16">
+      <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-12 px-4 py-16 sm:px-8 lg:grid-cols-12 lg:gap-12">
         {/* Left Column */}
-        <div className="min-w-0 space-y-12 lg:col-span-8">
+        <div className="min-w-0 space-y-16 lg:col-span-8">
           {/* Check-in Banner — top-of-page highlight when CHECK_IN_OPEN */}
           {event.hasLiveRace && event.liveStatus === "CHECK_IN_OPEN" && (
             <LiveRaceCheckinBanner />
@@ -461,20 +460,9 @@ export default async function EventPage({ params }: PageProps) {
           {/* About the Event — Description */}
           <EventMainContent
             description={event.description}
-            pricingPhases={event.pricingPhases}
-            variants={event.variants.map((v) => ({
-              id: v.id,
-              name: v.name,
-            }))}
-            externalUrl={event.externalUrl}
             stravaRouteEmbed={event.stravaRouteEmbed}
-            cancelled={event.cancelled}
-            hasRegistrations={event.hasRegistrations}
             translations={{
               aboutEvent: t("aboutEvent"),
-              readyToParticipate: t("readyToParticipate"),
-              moreInfoDescription: t("moreInfoDescription"),
-              goToWebsite: t("goToWebsite"),
             }}
           />
 
@@ -489,6 +477,18 @@ export default async function EventPage({ params }: PageProps) {
             eventId={event.id}
           />
 
+          {/* Route / Percurso Section */}
+          <EventRouteSection
+            eventId={event.id}
+            variants={event.variants.map((v) => ({
+              id: v.id,
+              name: v.name,
+              distanceKm: v.distanceKm,
+              elevationGainM: v.elevationGainM,
+            }))}
+            stravaRouteEmbed={event.stravaRouteEmbed}
+          />
+
           {/* LiveRace Section — visible when hasLiveRace (non check-in) */}
           {event.hasLiveRace && event.liveStatus !== "CHECK_IN_OPEN" && (
             <LiveRaceSection eventId={event.id} dbStatus={event.liveStatus} />
@@ -496,7 +496,7 @@ export default async function EventPage({ params }: PageProps) {
 
           {/* Location Map - Mobile Only */}
           {event.latitude && event.longitude && (
-            <EventLocationMobile
+            <EventLocationCard
               latitude={event.latitude}
               longitude={event.longitude}
               title={event.title}
@@ -504,65 +504,14 @@ export default async function EventPage({ params }: PageProps) {
               country={event.country}
               googleMapsUrl={event.googleMapsUrl}
               sportTypes={event.sportTypes}
+              mapHeightClass="aspect-video"
+              className="lg:hidden"
             />
           )}
 
           {/* Weather Forecast - Mobile Only */}
           {event.weather && event.weather.length > 0 && (
-            <EventWeatherMobile
-              weather={event.weather}
-              isPastEvent={isPastEvent}
-            />
-          )}
-
-          {/* Event Registration */}
-          {!event.cancelled && (
-            <div id="event-registration">
-              {isPastEvent ? (
-                <EventPastParticipation
-                  eventId={event.id}
-                  variants={event.variants.map((v) => ({
-                    id: v.id,
-                    name: v.name,
-                    distanceKm: v.distanceKm,
-                    startDate: v.startDate,
-                    startTime: v.startTime,
-                  }))}
-                />
-              ) : (
-                <EventRegistration
-                  eventId={event.id}
-                  eventSlug={event.slug}
-                  eventTitle={event.title}
-                  hasRegistrations={event.hasRegistrations}
-                  registrationFieldSettings={
-                    (event.registrationFieldSettings as Record<
-                      string,
-                      string
-                    >) ?? {}
-                  }
-                  variants={event.variants.map((v) => ({
-                    id: v.id,
-                    name: v.name,
-                    distanceKm: v.distanceKm,
-                    startDate: v.startDate,
-                    startTime: v.startTime,
-                    maxParticipants: v.maxParticipants,
-                    teamSize: v.teamSize,
-                    registrationCount:
-                      v._count.registrations + v._count.participations,
-                    pricingPhases: v.pricingPhases.map((p) => ({
-                      id: p.id,
-                      name: p.name,
-                      price: p.price,
-                      currency: p.currency,
-                      startDate: p.startDate,
-                      endDate: p.endDate,
-                    })),
-                  }))}
-                />
-              )}
-            </div>
+            <EventWeather weather={event.weather} isPastEvent={isPastEvent} />
           )}
 
           {/* FAQ Section */}
@@ -595,6 +544,7 @@ export default async function EventPage({ params }: PageProps) {
         <div className="lg:col-span-4">
           <EventSidebar
             event={{
+              id: event.id,
               title: event.title,
               slug: event.slug,
               imageUrl: event.imageUrl,
@@ -607,8 +557,39 @@ export default async function EventPage({ params }: PageProps) {
               googleMapsUrl: event.googleMapsUrl,
               stravaRouteEmbed: event.stravaRouteEmbed,
               sportTypes: event.sportTypes,
+              cancelled: event.cancelled,
               featuredVenue: event.featuredVenue,
             }}
+            variants={event.variants.map((v) => ({
+              id: v.id,
+              name: v.name,
+              distanceKm: v.distanceKm,
+              startDate: v.startDate,
+              startTime: v.startTime,
+            }))}
+            hasRegistrations={event.hasRegistrations}
+            registrationVariants={event.variants.map((v) => ({
+              id: v.id,
+              name: v.name,
+              distanceKm: v.distanceKm,
+              startDate: v.startDate,
+              startTime: v.startTime,
+              maxParticipants: v.maxParticipants,
+              registrationCount:
+                v._count.registrations + v._count.participations,
+              pricingPhases: v.pricingPhases.map((p) => ({
+                id: p.id,
+                name: p.name,
+                price: p.price,
+                currency: p.currency,
+                startDate: p.startDate,
+                endDate: p.endDate,
+              })),
+              teamSize: v.teamSize,
+            }))}
+            registrationFieldSettings={
+              (event.registrationFieldSettings as Record<string, string>) ?? {}
+            }
             weather={event.weather}
             friendsGoing={friendsGoing}
             friendsGoingCount={friendsGoingCount}
@@ -619,7 +600,7 @@ export default async function EventPage({ params }: PageProps) {
       </div>
 
       {/* Community Section - Full Width */}
-      <div className="border-t bg-muted/30">
+      <div className="bg-surface-container-low">
         <div className="mx-auto max-w-screen-2xl px-4 sm:px-8">
           <EventCommunity
             eventId={event.id}

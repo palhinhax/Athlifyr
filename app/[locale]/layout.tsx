@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "../globals.css";
@@ -46,6 +46,12 @@ const inter = Inter({
   subsets: ["latin", "latin-ext"],
   variable: "--font-inter",
   display: "swap",
+});
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-headline",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 const geistMono = localFont({
   src: "../fonts/GeistMonoVF.woff",
@@ -208,7 +214,7 @@ export default async function RootLayout({
         <StructuredData data={softwareAppSchema} />
       </head>
       <body
-        className={`${inter.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}
+        className={`${inter.variable} ${plusJakartaSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
         {/* Skip to main content: must be the very first focusable element (WCAG 2.4.1) */}
         <a

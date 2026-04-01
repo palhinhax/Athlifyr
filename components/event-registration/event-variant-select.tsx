@@ -26,13 +26,13 @@ export function EventVariantSelect({
 
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium">
+      <label className="text-on-surface-variant mb-2 block text-xs font-bold uppercase tracking-tight">
         {t("chooseVariant")}
       </label>
       <select
         value={selectedVariantId}
         onChange={(e) => onVariantChange(e.target.value)}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="text-on-surface w-full rounded-xl border-2 border-surface-container-high bg-surface-container-lowest px-4 py-3 text-sm font-bold focus:border-primary focus:outline-none focus:ring-0 disabled:opacity-50"
         disabled={isLoading}
       >
         <option value="">{t("selectVariantPlaceholder")}</option>

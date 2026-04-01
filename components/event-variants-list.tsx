@@ -171,10 +171,10 @@ export function EventVariantsList({
       {/* Bento-style variant cards */}
       {standardVariants.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-6 text-2xl font-extrabold sm:text-3xl">
+          <h2 className="mb-8 font-headline text-2xl font-extrabold sm:text-3xl">
             {labels.title}
           </h2>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-6">
             {standardVariants.map((variant) => {
               const isSoldOut =
                 variant.maxParticipants != null &&
@@ -184,13 +184,13 @@ export function EventVariantsList({
               return (
                 <div
                   key={variant.id}
-                  className={`group flex flex-col justify-between gap-6 rounded-xl border bg-card p-6 shadow-sm transition-all hover:shadow-md sm:flex-row sm:p-8 ${
+                  className={`group flex flex-col justify-between gap-6 rounded-xl bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] sm:flex-row sm:p-8 ${
                     isSoldOut ? "opacity-60" : ""
                   }`}
                 >
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                         {getVariantIcon(variant.name)}
                       </div>
                       <h3 className="text-xl font-bold sm:text-2xl">

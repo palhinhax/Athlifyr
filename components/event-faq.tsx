@@ -36,7 +36,7 @@ function FAQItemComponent({
     <Collapsible
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="rounded-xl bg-muted/50"
+      className="rounded-xl bg-surface-container-low"
     >
       <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between p-5 text-left font-bold transition-colors hover:text-primary sm:p-6">
         {item.question}
@@ -67,11 +67,11 @@ export function EventFAQ({ items, translations }: EventFAQProps) {
 
   return (
     <section className="mb-8">
-      <h2 className="mb-6 text-2xl font-extrabold sm:text-3xl">
+      <h2 className="mb-8 font-headline text-2xl font-extrabold sm:text-3xl">
         {translations.title}
       </h2>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {visibleItems.map((item, index) => (
           <FAQItemComponent key={index} item={item} defaultOpen={index === 0} />
         ))}

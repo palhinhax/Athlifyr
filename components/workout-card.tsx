@@ -38,25 +38,87 @@ import { Link } from "@/i18n/routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import type { WorkoutWithBlocks } from "@/types/workout";
-import { BLOCK_TYPE_INFO } from "@/types/workout";
 import { useUserVenues } from "@/hooks/use-user-venues";
 import { AssignWorkoutToSessionsDialog } from "@/components/assign-workout-to-sessions-dialog";
 import { WorkoutPreviewDialog } from "@/components/workout-preview-dialog";
 import type { WorkoutBlockType } from "@prisma/client";
+import Image from "next/image";
 
-// Gradient backgrounds per block type for the premium card look
-const BLOCK_TYPE_GRADIENTS: Record<WorkoutBlockType, string> = {
-  WARMUP: "from-orange-600 via-amber-700 to-orange-900",
-  STRENGTH: "from-red-700 via-rose-800 to-red-950",
-  AMRAP: "from-blue-700 via-indigo-800 to-blue-950",
-  EMOM: "from-purple-700 via-violet-800 to-purple-950",
-  FOR_TIME: "from-yellow-600 via-amber-700 to-yellow-900",
-  TABATA: "from-green-700 via-emerald-800 to-green-950",
-  CHIPPER: "from-indigo-700 via-blue-800 to-indigo-950",
-  REST: "from-slate-600 via-gray-700 to-slate-900",
-  COOLDOWN: "from-teal-700 via-cyan-800 to-teal-950",
-  SKILL: "from-pink-700 via-rose-800 to-pink-950",
+// Workout images mapped to block types (primary match)
+const BLOCK_TYPE_IMAGES: Record<WorkoutBlockType, string[]> = {
+  WARMUP: [
+    "/images/workouts/running.jpg",
+    "/images/workouts/sprinting.jpg",
+    "/images/workouts/jumping.jpg",
+  ],
+  STRENGTH: [
+    "/images/workouts/strength.jpg",
+    "/images/workouts/deadlift.jpg",
+    "/images/workouts/pullups.jpg",
+    "/images/workouts/gym-dark.jpg",
+  ],
+  AMRAP: [
+    "/images/workouts/crossfit.jpg",
+    "/images/workouts/battle-ropes.jpg",
+    "/images/workouts/hiit.jpg",
+  ],
+  EMOM: [
+    "/images/workouts/hiit.jpg",
+    "/images/workouts/battle-ropes.jpg",
+    "/images/workouts/gym-dark.jpg",
+  ],
+  FOR_TIME: [
+    "/images/workouts/crossfit.jpg",
+    "/images/workouts/sprinting.jpg",
+    "/images/workouts/rowing.jpg",
+  ],
+  TABATA: [
+    "/images/workouts/kettlebell.jpg",
+    "/images/workouts/boxing.jpg",
+    "/images/workouts/hiit.jpg",
+  ],
+  CHIPPER: [
+    "/images/workouts/kettlebell.jpg",
+    "/images/workouts/battle-ropes.jpg",
+    "/images/workouts/gym-dark.jpg",
+  ],
+  REST: ["/images/workouts/recovery.jpg", "/images/workouts/yoga-dark.jpg"],
+  COOLDOWN: ["/images/workouts/recovery.jpg", "/images/workouts/yoga-dark.jpg"],
+  SKILL: [
+    "/images/workouts/endurance.jpg",
+    "/images/workouts/rowing.jpg",
+    "/images/workouts/pullups.jpg",
+  ],
 };
+
+// All available workout images for pseudo-random selection
+const WORKOUT_IMAGES = [
+  "/images/workouts/strength.jpg",
+  "/images/workouts/crossfit.jpg",
+  "/images/workouts/running.jpg",
+  "/images/workouts/recovery.jpg",
+  "/images/workouts/kettlebell.jpg",
+  "/images/workouts/endurance.jpg",
+  "/images/workouts/hiit.jpg",
+  "/images/workouts/boxing.jpg",
+  "/images/workouts/rowing.jpg",
+  "/images/workouts/gym-dark.jpg",
+  "/images/workouts/sprinting.jpg",
+  "/images/workouts/pullups.jpg",
+  "/images/workouts/yoga-dark.jpg",
+  "/images/workouts/battle-ropes.jpg",
+  "/images/workouts/deadlift.jpg",
+  "/images/workouts/jumping.jpg",
+];
+
+// Simple hash to get a consistent pseudo-random index from a workout id
+function hashIndex(id: string, length: number): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % length;
+}
 
 interface WorkoutCardProps {
   workout: WorkoutWithBlocks & { isSaved?: boolean };
@@ -100,12 +162,11 @@ export function WorkoutCard({
     blockTypes.find(
       (t) => t !== "WARMUP" && t !== "COOLDOWN" && t !== "REST"
     ) || blockTypes[0];
-  const gradient = primaryType
-    ? BLOCK_TYPE_GRADIENTS[primaryType]
-    : "from-slate-700 via-slate-800 to-slate-950";
-
-  // Get the emoji for the primary block type
-  const primaryEmoji = primaryType ? BLOCK_TYPE_INFO[primaryType].icon : "💪";
+  // Pick image: use type-based array with hash for variety within the type
+  const typeImages = primaryType
+    ? BLOCK_TYPE_IMAGES[primaryType]
+    : WORKOUT_IMAGES;
+  const cardImage = typeImages[hashIndex(workout.id, typeImages.length)];
 
   const handleDelete = () => {
     setShowDeleteDialog(false);
@@ -141,16 +202,18 @@ export function WorkoutCard({
 
   return (
     <>
-      <div className="group relative flex h-[420px] flex-col overflow-hidden rounded-2xl shadow-lg transition-shadow duration-300 hover:shadow-xl">
-        {/* Gradient background */}
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-700 group-hover:scale-110`}
+      <div className="group relative flex h-[420px] flex-col overflow-hidden rounded-2xl bg-slate-900 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+        {/* Background image */}
+        <Image
+          src={cardImage}
+          alt=""
+          fill
+          className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-110"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
 
-        {/* Decorative large emoji */}
-        <div className="absolute right-4 top-6 select-none text-7xl opacity-15 transition-transform duration-700 group-hover:scale-110">
-          {primaryEmoji}
-        </div>
+        {/* Dark gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
 
         {/* Top action bar */}
         <div className="relative z-10 flex items-center justify-between p-4">

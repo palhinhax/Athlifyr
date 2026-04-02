@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/event-utils";
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
 import { FeedSidebar } from "@/components/feed-sidebar";
-import { FeedStories } from "@/components/feed-stories";
+// import { FeedStories } from "@/components/feed-stories";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
@@ -283,19 +283,19 @@ export default async function FeedPage({
     : [];
 
   // Story users: users who recently posted with images
-  const storyUsers = await prisma.user.findMany({
-    where: {
-      posts: {
-        some: {
-          imageUrl: { not: null },
-          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-        },
-      },
-      ...(isAuthenticated ? { id: { not: session.user.id } } : {}),
-    },
-    select: { id: true, name: true, image: true },
-    take: 8,
-  });
+  // const storyUsers = await prisma.user.findMany({
+  //   where: {
+  //     posts: {
+  //       some: {
+  //         imageUrl: { not: null },
+  //         createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+  //       },
+  //     },
+  //     ...(isAuthenticated ? { id: { not: session.user.id } } : {}),
+  //   },
+  //   select: { id: true, name: true, image: true },
+  //   take: 8,
+  // });
 
   return (
     <div className="min-h-screen">
@@ -304,13 +304,13 @@ export default async function FeedPage({
           {/* Feed Column */}
           <div className="space-y-6 lg:col-span-8">
             {/* Stories */}
-            <FeedStories
+            {/* <FeedStories
               currentUser={currentUser}
               storyUsers={storyUsers.map((u) => ({
                 ...u,
                 hasUnseenStory: true,
               }))}
-            />
+            /> */}
 
             {/* Create Post */}
             {isAuthenticated && currentUser && (

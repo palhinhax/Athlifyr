@@ -258,14 +258,19 @@ export default async function FeedPage({
     take: 4,
   });
 
-  // Get IDs of users the current user already follows
+  // Get IDs of users the current user already follows (bidirectional)
   const followingIds = isAuthenticated
     ? (
         await prisma.friendship.findMany({
-          where: { senderId: session.user.id, status: "ACCEPTED" },
-          select: { receiverId: true },
+          where: {
+            OR: [
+              { senderId: session.user.id, status: "ACCEPTED" },
+              { receiverId: session.user.id, status: "ACCEPTED" },
+            ],
+          },
+          select: { senderId: true, receiverId: true },
         })
-      ).map((f) => f.receiverId)
+      ).map((f) => (f.senderId === session.user.id ? f.receiverId : f.senderId))
     : [];
 
   // Fetch suggested users for sidebar (exclude self and already-followed)

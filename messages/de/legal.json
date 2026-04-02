@@ -124,9 +124,24 @@
       }
     },
     "terms": {
+      "badge": "Allgemeine Geschäftsbedingungen",
       "title": "Nutzungsbedingungen",
       "lastUpdated": "Letzte Aktualisierung: {date}",
       "intro": "Durch die Nutzung von Athlifyr akzeptieren Sie diese Bedingungen. Lesen Sie sie sorgfältig.",
+      "summary": {
+        "title": "Kurzzusammenfassung",
+        "excellence": "Engagement für Exzellenz",
+        "excellenceDesc": "Wir garantieren die besten Praktiken und Methoden für unsere Gemeinschaft.",
+        "security": "Datensicherheit",
+        "securityDesc": "Ihre Daten sind geschützt und verschlüsselt.",
+        "community": "Respekt in der Gemeinschaft",
+        "communityDesc": "Null Toleranz für toxisches Verhalten."
+      },
+      "questions": {
+        "title": "Fragen?",
+        "description": "Unser Support-Team steht Ihnen gerne zur Verfügung.",
+        "cta": "Support kontaktieren"
+      },
       "sections": {
         "acceptance": {
           "title": "1. Annahme der Bedingungen",

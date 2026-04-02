@@ -40,6 +40,7 @@ const sectionKeys = [
   "changes",
   "law",
   "contact",
+  "credits",
 ] as const;
 
 export default async function TermsPage({ params }: TermsPageProps) {
@@ -91,6 +92,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
               return (
                 <section
                   key={key}
+                  id={key}
                   className={`rounded-xl p-8 md:p-10 ${
                     isEven
                       ? "bg-card shadow-[0_8px_32px_rgba(0,0,0,0.04)]"

@@ -190,6 +190,10 @@
         "contact": {
           "title": "12. Kontakt",
           "content": "Bei Fragen zu diesen Bedingungen kontaktieren Sie uns über die Kontaktseite."
+        },
+        "credits": {
+          "title": "13. Athlifyr-Guthaben",
+          "content": "Athlifyr-Guthaben sind Plattformguthaben zur Nutzung innerhalb des Athlifyr-Ökosystems. Sie sind kein elektronisches Geld, kein Bankkonto und kein Finanzprodukt. Guthaben können nicht übertragen, abgehoben oder außerhalb der Plattform verwendet werden."
         }
       }
     },

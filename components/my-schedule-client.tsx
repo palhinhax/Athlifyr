@@ -549,7 +549,7 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
                     : format(selectedDay, "EEEE", { locale: dateLocale })}
                 </p>
                 <h2 className="font-headline text-2xl font-extrabold">
-                  {format(selectedDay, "d 'de' MMMM", { locale: dateLocale })}
+                  {format(selectedDay, "d MMMM", { locale: dateLocale })}
                 </h2>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">

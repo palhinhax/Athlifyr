@@ -190,6 +190,10 @@
         "contact": {
           "title": "12. Contact",
           "content": "For questions about these terms, contact us through the contact page."
+        },
+        "credits": {
+          "title": "13. Athlifyr Credits",
+          "content": "Athlifyr Credits are platform credits for use within the Athlifyr ecosystem. They are not electronic money, a bank account, or a financial product. Credits cannot be transferred, withdrawn, or used outside the platform."
         }
       }
     },

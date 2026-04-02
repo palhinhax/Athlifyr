@@ -190,6 +190,10 @@
         "contact": {
           "title": "12. Contact",
           "content": "Pour les questions concernant ces conditions, contactez-nous via la page de contact."
+        },
+        "credits": {
+          "title": "13. Crédits Athlifyr",
+          "content": "Les Crédits Athlifyr sont des crédits de plateforme à utiliser au sein de l'écosystème Athlifyr. Ce ne sont pas de la monnaie électronique, un compte bancaire ou un produit financier. Les crédits ne peuvent pas être transférés, retirés ou utilisés en dehors de la plateforme."
         }
       }
     },

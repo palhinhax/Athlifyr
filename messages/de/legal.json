@@ -124,9 +124,24 @@
       }
     },
     "terms": {
+      "badge": "Allgemeine Geschäftsbedingungen",
       "title": "Nutzungsbedingungen",
       "lastUpdated": "Letzte Aktualisierung: {date}",
       "intro": "Durch die Nutzung von Athlifyr akzeptieren Sie diese Bedingungen. Lesen Sie sie sorgfältig.",
+      "summary": {
+        "title": "Kurzzusammenfassung",
+        "excellence": "Engagement für Exzellenz",
+        "excellenceDesc": "Wir garantieren die besten Praktiken und Methoden für unsere Gemeinschaft.",
+        "security": "Datensicherheit",
+        "securityDesc": "Ihre Daten sind geschützt und verschlüsselt.",
+        "community": "Respekt in der Gemeinschaft",
+        "communityDesc": "Null Toleranz für toxisches Verhalten."
+      },
+      "questions": {
+        "title": "Fragen?",
+        "description": "Unser Support-Team steht Ihnen gerne zur Verfügung.",
+        "cta": "Support kontaktieren"
+      },
       "sections": {
         "acceptance": {
           "title": "1. Annahme der Bedingungen",
@@ -175,6 +190,10 @@
         "contact": {
           "title": "12. Kontakt",
           "content": "Bei Fragen zu diesen Bedingungen kontaktieren Sie uns über die Kontaktseite."
+        },
+        "credits": {
+          "title": "13. Athlifyr-Guthaben",
+          "content": "Athlifyr-Guthaben sind Plattformguthaben zur Nutzung innerhalb des Athlifyr-Ökosystems. Sie sind kein elektronisches Geld, kein Bankkonto und kein Finanzprodukt. Guthaben können nicht übertragen, abgehoben oder außerhalb der Plattform verwendet werden."
         }
       }
     },

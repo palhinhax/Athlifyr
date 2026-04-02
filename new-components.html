@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Athlifyr Elite Schedule Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#5a3b00",
+              "on-tertiary-container": "#4e3300",
+              "background": "#f5f6f7",
+              "on-surface": "#2c2f30",
+              "tertiary-dim": "#6c4900",
+              "surface-container-highest": "#dadddf",
+              "secondary-dim": "#833a00",
+              "tertiary-fixed": "#f7ad1e",
+              "surface-dim": "#d1d5d7",
+              "secondary-fixed-dim": "#ffb286",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#853b00",
+              "inverse-surface": "#0c0f10",
+              "outline": "#757778",
+              "on-secondary-fixed": "#592500",
+              "surface-variant": "#dadddf",
+              "on-tertiary-fixed": "#321f00",
+              "on-secondary": "#fff0e9",
+              "secondary-container": "#ffc5a6",
+              "primary-fixed-dim": "#f66714",
+              "tertiary-fixed-dim": "#e7a006",
+              "tertiary-container": "#f7ad1e",
+              "tertiary": "#7c5400",
+              "primary-fixed": "#ff7936",
+              "on-error": "#ffefee",
+              "surface-tint": "#9e3c00",
+              "on-surface-variant": "#595c5d",
+              "surface-container-high": "#e0e3e4",
+              "on-background": "#2c2f30",
+              "outline-variant": "#abadae",
+              "primary": "#E85D04",
+              "on-primary-fixed-variant": "#511b00",
+              "error-container": "#fb5151",
+              "on-secondary-container": "#773400",
+              "error-dim": "#9f0519",
+              "on-primary-container": "#411400",
+              "surface-container": "#e6e8ea",
+              "surface": "#f5f6f7",
+              "on-tertiary": "#fff0e0",
+              "on-primary-fixed": "#000000",
+              "error": "#b31b25",
+              "primary-container": "#ff7936",
+              "on-error-container": "#570008",
+              "secondary-fixed": "#ffc5a6",
+              "secondary": "#964300",
+              "on-primary": "#fff0ea",
+              "inverse-on-surface": "#9b9d9e",
+              "surface-container-low": "#eff1f2",
+              "inverse-primary": "#fd6c1a",
+              "surface-bright": "#f5f6f7",
+              "primary-dim": "#8b3400"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+            boxShadow: {
+              'sunlit': '0 20px 32px -8px rgba(232, 93, 4, 0.08), 0 8px 16px -4px rgba(0, 0, 0, 0.03)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-white/90 backdrop-blur-md fixed top-0 w-full z-50 shadow-sm border-b border-gray-100">
+<div class="flex justify-between items-center px-4 h-16 max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary">
+<img class="w-full h-full object-cover" data-alt="Close up portrait of a determined male athlete with sweat on brow, high contrast athletic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCk9ZjL7Jg_5WmNQbrHIBZHO5ofXo-uibmfAGBakxXSAPLzbEW1Q6r0FcLMvKNnPPNzM40EtbWdQ25rbWg5p68Lj4JTCqSKTTTjgJnTDtezfp_2TuQmrWcvKLljosPNNeUmKQbUeJ5a3ScRGz30svk75vb8zcfgqarTlE9FNQRLebtGRQDPjr_Mb739FFiya-GP5ax8i-v-XSv_5AE-Yu46jN5YfCR30nwoLbkxm6SL5mLsMGL4G9-S417swE8VkfqZgamQQlHJEtk"/>
+</div>
+<span class="text-xl font-extrabold tracking-tight text-primary font-headline">AthletePro</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-slate-500" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-20 pb-32 px-4 space-y-8">
+<!-- My Schedule Title Section -->
+<section class="mt-4">
+<h1 class="font-headline font-bold text-2xl text-on-background tracking-tight">My Schedule</h1>
+<p class="text-on-surface-variant text-sm">Stay on track with your elite performance goals.</p>
+</section>
+<!-- Compact Calendar Grid -->
+<section class="bg-white rounded-2xl p-4 shadow-sunlit">
+<div class="flex justify-between items-center mb-4">
+<h2 class="font-headline font-bold text-lg">April 2024</h2>
+<div class="flex gap-2">
+<button class="p-1 rounded-lg hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="p-1 rounded-lg hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center mb-2">
+<span class="text-[10px] font-bold text-outline uppercase tracking-wider">Mo</span>
+<span class="text-[10px] font-bold text-outline uppercase tracking-wider">Tu</span>
+<span class="text-[10px] font-bold text-outline uppercase tracking-wider">We</span>
+<span class="text-[10px] font-bold text-outline uppercase tracking-wider">Th</span>
+<span class="text-[10px] font-bold text-outline uppercase tracking-wider">Fr</span>
+<span class="text-[10px] font-bold text-outline uppercase tracking-wider">Sa</span>
+<span class="text-[10px] font-bold text-outline uppercase tracking-wider">Su</span>
+</div>
+<div class="grid grid-cols-7 gap-1">
+<div class="aspect-square flex items-center justify-center text-sm text-outline-variant">1</div>
+<div class="aspect-square flex items-center justify-center text-sm font-bold bg-primary text-white rounded-xl shadow-md">2</div>
+<div class="aspect-square flex items-center justify-center text-sm">3</div>
+<div class="aspect-square flex items-center justify-center text-sm">4</div>
+<div class="aspect-square flex items-center justify-center text-sm">5</div>
+<div class="aspect-square flex items-center justify-center text-sm font-semibold relative">
+                    6 <div class="absolute bottom-1 w-1 h-1 bg-primary rounded-full"></div>
+</div>
+<div class="aspect-square flex items-center justify-center text-sm font-semibold relative">
+                    7 <div class="absolute bottom-1 w-1 h-1 bg-primary rounded-full"></div>
+</div>
+<!-- Row 2 snippet -->
+<div class="aspect-square flex items-center justify-center text-sm">8</div>
+<div class="aspect-square flex items-center justify-center text-sm">9</div>
+<div class="aspect-square flex items-center justify-center text-sm">10</div>
+<div class="aspect-square flex items-center justify-center text-sm">11</div>
+<div class="aspect-square flex items-center justify-center text-sm">12</div>
+<div class="aspect-square flex items-center justify-center text-sm">13</div>
+<div class="aspect-square flex items-center justify-center text-sm">14</div>
+</div>
+</section>
+<!-- Daily Agenda Timeline -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<div>
+<h3 class="font-headline font-bold text-xl">Daily Agenda</h3>
+<p class="text-sm text-outline font-medium">Today, April 2nd</p>
+</div>
+<button class="text-primary text-xs font-bold uppercase tracking-widest">View Full</button>
+</div>
+<div class="space-y-6 relative ml-4 border-l-2 border-primary/20 pl-6">
+<!-- Timeline Item 1 -->
+<div class="relative">
+<div class="absolute -left-[31px] top-1 w-4 h-4 bg-primary rounded-full border-2 border-white shadow-sm"></div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-50 flex items-start gap-4">
+<div class="p-3 bg-orange-50 text-primary rounded-lg">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<h4 class="font-bold text-on-surface">Treino de Força</h4>
+<span class="text-xs font-bold text-outline">07:00</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Lower body focused session • 60 mins</p>
+</div>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative">
+<div class="absolute -left-[31px] top-1 w-4 h-4 bg-secondary rounded-full border-2 border-white shadow-sm"></div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-50 flex items-start gap-4">
+<div class="p-3 bg-secondary-container/30 text-secondary rounded-lg">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<h4 class="font-bold text-on-surface">Refeição Pré-Prova</h4>
+<span class="text-xs font-bold text-outline">12:30</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">High carb / Low fiber intake protocol</p>
+</div>
+</div>
+</div>
+<!-- Timeline Item 3 -->
+<div class="relative">
+<div class="absolute -left-[31px] top-1 w-4 h-4 bg-primary rounded-full border-2 border-white shadow-sm"></div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-50 flex items-start gap-4">
+<div class="p-3 bg-orange-50 text-primary rounded-lg">
+<span class="material-symbols-outlined" data-icon="directions_run">directions_run</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<h4 class="font-bold text-on-surface">Corrida de Recuperação</h4>
+<span class="text-xs font-bold text-outline">18:00</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Z2 heart rate zone • 5km light pace</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Events Carousel -->
+<section>
+<h3 class="font-headline font-bold text-xl mb-4">Upcoming Events</h3>
+<div class="flex overflow-x-auto gap-4 hide-scrollbar pb-4 snap-x">
+<!-- Event Card 1 -->
+<div class="min-w-[280px] bg-white rounded-2xl overflow-hidden shadow-sunlit snap-center">
+<div class="h-32 bg-slate-200 relative">
+<img class="w-full h-full object-cover" data-alt="Marathon runners at the start line in Lisbon with iconic bridge background, morning sunlight, athletic competition" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_Yo5ahQZzpL4LyV3EO8m7sRIB9YvjG04j7yiysstbhfUGDFNVtwnP3BEcmE4_SdjrgNvXy4VupKH7xQ81e4CO_HSeh737ZFKS_hAJ38WgzZoTbrVr1oNwpk8TVYUOJ_8J85kP1peUPv5qg8gssDq_4yXtITwpDXXxDKN3ZyUuATF3y10qXcMk3mr31tA1hGpec5lbjP52-Q82UBEbxuAE_EIjYr0RvunKQrX-tUlOD8cw88oaM1G3FuHudZy5cA1yWEkVlWSlmaA"/>
+<div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded text-[10px] font-bold uppercase text-primary">Marathon</div>
+</div>
+<div class="p-4">
+<h4 class="font-bold font-headline">Lisbon Eco Marathon</h4>
+<div class="flex items-center gap-1 text-xs text-outline mt-1">
+<span class="material-symbols-outlined text-sm">calendar_today</span> Apr 24, 2024
+                        </div>
+<div class="mt-3 h-24 rounded-lg overflow-hidden relative border border-slate-100">
+<img class="w-full h-full object-cover grayscale opacity-60" data-alt="Top down minimalist map of Lisbon city center with highlighted coastal route" data-location="Lisbon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXHi0qi9kOCNeKDbYdrMFnxNouvdS_niJspySH26DLGvHqxP1LPQiIJO4Q7qHwY3UeD1J8ufzIGQEd0JgtU0BoHcF_9J8Xa8d1DWTi2KNGyBMYE3RaghMLMAawNAgZHlCgY1Hq0eZIDdaW1-zOESpeUSyn5D_wDhmkZqj516DISfE3Z_9CI20L8sEviZr_nqG73agx5csT_icDLgLWAz6nBF6tkxWJvSco9iTr6F9DYJUCmZKgNpJ5TucvcbbPvp29S63hncd4-P0"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="bg-primary text-white text-[10px] px-2 py-1 rounded-full font-bold shadow-md">Race Route</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="min-w-[280px] bg-white rounded-2xl overflow-hidden shadow-sunlit snap-center">
+<div class="h-32 bg-slate-200 relative">
+<img class="w-full h-full object-cover" data-alt="Intense indoor fitness competition arena with neon lights, athletes performing functional movements, dynamic atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjibzxuS8BZ0RFSZmsslmF9W34xVtqstnSpK90vDa5tEHK4wuSyfYR5orTXfJaOJ_z3VcPqNV1pr-WDu3E9HqmFfMGbh3AP1bWp3cYgebumEhNHiEtQtdnzDzFSOUuB7-FXa8ONh59EHhhXT7L12VSz00umX1zSc-DJvb8vTPHDdBVRIdBj1LufgKDWw8yRibbjfrV9EjCdUZZP8yWPdS-xE9MUAaPmYTeeR3UUYWprPCBdshxI3Hax4XKBKffdSPoqcpTQuXR3DU"/>
+<div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded text-[10px] font-bold uppercase text-secondary">Functional</div>
+</div>
+<div class="p-4">
+<h4 class="font-bold font-headline">HYROX Lisboa</h4>
+<div class="flex items-center gap-1 text-xs text-outline mt-1">
+<span class="material-symbols-outlined text-sm">calendar_today</span> May 12, 2024
+                        </div>
+<div class="mt-3 h-24 rounded-lg overflow-hidden relative border border-slate-100">
+<img class="w-full h-full object-cover grayscale opacity-60" data-alt="Digital city map of Lisbon with pin marker on the expo center area" data-location="Lisbon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfHFLORCyCRMhmJ6PeyqDBQ8d4abyC7D3m3-TfbteXelwVSDNN7D6YOfBimNhQ4crsyEqi_mjFYfcOD3y5pQMQo4lh5BAFjXra-MZSLY0TzTrlCWmQ_JMhH6eegUynyZ36LFDH65ZClenyTraovyWMfOfJJ52SZRsGINVX3MPAXwMJTypyeeqlk58TKg9H5kGARRDuz4rD2avyyRzyjmj2eGTYSLt5QWvmjz5d0VYiWI7FBhtwNdwUZ37Cq382EdxSQiNaxiC2cvk"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="bg-secondary text-white text-[10px] px-2 py-1 rounded-full font-bold shadow-md">Venue Location</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Coach's Tip -->
+<section class="bg-primary rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined" data-icon="tips_and_updates">tips_and_updates</span>
+<h3 class="font-headline font-extrabold text-lg uppercase tracking-tight">Dica do Treinador</h3>
+</div>
+<p class="text-on-primary font-medium leading-relaxed">
+                "Hydration starts 24 hours before the effort. For today's recovery run, keep your heart rate below 140bpm to maximize mitochondrial adaptation."
+            </p>
+<div class="mt-4 flex items-center gap-2">
+<div class="w-8 h-8 rounded-full border border-white/30 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Professional sports coach in athletic gear with a stopwatch around neck, confident smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfpdHB9rWkbZBWX3hM6-MfeBC-8cAphtI47BTLcplSvep7qoHusOGNW0rgxJvlgFojgQNApIIbCwrkmY6kRSMl4LDNof3gRvoPVJOFPXO2Vbhnkld8rST6h2C_3-oGh_uQnhFOw_5C1wm3efBtykQuJzeZJu7EaCNdHFJTZVQoBoNkZ-M7ikdVVEOd59PPZw6NUIiPKSoxLShyUfOskbvrYSLX__r67bVqnJxeXsXqjXcxCeo68Nd5JdaIgYSLp0Q2yAt9Z4RakA0"/>
+</div>
+<span class="text-xs font-bold">Coach Ricardo Santos</span>
+</div>
+</section>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed right-6 bottom-28 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform duration-150 z-40">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white rounded-t-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] border-t border-gray-100">
+<button class="flex flex-col items-center justify-center text-primary font-bold bg-orange-50 rounded-xl px-3 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="calendar_month" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="font-['Inter'] text-[10px] font-medium">Schedule</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 hover:text-orange-400 transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[10px] font-medium">Events</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 hover:text-orange-400 transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="format_list_bulleted">format_list_bulleted</span>
+<span class="font-['Inter'] text-[10px] font-medium">Agenda</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 hover:text-orange-400 transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[10px] font-medium">Profile</span>
+</button>
+</nav>
+</body></html>

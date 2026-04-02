@@ -23,6 +23,10 @@
     "noUpcomingEvents": "Aucun événement programmé",
     "noUpcomingSessions": "Aucune séance programmée",
     "viewAllEvents": "Voir tous les événements",
-    "viewFullCalendar": "Voir le calendrier complet"
+    "viewFullCalendar": "Voir le calendrier complet",
+    "itemSingular": "activité",
+    "itemPlural": "activités",
+    "eventLabel": "Événement",
+    "viewDetails": "Détails"
   }
 }

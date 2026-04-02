@@ -55,7 +55,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
   });
 
   return (
-    <main className="min-h-screen bg-background pb-20 pt-32">
+    <main className="min-h-screen bg-background pb-20 pt-10">
       <div className="mx-auto max-w-7xl px-6">
         {/* Back button */}
         <Button asChild variant="ghost" className="mb-6">

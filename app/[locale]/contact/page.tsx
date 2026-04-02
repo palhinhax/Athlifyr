@@ -14,10 +14,10 @@ export default function ContactPage() {
   const t = useTranslations("contact");
 
   return (
-    <main className="min-h-screen bg-background pb-20 pt-32">
+    <main className="min-h-screen bg-background pb-20 pt-10">
       <div className="mx-auto max-w-7xl px-6 md:px-8">
         {/* Hero Section */}
-        <section className="py-24 md:py-32">
+        <section className="py-10 md:py-12">
           <div className="max-w-3xl">
             <h1 className="mb-6 font-headline text-5xl font-extrabold tracking-tighter text-foreground md:text-7xl">
               {t("title")}

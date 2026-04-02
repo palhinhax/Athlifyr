@@ -1,6 +1,5 @@
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
-import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface EventCommunityProps {
@@ -37,35 +36,51 @@ export function EventCommunity({
   const t = useTranslations("events");
 
   return (
-    <div className="mt-12 border-t pt-12">
-      <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold">
-        <MessageCircle className="h-5 w-5 text-primary" />
-        {t("community")}
-      </h2>
-      <div className="space-y-4">
-        <CreatePost eventId={eventId} />
-        {posts.length === 0 ? (
-          <p className="py-8 text-center text-muted-foreground">
-            {t("noPosts")}
-          </p>
-        ) : (
-          posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={{
-                ...post,
-                event: {
-                  id: eventId,
-                  title: eventTitle,
-                  slug: eventSlug,
-                },
-              }}
-              currentUserId={currentUserId}
-              isAdmin={isAdmin}
-            />
-          ))
-        )}
+    <section className="py-20 sm:py-24">
+      <div className="mb-8 flex items-center justify-between sm:mb-12">
+        <h2 className="font-headline text-4xl font-black tracking-tight sm:text-5xl">
+          {t("community")}
+        </h2>
       </div>
-    </div>
+
+      {/* Create Post Box */}
+      <div className="mb-8 rounded-[32px] bg-white p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)] sm:mb-12">
+        <CreatePost eventId={eventId} />
+      </div>
+
+      {/* Posts Grid */}
+      {posts.length === 0 ? (
+        <p className="py-12 text-center text-muted-foreground">
+          {t("noPosts")}
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={{
+                  ...post,
+                  event: {
+                    id: eventId,
+                    title: eventTitle,
+                    slug: eventSlug,
+                  },
+                }}
+                currentUserId={currentUserId}
+                isAdmin={isAdmin}
+              />
+            ))}
+          </div>
+          {posts.length >= 20 && (
+            <div className="mt-16 text-center">
+              <button className="font-headline text-lg font-extrabold text-primary transition-all hover:underline">
+                {t("viewMoreComments")}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }

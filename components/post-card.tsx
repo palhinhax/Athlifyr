@@ -5,7 +5,17 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { pt } from "date-fns/locale";
+import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
+import { useTranslations, useLocale } from "next-intl";
+
+const localeMap: Record<string, Locale> = {
+  pt,
+  en: enUS,
+  es,
+  fr,
+  de,
+  it,
+};
 import {
   Heart,
   Trash2,
@@ -19,7 +29,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -134,12 +143,15 @@ function CommentsList({
   currentUserId,
   isAdmin,
   onDeleteComment,
+  locale,
 }: {
   readonly comments: Comment[];
   readonly currentUserId?: string;
   readonly isAdmin?: boolean;
   readonly onDeleteComment: (commentId: string) => void;
+  readonly locale?: string;
 }) {
+  const dateLocale = localeMap[locale || "en"] || enUS;
   if (!comments || comments.length === 0) {
     return (
       <div className="py-4 text-center text-sm text-muted-foreground">
@@ -176,7 +188,7 @@ function CommentsList({
               <span>
                 {formatDistanceToNow(new Date(comment.createdAt), {
                   addSuffix: true,
-                  locale: pt,
+                  locale: dateLocale,
                 })}
               </span>
               {(currentUserId === comment.user.id || isAdmin) && (
@@ -200,9 +212,12 @@ export function PostCard({
   currentUserId,
   isAdmin,
   onPostDeleted,
-  hideVenueBadge = false, // Default to showing badge
+  hideVenueBadge: _hideVenueBadge = false, // Default to showing badge
 }: PostCardProps) {
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations("feed.post");
+  const dateLocale = localeMap[locale] || enUS;
   const [isLiked, setIsLiked] = useState(post.isLikedByUser);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [isLiking, setIsLiking] = useState(false);
@@ -416,62 +431,63 @@ export function PostCard({
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <article className="overflow-hidden rounded-xl bg-card shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 pb-3">
-          <Link
-            href={`/user/${post.userId}`}
-            className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted"
-          >
-            {post.user.image ? (
-              <Image
-                src={post.user.image}
-                alt={post.user.name || "User"}
-                fill
-                sizes="40px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
-                {post.user.name?.[0]?.toUpperCase() || "U"}
-              </div>
-            )}
-          </Link>
-          <div className="min-w-0 flex-1 overflow-hidden">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
             <Link
               href={`/user/${post.userId}`}
-              className="block truncate font-semibold hover:underline"
+              className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted"
             >
-              {post.user.name}
+              {post.user.image ? (
+                <Image
+                  src={post.user.image}
+                  alt={post.user.name || "User"}
+                  fill
+                  sizes="40px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-sm font-bold text-muted-foreground">
+                  {post.user.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
             </Link>
-            <div className="min-w-0 flex-wrap items-center gap-x-2 overflow-hidden text-xs text-muted-foreground">
-              <span className="shrink-0 whitespace-nowrap">
+            <div>
+              <Link
+                href={`/user/${post.userId}`}
+                className="block text-sm font-bold hover:underline"
+              >
+                {post.user.name}
+              </Link>
+              <p className="text-[10px] font-medium text-muted-foreground">
                 {formatDistanceToNow(createdAt, {
                   addSuffix: true,
-                  locale: pt,
+                  locale: dateLocale,
                 })}
-              </span>
-              {post.event && (
-                <>
-                  <span className="shrink-0">•</span>
-                  <Link
-                    href={`/events/${post.event.slug}`}
-                    className="block min-w-0 hover:text-accent hover:underline"
-                  >
-                    {post.event.title}
-                  </Link>
-                </>
-              )}
-              {post.venue && !hideVenueBadge && (
-                <>
-                  <Link
-                    href={`/venues/${post.venue.slug}`}
-                    className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-white/20 bg-black/20 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-black/30"
-                  >
-                    <span>{post.venue.name}</span>
-                  </Link>
-                </>
-              )}
+                {post.event && (
+                  <>
+                    {" • "}
+                    <Link
+                      href={`/events/${post.event.slug}`}
+                      className="text-primary hover:underline"
+                    >
+                      {post.event.title}
+                    </Link>
+                  </>
+                )}
+                {post.venue && (
+                  <>
+                    {" • "}
+                    <Link
+                      href={`/venues/${post.venue.slug}`}
+                      className="text-primary hover:underline"
+                    >
+                      {post.venue.name}
+                    </Link>
+                  </>
+                )}
+              </p>
             </div>
           </div>
           {canDelete && (
@@ -501,13 +517,13 @@ export function PostCard({
         </div>
 
         {/* Content */}
-        <div className="overflow-hidden px-4 pb-3">
+        <div className="px-4 pb-3">
           {isEditing ? (
             <div className="space-y-2">
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm"
                 disabled={isUpdating}
               />
               <div className="flex gap-2">
@@ -516,8 +532,7 @@ export function PostCard({
                   onClick={handleUpdatePost}
                   disabled={isUpdating || !editContent.trim()}
                 >
-                  <Save className="mr-2 h-4 w-4" />
-                  Guardar
+                  <Save className="mr-2 h-4 w-4" /> Guardar
                 </Button>
                 <Button
                   size="sm"
@@ -525,13 +540,12 @@ export function PostCard({
                   onClick={handleCancelEdit}
                   disabled={isUpdating}
                 >
-                  <XIcon className="mr-2 h-4 w-4" />
-                  Cancelar
+                  <XIcon className="mr-2 h-4 w-4" /> Cancelar
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="prose prose-sm min-w-0 max-w-none [overflow-wrap:anywhere] dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:my-1 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-pre:overflow-x-auto prose-ol:my-1 prose-ul:my-1 prose-li:my-0 prose-img:hidden">
+            <div className="prose prose-sm min-w-0 max-w-none text-sm leading-relaxed [overflow-wrap:anywhere] dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:my-1 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-pre:overflow-x-auto prose-ol:my-1 prose-ul:my-1 prose-li:my-0 prose-img:hidden">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {post.content}
               </ReactMarkdown>
@@ -539,15 +553,9 @@ export function PostCard({
           )}
         </div>
 
-        {/* Media (Image, Video or Carousel) */}
+        {/* Media — after content, full-width */}
         {post.imageUrl && (
-          <div
-            className={`relative w-full overflow-hidden ${
-              post.mediaType === "video"
-                ? "flex items-center justify-center bg-black"
-                : "max-h-[850px] bg-gradient-to-br from-muted/50 to-muted"
-            }`}
-          >
+          <div className="relative aspect-[4/3] bg-muted">
             {post.mediaType === "video" ? (
               <video
                 src={post.imageUrl}
@@ -555,27 +563,23 @@ export function PostCard({
                 loop
                 muted
                 playsInline
-                className="max-h-[850px] w-auto max-w-full cursor-pointer"
+                className="h-full w-full cursor-pointer object-cover"
                 preload="auto"
                 onClick={(e) => {
-                  const video = e.currentTarget;
-                  if (video.paused) {
-                    video.play();
+                  const v = e.currentTarget;
+                  if (v.paused) {
+                    v.play();
                   } else {
-                    video.pause();
+                    v.pause();
                   }
                 }}
               />
             ) : hasCarousel ? (
-              <div className="relative">
+              <div className="relative h-full">
                 <PostImage
                   imageUrl={carouselImages[carouselIdx]}
                   imageError={imageError}
                   onImageError={() => {
-                    console.error(
-                      "Failed to load image:",
-                      carouselImages[carouselIdx]
-                    );
                     setImageError(true);
                   }}
                 />
@@ -604,9 +608,7 @@ export function PostCard({
                     <button
                       key={idx}
                       onClick={() => setCarouselIdx(idx)}
-                      className={`h-2 w-2 rounded-full transition-colors ${
-                        idx === carouselIdx ? "bg-white" : "bg-white/50"
-                      }`}
+                      className={`h-2 w-2 rounded-full transition-colors ${idx === carouselIdx ? "bg-white" : "bg-white/50"}`}
                     />
                   ))}
                 </div>
@@ -616,7 +618,6 @@ export function PostCard({
                 imageUrl={post.imageUrl}
                 imageError={imageError}
                 onImageError={() => {
-                  console.error("Failed to load image:", post.imageUrl);
                   setImageError(true);
                 }}
               />
@@ -624,9 +625,9 @@ export function PostCard({
           </div>
         )}
 
-        {/* Shared Event Card - Show when post has full event data */}
+        {/* Shared Event Card */}
         {post.event?.city && post.event?.sportTypes && (
-          <div className="px-4 pb-3">
+          <div className="px-4 pt-3">
             <FeaturedEventCard
               event={{
                 id: post.event.id,
@@ -652,74 +653,97 @@ export function PostCard({
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center gap-4 border-t px-4 py-3">
-          <button
-            onClick={handleLike}
-            disabled={!currentUserId || isLiking}
-            className={`flex items-center gap-1.5 text-sm transition-colors ${
-              isLiked
-                ? "text-red-500"
-                : "text-muted-foreground hover:text-red-500"
-            } ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
-          >
-            <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
-            <span>{likesCount}</span>
-          </button>
-          <button
-            onClick={handleToggleComments}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-p-info"
-          >
-            <MessageCircle className="h-5 w-5" />
-            <span>{commentsCount}</span>
-          </button>
-        </div>
-
-        {/* Comments Section */}
-        {showComments && (
-          <div className="border-t px-4 py-3">
-            {/* Comment Input */}
-            {currentUserId && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmitComment();
-                }}
-                className="mb-3 flex gap-2"
+        {/* Actions + Comments */}
+        <div className="p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex gap-4">
+              <button
+                onClick={handleLike}
+                disabled={!currentUserId || isLiking}
+                className={`group flex items-center gap-1 ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
               >
-                <Input
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Escreve um comentário..."
-                  className="flex-1"
-                  disabled={isSubmittingComment}
+                <Heart
+                  className={`h-5 w-5 transition-transform group-active:scale-125 ${isLiked ? "fill-primary text-primary" : "text-muted-foreground"}`}
                 />
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={!newComment.trim() || isSubmittingComment}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
-            )}
-
-            {/* Comments List */}
-            {isLoadingComments ? (
-              <div className="py-4 text-center text-sm text-muted-foreground">
-                A carregar comentários...
-              </div>
-            ) : (
-              <CommentsList
-                comments={comments}
-                currentUserId={currentUserId}
-                isAdmin={isAdmin}
-                onDeleteComment={handleDeleteComment}
-              />
-            )}
+                <span className="text-xs font-bold">{likesCount}</span>
+              </button>
+              <button
+                onClick={handleToggleComments}
+                className="group flex items-center gap-1"
+              >
+                <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs font-medium">{commentsCount}</span>
+              </button>
+            </div>
           </div>
-        )}
-      </Card>
+
+          {/* Inline comment hint */}
+          {currentUserId && !showComments && (
+            <button
+              type="button"
+              onClick={handleToggleComments}
+              className="flex w-full items-center gap-2 text-left"
+            >
+              <div className="relative h-6 w-6 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                {post.user.image && (
+                  <Image
+                    src={post.user.image}
+                    alt=""
+                    fill
+                    sizes="24px"
+                    className="object-cover"
+                  />
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {t("addComment")}...
+              </span>
+            </button>
+          )}
+
+          {showComments && (
+            <div className="border-t border-muted pt-4">
+              {currentUserId && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmitComment();
+                  }}
+                  className="mb-3 flex gap-2"
+                >
+                  <Input
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Escreve um comentário..."
+                    className="flex-1"
+                    disabled={isSubmittingComment}
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!newComment.trim() || isSubmittingComment}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </form>
+              )}
+              {isLoadingComments ? (
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  A carregar comentários...
+                </div>
+              ) : (
+                <CommentsList
+                  comments={comments}
+                  currentUserId={currentUserId}
+                  isAdmin={isAdmin}
+                  onDeleteComment={handleDeleteComment}
+                  locale={locale}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </article>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

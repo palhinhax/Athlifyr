@@ -387,7 +387,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               </h3>
               <div className="h-px flex-1 bg-border" />
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {featuredEvents.map((event) => (
                 <EventCard
                   key={event.id}
@@ -408,15 +408,15 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
             <Fragment key={group.key}>
               <div className="mb-4 mt-8 flex items-center gap-3 first:mt-0">
                 <Calendar className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold capitalize text-foreground">
-                  {group.label}
+                <h3 className="text-lg font-semibold text-foreground">
+                  {group.label.charAt(0).toUpperCase() + group.label.slice(1)}
                 </h3>
                 <div className="h-px flex-1 bg-border" />
                 <span className="text-sm text-muted-foreground">
                   {group.events.length}
                 </span>
               </div>
-              <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {group.events.map((event) => (
                   <EventCard
                     key={event.id}

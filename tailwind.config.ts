@@ -18,12 +18,18 @@ const config: Config = {
         sm: "2rem",
       },
       screens: {
-        "2xl": "1400px",
+        "2xl": "1536px",
       },
     },
     extend: {
       fontFamily: {
         sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        headline: [
+          "var(--font-headline)",
+          "Plus Jakarta Sans",
+          "system-ui",
+          "sans-serif",
+        ],
         mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
       },
       colors: {
@@ -72,6 +78,18 @@ const config: Config = {
         "p-golden": "hsl(var(--p-golden))",
         "p-highlight": "hsl(var(--p-highlight))",
         "p-info": "hsl(var(--p-info))",
+        // M3 Surface hierarchy
+        "primary-container": "hsl(var(--primary-container))",
+        "surface-dim": "hsl(var(--surface-dim))",
+        "surface-container-lowest": "hsl(var(--surface-container-lowest))",
+        "surface-container-low": "hsl(var(--surface-container-low))",
+        "surface-container": "hsl(var(--surface-container))",
+        "surface-container-high": "hsl(var(--surface-container-high))",
+        "surface-container-highest": "hsl(var(--surface-container-highest))",
+        outline: {
+          DEFAULT: "hsl(var(--outline))",
+          variant: "hsl(var(--outline-variant))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -4,7 +4,10 @@
       "WebFetch(domain:localhost)",
       "Bash(ls:*)",
       "Bash(npm install:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(find /c/Users/jduarte/Documents/workSpace/Athlifyr/.claude/worktrees/great-hellman -type f \\\\\\(-name *live* -o -name *liveRace* -o -name *liveStatus* \\\\\\))"
     ]
   }
 }

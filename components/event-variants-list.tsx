@@ -1,6 +1,5 @@
-import { Route } from "lucide-react";
+import { Route, Mountain } from "lucide-react";
 import { TriathlonSegmentsDisplay } from "./triathlon-segments-display";
-import { VariantCardWithMap } from "./variant-card-with-map";
 
 interface TriathlonSegment {
   id: string;
@@ -8,6 +7,15 @@ interface TriathlonSegment {
   distanceKm: number;
   terrainType: "POOL" | "OPEN_WATER" | "ROAD" | "TRAIL" | "MIXED";
   order: number;
+}
+
+interface PricingPhase {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  startDate: Date;
+  endDate: Date;
 }
 
 interface EventVariant {
@@ -24,6 +32,7 @@ interface EventVariant {
   maxParticipants?: number | null;
   registrationCount?: number;
   triathlonSegments?: TriathlonSegment[];
+  pricingPhases?: PricingPhase[];
 }
 
 interface VariantLabels {
@@ -89,10 +98,43 @@ const defaultLabels: VariantLabels = {
   },
 };
 
+function getCurrentPrice(
+  pricingPhases?: PricingPhase[]
+): { price: number; currency: string } | null {
+  if (!pricingPhases || pricingPhases.length === 0) return null;
+  const now = new Date();
+  const active = pricingPhases.find(
+    (p) => new Date(p.startDate) <= now && new Date(p.endDate) >= now
+  );
+  if (active) return { price: active.price, currency: active.currency };
+  // If no active phase, return the cheapest
+  const sorted = [...pricingPhases].sort((a, b) => a.price - b.price);
+  return { price: sorted[0].price, currency: sorted[0].currency };
+}
+
+function getVariantIcon(name: string): React.ReactNode {
+  const lowerName = name.toLowerCase();
+  if (
+    lowerName.includes("caminhada") ||
+    lowerName.includes("walk") ||
+    lowerName.includes("hike")
+  ) {
+    return <Route className="h-6 w-6 text-primary" />;
+  }
+  if (
+    lowerName.includes("sprint") ||
+    lowerName.includes("mini") ||
+    lowerName.includes("kids")
+  ) {
+    return <Route className="h-6 w-6 text-primary" />;
+  }
+  return <Mountain className="h-6 w-6 text-primary" />;
+}
+
 export function EventVariantsList({
   variants,
   labels = defaultLabels,
-  eventId,
+  eventId: _eventId,
 }: EventVariantsListProps) {
   if (!variants || variants.length === 0) {
     return null;
@@ -126,31 +168,99 @@ export function EventVariantsList({
           ) : null
         )}
 
-      {/* Compact variant cards */}
+      {/* Bento-style variant cards */}
       {standardVariants.length > 0 && (
-        <div className="mb-6">
-          <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold">
-            <Route className="h-5 w-5 text-primary" />
+        <section className="mb-8">
+          <h2 className="mb-8 font-headline text-2xl font-extrabold sm:text-3xl">
             {labels.title}
           </h2>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6">
             {standardVariants.map((variant) => {
               const isSoldOut =
                 variant.maxParticipants != null &&
                 (variant.registrationCount ?? 0) >= variant.maxParticipants;
+              const currentPrice = getCurrentPrice(variant.pricingPhases);
 
               return (
-                <VariantCardWithMap
+                <div
                   key={variant.id}
-                  variant={variant}
-                  isSoldOut={isSoldOut}
-                  labels={labels}
-                  eventId={eventId}
-                />
+                  className={`group flex flex-col justify-between gap-6 rounded-xl bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] sm:flex-row sm:p-8 ${
+                    isSoldOut ? "opacity-60" : ""
+                  }`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                        {getVariantIcon(variant.name)}
+                      </div>
+                      <h3 className="text-xl font-bold sm:text-2xl">
+                        {variant.name}
+                      </h3>
+                      {isSoldOut && (
+                        <span className="rounded-full bg-destructive/10 px-3 py-1 text-xs font-semibold text-destructive">
+                          {labels.soldOut}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-4 sm:gap-6">
+                      {variant.distanceKm && (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            {labels.distance}
+                          </span>
+                          <span className="text-lg font-black sm:text-xl">
+                            {variant.distanceKm} km
+                          </span>
+                        </div>
+                      )}
+                      {variant.elevationGainM && (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            {labels.elevationGain}
+                          </span>
+                          <span className="text-lg font-black sm:text-xl">
+                            {variant.elevationGainM}m D+
+                          </span>
+                        </div>
+                      )}
+                      {variant.startTime && (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            {labels.time}
+                          </span>
+                          <span className="text-lg font-black sm:text-xl">
+                            {variant.startTime}
+                          </span>
+                        </div>
+                      )}
+                      {variant.cutoffTimeHours && (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            {labels.cutoffTime}
+                          </span>
+                          <span className="text-lg font-black sm:text-xl">
+                            {variant.cutoffTimeHours}h
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {currentPrice && (
+                    <div className="flex flex-col items-start justify-center sm:items-end">
+                      <span className="text-3xl font-black text-primary sm:text-4xl">
+                        {new Intl.NumberFormat(undefined, {
+                          style: "currency",
+                          currency: currentPrice.currency || "EUR",
+                          minimumFractionDigits: 2,
+                        }).format(currentPrice.price)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
     </>
   );

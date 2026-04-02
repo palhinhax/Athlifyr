@@ -58,7 +58,7 @@
     "loadError": "No se pudo cargar el evento",
     "notFound": "Evento no encontrado",
     "about": "Sobre",
-    "visitWebsite": "Visitar Sitio Oficial",
+    "visitWebsite": "Visitar Sitio",
     "meta": {
       "date": "Fecha",
       "location": "Ubicación",
@@ -527,6 +527,13 @@
       "admin": "Administrador",
       "coach": "Entrenador",
       "client": "Miembro"
+    },
+    "member": "miembro",
+    "members": "miembros",
+    "a11y": {
+      "venueCard": "{{name}}, {{location}}",
+      "listView": "Vista en lista",
+      "mapView": "Vista en mapa"
     }
   },
   "venueDetail": {

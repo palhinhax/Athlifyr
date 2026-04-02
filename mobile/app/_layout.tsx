@@ -2,6 +2,18 @@ import { useEffect } from "react";
 import { AppState, Platform, View } from "react-native";
 import type { AppStateStatus } from "react-native";
 import { Stack } from "expo-router";
+import { useFonts } from "expo-font";
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
+import {
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from "@expo-google-fonts/plus-jakarta-sans";
 import * as Sentry from "@sentry/react-native";
 import {
   QueryClient,
@@ -32,6 +44,16 @@ function RootLayout() {
   const loadStoredAuth = useAuthStore((s) => s.loadStoredAuth);
   const { colors } = useThemeColors();
   const reduceMotion = useReducedMotion();
+
+  useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
 
   // Restore auth session + initialize Play Integrity on app launch
   useEffect(() => {

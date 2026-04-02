@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Calendar, MapPin, ExternalLink } from "lucide-react";
-import { formatDate } from "@/lib/event-utils";
-import { EventLocationMap } from "./event-location-map";
+import { EventInviteFriendsModal } from "@/components/event-invite-friends-modal";
+import { EventLocationCard } from "./event-location-card";
 import { StravaRouteEmbed } from "./strava-route-embed";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
 import { EventWeather } from "@/components/event-weather";
 import { EventFeaturedVenue } from "@/components/event-featured-venue";
+import { EventParticipationCard } from "@/components/event-participation-card";
 import { RelatedEvents } from "@/components/related-events";
+import type { EventRegistrationProps } from "@/components/event-registration/event-registration-types";
 import { SportType } from "@prisma/client";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 interface FeaturedVenue {
   id: string;
@@ -40,21 +41,31 @@ interface RelatedEvent {
 }
 
 interface EventSidebarProps {
-  event: {
-    title: string;
-    imageUrl: string | null;
-    startDate: Date;
-    endDate: Date | null;
-    city: string;
-    country: string;
-    latitude: number | null;
-    longitude: number | null;
-    googleMapsUrl: string | null;
-    stravaRouteEmbed: string | null;
-    sportTypes: string[];
-    featuredVenue?: FeaturedVenue | null;
+  readonly event: {
+    readonly id: string;
+    readonly title: string;
+    readonly slug: string;
+    readonly imageUrl: string | null;
+    readonly startDate: Date;
+    readonly endDate: Date | null;
+    readonly city: string;
+    readonly country: string;
+    readonly latitude: number | null;
+    readonly longitude: number | null;
+    readonly googleMapsUrl: string | null;
+    readonly stravaRouteEmbed: string | null;
+    readonly sportTypes: string[];
+    readonly cancelled: boolean;
+    readonly featuredVenue?: FeaturedVenue | null;
   };
-  weather?: Array<{
+  readonly variants?: Array<{
+    id: string;
+    name: string;
+    distanceKm: number | null;
+    startDate?: Date | string | null;
+    startTime?: string | null;
+  }>;
+  readonly weather?: Array<{
     date: Date;
     temperature: number;
     condition: string;
@@ -62,19 +73,34 @@ interface EventSidebarProps {
     windSpeed: number | null;
     icon: string | null;
   }>;
-  relatedEvents?: RelatedEvent[];
-  relatedEventsTitle?: string;
+  readonly friendsGoing?: Array<{
+    id: string;
+    name: string | null;
+    image: string | null;
+  }>;
+  readonly friendsGoingCount?: number;
+  readonly hasRegistrations?: boolean;
+  readonly registrationVariants?: EventRegistrationProps["variants"];
+  readonly registrationFieldSettings?: Record<string, string>;
+  readonly relatedEvents?: RelatedEvent[];
+  readonly relatedEventsTitle?: string;
 }
 
 export function EventSidebar({
   event,
+  variants = [],
   weather,
+  friendsGoing = [],
+  friendsGoingCount = 0,
+  hasRegistrations = false,
+  registrationVariants = [],
+  registrationFieldSettings,
   relatedEvents = [],
   relatedEventsTitle,
 }: EventSidebarProps) {
   const t = useTranslations("events");
-  const locale = useLocale();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const hasImage =
     event.imageUrl && event.imageUrl !== "/placeholder-event.jpg";
 
@@ -86,91 +112,23 @@ export function EventSidebar({
   return (
     <>
       <aside className="hidden lg:block">
-        <div className="sticky top-4 space-y-6">
-          {/* Event Image Card */}
-          <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
-            <div
-              className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10"
-              onClick={() => hasImage && setIsLightboxOpen(true)}
-              style={{ cursor: hasImage ? "pointer" : "default" }}
-            >
-              <Image
-                src={
-                  event.imageUrl && event.imageUrl !== "null"
-                    ? event.imageUrl
-                    : "/placeholder-event.jpg"
-                }
-                alt={event.title}
-                fill
-                className="object-cover object-center transition-transform duration-300 hover:scale-105"
-                sizes="400px"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="mb-2 font-semibold">{event.title}</h3>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{formatDate(event.startDate, locale)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  <span>
-                    {event.city}, {event.country}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Weather Forecast Card */}
+        <div className="sticky top-[7.5rem] space-y-8">
+          {/* Weather Widget Card */}
           {weather && weather.length > 0 && (
-            <div className="rounded-lg border bg-card shadow-sm">
-              <EventWeather weather={weather} isPastEvent={isPastEvent} />
-            </div>
+            <EventWeather weather={weather} isPastEvent={isPastEvent} />
           )}
 
-          {/* Location Map Card */}
+          {/* Location Card */}
           {event.latitude && event.longitude && (
-            <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
-              <div className="p-4">
-                <h3 className="mb-3 flex items-center gap-2 font-semibold">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  {t("locationTitle")}
-                </h3>
-              </div>
-              <div className="relative aspect-[4/3] w-full">
-                <EventLocationMap
-                  latitude={event.latitude}
-                  longitude={event.longitude}
-                  title={event.title}
-                  sportTypes={event.sportTypes}
-                />
-              </div>
-              <div className="p-4">
-                {event.googleMapsUrl ? (
-                  <a
-                    href={event.googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    {t("openInGoogleMaps")}
-                  </a>
-                ) : (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    {t("openInGoogleMaps")}
-                  </a>
-                )}
-              </div>
-            </div>
+            <EventLocationCard
+              latitude={event.latitude}
+              longitude={event.longitude}
+              title={event.title}
+              city={event.city}
+              country={event.country}
+              googleMapsUrl={event.googleMapsUrl}
+              sportTypes={event.sportTypes}
+            />
           )}
 
           {/* Featured Venue Card */}
@@ -178,16 +136,87 @@ export function EventSidebar({
             <EventFeaturedVenue venue={event.featuredVenue} />
           )}
 
-          {/* Strava Route Embed */}
-          {event.stravaRouteEmbed && (
-            <div className="mb-6">
-              <StravaRouteEmbed embedCode={event.stravaRouteEmbed} />
-            </div>
-          )}
+          {/* Participation Card */}
+          <EventParticipationCard
+            eventId={event.id}
+            eventSlug={event.slug}
+            eventTitle={event.title}
+            hasRegistrations={hasRegistrations}
+            variants={variants}
+            registrationVariants={registrationVariants}
+            cancelled={event.cancelled}
+            isPastEvent={isPastEvent}
+            registrationFieldSettings={registrationFieldSettings}
+          />
 
           {/* Related Events Carousel */}
           {relatedEvents.length > 0 && (
             <RelatedEvents events={relatedEvents} title={relatedEventsTitle} />
+          )}
+
+          {/* Who's Going + Invite Friends */}
+          <div className="rounded-2xl bg-surface-container-lowest p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+            <h4 className="text-on-surface-variant mb-6 text-xs font-bold uppercase tracking-widest">
+              {t("sidebar.whoIsGoing")}
+            </h4>
+
+            {friendsGoingCount > 0 && (
+              <>
+                {/* Avatar stack */}
+                <div className="mb-6 flex -space-x-3">
+                  {friendsGoing.slice(0, 4).map((friend) => (
+                    <div
+                      key={friend.id}
+                      className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-4 border-white"
+                    >
+                      {friend.image ? (
+                        <Image
+                          src={friend.image}
+                          alt={friend.name || ""}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="text-on-primary-container flex h-full w-full items-center justify-center bg-primary-container text-xs font-bold">
+                          {friend.name?.[0]?.toUpperCase() || "?"}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {friendsGoingCount > 4 && (
+                    <div className="text-on-primary-container flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-4 border-white bg-primary-container text-xs font-bold">
+                      +{friendsGoingCount - 4}
+                    </div>
+                  )}
+                </div>
+
+                {/* Friend mention text */}
+                <p className="text-on-surface-variant mb-6 text-sm">
+                  <strong>{friendsGoing[0]?.name}</strong>{" "}
+                  {friendsGoingCount === 1
+                    ? t("sidebar.friendSignedUpSuffix")
+                    : t("sidebar.friendsSignedUpSuffix", {
+                        count: friendsGoingCount - 1,
+                      })}
+                </p>
+              </>
+            )}
+
+            {/* Invite Friends button */}
+            <button
+              onClick={() => setIsInviteOpen(true)}
+              className="w-full rounded-xl border-2 border-primary py-4 font-bold text-primary transition-colors hover:bg-primary/5"
+            >
+              {t("sidebar.inviteFriends")}
+            </button>
+          </div>
+
+          {/* Strava Route Embed */}
+          {event.stravaRouteEmbed && (
+            <div className="overflow-hidden rounded-2xl">
+              <StravaRouteEmbed embedCode={event.stravaRouteEmbed} />
+            </div>
           )}
         </div>
       </aside>
@@ -200,6 +229,15 @@ export function EventSidebar({
           onClose={() => setIsLightboxOpen(false)}
         />
       )}
+
+      {/* Invite Friends Modal */}
+      <EventInviteFriendsModal
+        open={isInviteOpen}
+        onOpenChange={setIsInviteOpen}
+        eventId={event.id}
+        eventTitle={event.title}
+        eventSlug={event.slug}
+      />
     </>
   );
 }

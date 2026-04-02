@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { ImagePlus, X, Send, Globe } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ImagePlus, Video, X, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -248,9 +247,10 @@ export function CreatePost({
   }
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div>
       <form onSubmit={handleSubmit}>
-        <div className="mb-3 flex items-start gap-3">
+        {/* Composer header: avatar + input/placeholder */}
+        <div className="flex gap-4">
           <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
             {displayImage ? (
               <Image
@@ -266,18 +266,20 @@ export function CreatePost({
               </div>
             )}
           </div>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={placeholderText}
-            className="min-h-[80px] flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            disabled={isSubmitting || isUploading}
-          />
+          <div className="flex-1">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={placeholderText}
+              className="min-h-[44px] w-full resize-none rounded-xl bg-muted/50 px-4 py-3 text-sm transition-colors placeholder:text-muted-foreground/70 hover:bg-muted focus:min-h-[100px] focus:bg-muted/50 focus:outline-none focus:ring-0"
+              disabled={isSubmitting || isUploading}
+            />
+          </div>
         </div>
 
         {/* Media Preview */}
         {mediaPreview && (
-          <div className="relative mb-3 max-h-[500px] w-full overflow-hidden rounded-lg bg-gradient-to-br from-muted/50 to-muted">
+          <div className="relative mt-3 max-h-[500px] w-full overflow-hidden rounded-[24px] bg-gradient-to-br from-muted/50 to-muted">
             {mediaType === "video" ? (
               <video
                 src={mediaPreview}
@@ -307,32 +309,56 @@ export function CreatePost({
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            {/* Media Upload */}
-            <label htmlFor="post-media">
+        {/* Actions bar */}
+        <div className="mt-4 flex items-center justify-between pt-4">
+          <div className="flex items-center gap-2">
+            {/* Photo button */}
+            <label htmlFor="post-media-photo">
               <input
-                id="post-media"
+                id="post-media-photo"
                 type="file"
-                accept="image/*,video/*"
+                accept="image/*"
                 onChange={handleMediaSelect}
                 className="hidden"
                 disabled={isSubmitting || isUploading || !!mediaPreview}
               />
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
                 disabled={isSubmitting || isUploading || !!mediaPreview}
-                onClick={() => document.getElementById("post-media")?.click()}
+                onClick={() =>
+                  document.getElementById("post-media-photo")?.click()
+                }
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50"
               >
-                <ImagePlus className="mr-2 h-4 w-4" />
-                {t("addMedia")}
-              </Button>
+                <ImagePlus className="h-4 w-4 text-primary" />
+                {t("addPhoto")}
+              </button>
             </label>
 
-            {/* Public/Private Toggle - Only show if post is for venue or event */}
+            {/* Video button */}
+            <label htmlFor="post-media-video">
+              <input
+                id="post-media-video"
+                type="file"
+                accept="video/*"
+                onChange={handleMediaSelect}
+                className="hidden"
+                disabled={isSubmitting || isUploading || !!mediaPreview}
+              />
+              <button
+                type="button"
+                disabled={isSubmitting || isUploading || !!mediaPreview}
+                onClick={() =>
+                  document.getElementById("post-media-video")?.click()
+                }
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50"
+              >
+                <Video className="h-4 w-4 text-primary" />
+                {t("addVideo")}
+              </button>
+            </label>
+
+            {/* Public/Private Toggle */}
             {(venueId || eventId) && (
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -359,22 +385,15 @@ export function CreatePost({
             )}
           </div>
 
-          <Button
+          <button
             type="submit"
-            size="sm"
             disabled={
               isSubmitting || isUploading || (!content.trim() && !mediaFile)
             }
+            className="rounded-xl bg-gradient-to-br from-primary to-primary/60 px-6 py-2 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 active:scale-[0.98] disabled:opacity-50"
           >
-            {isSubmitting || isUploading ? (
-              t("publish")
-            ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                {t("publish")}
-              </>
-            )}
-          </Button>
+            {t("publish")}
+          </button>
         </div>
       </form>
     </div>

@@ -213,7 +213,7 @@ export default async function SportPage({ params }: PageProps) {
             <h2 className="mb-8 text-2xl font-semibold">
               {t("upcomingEvents", { sport: sportName })}
             </h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {events.map((event) => (
                 <EventCard
                   key={event.id}

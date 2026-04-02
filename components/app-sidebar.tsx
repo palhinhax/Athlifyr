@@ -190,7 +190,7 @@ export function AppSidebar() {
                             "relative flex h-12 w-12 items-center justify-center rounded-lg transition-colors",
                             "mx-auto",
                             active
-                              ? "bg-primary text-primary-foreground"
+                              ? "bg-gradient-to-r from-primary to-primary/60 text-primary-foreground"
                               : "hover:bg-muted"
                           )}
                         >
@@ -219,7 +219,7 @@ export function AppSidebar() {
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                         active
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-gradient-to-r from-primary to-primary/60 text-primary-foreground"
                           : "hover:bg-muted"
                       )}
                     >

@@ -23,7 +23,7 @@
     "manageEvents": "Gerir Eventos",
     "instagramGenerator": "Gerador Instagram & TikTok",
     "adminContacts": "Contactos Admin",
-    "mySchedule": "O Meu Horário",
+    "mySchedule": "O Meu Calendário",
     "notifications": "Notificações",
     "openMenu": "Abrir menu",
     "closeMenu": "Fechar menu",
@@ -58,7 +58,7 @@
   "search": {
     "placeholder": "Pesquisar...",
     "hint": "Começa a escrever para pesquisar",
-    "searchDescription": "Pesquisa em eventos, venues e pessoas",
+    "searchDescription": "Pesquisa em eventos, locais e pessoas",
     "noResults": "Sem resultados",
     "tryDifferent": "Tenta um termo de pesquisa diferente",
     "searching": "A pesquisar...",

@@ -13,6 +13,22 @@
     "replies": "replies",
     "loadingMore": "Loading more posts...",
     "allPostsLoaded": "All posts loaded",
-    "loginToInteract": "Sign in to like posts and leave comments."
+    "loginToInteract": "Sign in to like posts and leave comments.",
+    "sidebar": {
+      "upcomingEvents": "Upcoming Events",
+      "viewAll": "View All",
+      "attending": "Athletes attending",
+      "suggestedAthletes": "Athletes You May Know",
+      "addFriend": "Add Friend",
+      "trending": "Trending",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "stories": {
+      "myStory": "My Story"
+    },
+    "post": {
+      "addComment": "Add a comment"
+    }
   }
 }

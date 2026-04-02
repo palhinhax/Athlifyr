@@ -48,7 +48,7 @@ export function AthliWelcome({ onSuggestionClick }: AthliWelcomeProps) {
 
       {/* Title */}
       <div className="text-center">
-        <h3 className="text-lg font-bold">{t("welcome")} 👋</h3>
+        <h2 className="text-lg font-bold">{t("welcome")} 👋</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("welcomeDescription")}
         </p>

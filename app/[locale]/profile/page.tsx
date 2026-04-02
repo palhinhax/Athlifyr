@@ -2,10 +2,20 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const { locale } = await Promise.resolve(params);
+  const t = await getTranslations({ locale, namespace: "nav" });
+  return {
+    title: t("profile"),
+    robots: { index: false, follow: false },
+  };
+}
 import { Calendar, Trophy, Users } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
 import { Link } from "@/i18n/routing";
@@ -19,7 +29,6 @@ import { HybridScoreCard } from "@/components/scoring/hybrid-score-card";
 import { ProfileProfessionalSection } from "@/components/profile-professional-section";
 import { AnalysesSection } from "@/components/analyses-section";
 import { ProfileUpcomingEvents } from "@/components/profile-upcoming-events";
-import { getTranslations } from "next-intl/server";
 import { PageContainer } from "@/components/page-container";
 
 export const dynamic = "force-dynamic";

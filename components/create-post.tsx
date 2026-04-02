@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { ImagePlus, X, Globe } from "lucide-react";
+import { ImagePlus, Video, X, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -249,14 +249,15 @@ export function CreatePost({
   return (
     <div>
       <form onSubmit={handleSubmit}>
+        {/* Composer header: avatar + input/placeholder */}
         <div className="flex gap-4">
-          <div className="relative hidden h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted sm:block">
+          <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
             {displayImage ? (
               <Image
                 src={displayImage}
                 alt={displayName || "User"}
                 fill
-                sizes="48px"
+                sizes="40px"
                 className="object-cover"
               />
             ) : (
@@ -270,108 +271,129 @@ export function CreatePost({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={placeholderText}
-              className="min-h-[100px] w-full resize-none border-0 bg-transparent text-sm placeholder:text-muted-foreground focus:ring-0"
+              className="min-h-[44px] w-full resize-none rounded-xl bg-muted/50 px-4 py-3 text-sm transition-colors placeholder:text-muted-foreground/70 hover:bg-muted focus:min-h-[100px] focus:bg-muted/50 focus:outline-none focus:ring-0"
               disabled={isSubmitting || isUploading}
             />
+          </div>
+        </div>
 
-            {/* Media Preview */}
-            {mediaPreview && (
-              <div className="relative mb-3 max-h-[500px] w-full overflow-hidden rounded-[24px] bg-gradient-to-br from-muted/50 to-muted">
-                {mediaType === "video" ? (
-                  <video
-                    src={mediaPreview}
-                    controls
-                    className="h-auto max-h-[500px] w-full object-contain"
-                  >
-                    <track kind="captions" srcLang="en" label="English" />
-                  </video>
-                ) : (
-                  <Image
-                    src={mediaPreview}
-                    alt="Preview"
-                    width={600}
-                    height={600}
-                    className="h-auto max-h-[500px] w-full object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={handleRemoveMedia}
-                  className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white shadow-lg transition-all hover:scale-110 hover:bg-black/90"
+        {/* Media Preview */}
+        {mediaPreview && (
+          <div className="relative mt-3 max-h-[500px] w-full overflow-hidden rounded-[24px] bg-gradient-to-br from-muted/50 to-muted">
+            {mediaType === "video" ? (
+              <video
+                src={mediaPreview}
+                controls
+                className="h-auto max-h-[500px] w-full object-contain"
+              >
+                <track kind="captions" srcLang="en" label="English" />
+              </video>
+            ) : (
+              <Image
+                src={mediaPreview}
+                alt="Preview"
+                width={600}
+                height={600}
+                className="h-auto max-h-[500px] w-full object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            )}
+            <button
+              type="button"
+              onClick={handleRemoveMedia}
+              className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white shadow-lg transition-all hover:scale-110 hover:bg-black/90"
+              disabled={isSubmitting || isUploading}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Actions bar */}
+        <div className="mt-4 flex items-center justify-between pt-4">
+          <div className="flex items-center gap-2">
+            {/* Photo button */}
+            <label htmlFor="post-media-photo">
+              <input
+                id="post-media-photo"
+                type="file"
+                accept="image/*"
+                onChange={handleMediaSelect}
+                className="hidden"
+                disabled={isSubmitting || isUploading || !!mediaPreview}
+              />
+              <button
+                type="button"
+                disabled={isSubmitting || isUploading || !!mediaPreview}
+                onClick={() =>
+                  document.getElementById("post-media-photo")?.click()
+                }
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50"
+              >
+                <ImagePlus className="h-4 w-4 text-primary" />
+                {t("addPhoto")}
+              </button>
+            </label>
+
+            {/* Video button */}
+            <label htmlFor="post-media-video">
+              <input
+                id="post-media-video"
+                type="file"
+                accept="video/*"
+                onChange={handleMediaSelect}
+                className="hidden"
+                disabled={isSubmitting || isUploading || !!mediaPreview}
+              />
+              <button
+                type="button"
+                disabled={isSubmitting || isUploading || !!mediaPreview}
+                onClick={() =>
+                  document.getElementById("post-media-video")?.click()
+                }
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50"
+              >
+                <Video className="h-4 w-4 text-primary" />
+                {t("addVideo")}
+              </button>
+            </label>
+
+            {/* Public/Private Toggle */}
+            {(venueId || eventId) && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="isPublic"
+                  checked={isPublic}
+                  onCheckedChange={(checked) => setIsPublic(checked as boolean)}
                   disabled={isSubmitting || isUploading}
+                />
+                <Label
+                  htmlFor="isPublic"
+                  className="flex cursor-pointer items-center gap-1.5 text-sm font-normal"
                 >
-                  <X className="h-4 w-4" />
-                </button>
+                  <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {t("makePublic")}
+                  </span>
+                  {!isPublic && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      ({t("currentlyPrivate")})
+                    </span>
+                  )}
+                </Label>
               </div>
             )}
-
-            {/* Actions */}
-            <div className="mt-2 flex flex-col gap-3 border-t border-surface-container-high pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                {/* Media Upload */}
-                <label htmlFor="post-media">
-                  <input
-                    id="post-media"
-                    type="file"
-                    accept="image/*,video/*"
-                    onChange={handleMediaSelect}
-                    className="hidden"
-                    disabled={isSubmitting || isUploading || !!mediaPreview}
-                  />
-                  <button
-                    type="button"
-                    disabled={isSubmitting || isUploading || !!mediaPreview}
-                    onClick={() =>
-                      document.getElementById("post-media")?.click()
-                    }
-                    className="flex items-center gap-2 rounded-full p-2 text-muted-foreground transition-colors hover:bg-surface-container-low"
-                  >
-                    <ImagePlus className="h-5 w-5" />
-                    <span className="text-sm font-bold">{t("addMedia")}</span>
-                  </button>
-                </label>
-
-                {/* Public/Private Toggle */}
-                {(venueId || eventId) && (
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="isPublic"
-                      checked={isPublic}
-                      onCheckedChange={(checked) =>
-                        setIsPublic(checked as boolean)
-                      }
-                      disabled={isSubmitting || isUploading}
-                    />
-                    <Label
-                      htmlFor="isPublic"
-                      className="flex cursor-pointer items-center gap-1.5 text-sm font-normal"
-                    >
-                      <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {t("makePublic")}
-                      </span>
-                      {!isPublic && (
-                        <span className="ml-1 text-xs text-muted-foreground">
-                          ({t("currentlyPrivate")})
-                        </span>
-                      )}
-                    </Label>
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={
-                  isSubmitting || isUploading || (!content.trim() && !mediaFile)
-                }
-                className="w-full rounded-full bg-primary px-8 py-2.5 font-headline text-sm font-bold text-white shadow-[0_4px_12px_rgba(232,93,4,0.3)] transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 sm:w-auto"
-              >
-                {t("publish")}
-              </button>
-            </div>
           </div>
+
+          <button
+            type="submit"
+            disabled={
+              isSubmitting || isUploading || (!content.trim() && !mediaFile)
+            }
+            className="rounded-xl bg-gradient-to-br from-primary to-primary/60 px-6 py-2 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 active:scale-[0.98] disabled:opacity-50"
+          >
+            {t("publish")}
+          </button>
         </div>
       </form>
     </div>

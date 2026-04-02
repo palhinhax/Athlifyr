@@ -69,12 +69,79 @@
           "cookies": "Usamos cookies (podes gerir nas definições)",
           "protected": "Os teus dados estão protegidos"
         }
+      },
+      "badge": "Transparência & Desempenho",
+      "highlights": {
+        "title": "Destaques Principais",
+        "privacyByDesign": "Privacidade por Design",
+        "privacyByDesignDesc": "A privacidade é integrada na arquitetura de cada funcionalidade.",
+        "totalControl": "Controlo Total",
+        "totalControlDesc": "Tu decides o que partilhar com a comunidade e treinadores.",
+        "encryption": "Encriptação de Elite",
+        "encryptionDesc": "Dados sensíveis protegidos por encriptação de ponta a ponta."
+      },
+      "questions": {
+        "title": "Dúvidas sobre dados?",
+        "description": "A nossa equipa de conformidade está disponível para esclarecer qualquer ponto.",
+        "cta": "Contactar DPO"
+      },
+      "table": {
+        "title": "Resumo de Utilização de Dados",
+        "category": "Categoria de Dado",
+        "purpose": "Propósito Principal",
+        "retention": "Período de Retenção",
+        "thirdParties": "Terceiros Envolvidos",
+        "rows": {
+          "profile": {
+            "name": "Perfil de Utilizador",
+            "detail": "E-mail, Nome, Password",
+            "purpose": "Autenticação e Gestão de Conta",
+            "retention": "Até encerramento da conta",
+            "thirdParties": "Nenhum"
+          },
+          "vitals": {
+            "name": "Sinais Vitais",
+            "detail": "FC, Sono, Stress",
+            "purpose": "Análise de Recuperação Atleta",
+            "retention": "5 anos (Histórico)",
+            "thirdParties": "Wearable Sync API"
+          },
+          "geo": {
+            "name": "Geolocalização",
+            "detail": "Trajetos GPS, Mapas",
+            "purpose": "Mapeamento de Percursos",
+            "retention": "Enquanto ativo no serviço",
+            "thirdParties": "Map Provider (Anónimo)"
+          },
+          "transactions": {
+            "name": "Transações",
+            "detail": "Faturação, Subscrições",
+            "purpose": "Processamento de Pagamentos",
+            "retention": "10 anos (Legal)",
+            "thirdParties": "Stripe"
+          }
+        }
       }
     },
     "terms": {
+      "badge": "Termos & Condições",
       "title": "Termos de Serviço",
       "lastUpdated": "Última atualização: {date}",
       "intro": "Ao usar o Athlifyr, concordas com estes termos. Lê-os atentamente.",
+      "summary": {
+        "title": "Resumo Rápido",
+        "excellence": "Compromisso de Excelência",
+        "excellenceDesc": "Garantimos as melhores práticas e metodologias para a nossa comunidade.",
+        "security": "Segurança de Dados",
+        "securityDesc": "Os teus dados estão protegidos e encriptados.",
+        "community": "Respeito pela Comunidade",
+        "communityDesc": "Tolerância zero para comportamentos tóxicos."
+      },
+      "questions": {
+        "title": "Dúvidas?",
+        "description": "A nossa equipa de suporte está pronta para te ajudar.",
+        "cta": "Contacta o Suporte"
+      },
       "sections": {
         "acceptance": {
           "title": "1. Aceitação dos Termos",
@@ -127,6 +194,7 @@
       }
     },
     "cookies": {
+      "badge": "Privacidade & Transparência",
       "title": "Política de Cookies",
       "lastUpdated": "Última atualização: {date}",
       "intro": "Utilizamos cookies para melhorar a tua experiência no Athlifyr. Esta página explica o que são cookies e como os usamos.",

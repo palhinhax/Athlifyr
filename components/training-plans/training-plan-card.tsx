@@ -1,14 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,6 +24,7 @@ import {
   CalendarDaysIcon,
   ClipboardListIcon,
   CopyIcon,
+  EyeIcon,
   GlobeIcon,
   Loader2Icon,
   MoreVerticalIcon,
@@ -45,6 +38,34 @@ import { Link } from "@/i18n/routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import type { TrainingPlanWithDetails } from "@/types/training-plan";
+import Image from "next/image";
+
+// All available images for plan cards
+const PLAN_IMAGES = [
+  "/images/workouts/strength.jpg",
+  "/images/workouts/crossfit.jpg",
+  "/images/workouts/running.jpg",
+  "/images/workouts/kettlebell.jpg",
+  "/images/workouts/endurance.jpg",
+  "/images/workouts/hiit.jpg",
+  "/images/workouts/boxing.jpg",
+  "/images/workouts/rowing.jpg",
+  "/images/workouts/gym-dark.jpg",
+  "/images/workouts/sprinting.jpg",
+  "/images/workouts/pullups.jpg",
+  "/images/workouts/battle-ropes.jpg",
+  "/images/workouts/deadlift.jpg",
+  "/images/workouts/jumping.jpg",
+];
+
+// Simple hash to get a consistent pseudo-random index from an id
+function hashIndex(id: string, length: number): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % length;
+}
 
 interface TrainingPlanCardProps {
   plan: TrainingPlanWithDetails & { isSaved?: boolean };
@@ -81,6 +102,8 @@ export function TrainingPlanCard({
     0
   );
 
+  const cardImage = PLAN_IMAGES[hashIndex(plan.id, PLAN_IMAGES.length)];
+
   const handleDelete = () => {
     setShowDeleteDialog(false);
     onDelete?.();
@@ -113,181 +136,207 @@ export function TrainingPlanCard({
     }
   };
 
-  const getDifficultyColor = (difficulty: number) => {
-    switch (difficulty) {
-      case 1:
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case 2:
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case 3:
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      case 4:
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-    }
-  };
-
   return (
     <>
-      <Card className="flex flex-col">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="line-clamp-1 text-lg">
-                <Link
-                  href={`/workouts/plans/${plan.id}`}
-                  className="hover:underline"
-                >
-                  {plan.name}
-                </Link>
-              </CardTitle>
-              {plan.description && (
-                <CardDescription className="mt-1 line-clamp-2">
-                  {plan.description}
-                </CardDescription>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              {canSave && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="-mr-1 -mt-2"
-                  onClick={handleToggleSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <Loader2Icon className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <BookmarkIcon
-                      className={`h-4 w-4 ${isSaved ? "fill-current text-primary" : ""}`}
-                    />
-                  )}
-                </Button>
-              )}
-              {canEdit && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
-                      <MoreVerticalIcon className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onEdit}>
-                      <PencilIcon className="mr-2 h-4 w-4" />
-                      {t("editPlan")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDuplicate}>
-                      <CopyIcon className="mr-2 h-4 w-4" />
-                      {t("duplicatePlan")}
-                    </DropdownMenuItem>
-                    {canAssign && (
-                      <DropdownMenuItem onClick={onAssign}>
-                        <UserPlusIcon className="mr-2 h-4 w-4" />
-                        {t("assignPlan")}
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => setShowDeleteDialog(true)}
-                    >
-                      <TrashIcon className="mr-2 h-4 w-4" />
-                      {t("deletePlan")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          </div>
-        </CardHeader>
+      <div className="group relative flex h-[420px] flex-col overflow-hidden rounded-2xl bg-slate-900 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+        {/* Background image */}
+        <Image
+          src={cardImage}
+          alt=""
+          fill
+          className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-110"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
 
-        <CardContent className="flex-1 space-y-3 pt-0">
-          {/* Stats */}
-          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <CalendarDaysIcon className="h-4 w-4" />
-              <span>
-                {t("stats.totalWeeks", { count: plan.duration ?? 0 })}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <ClipboardListIcon className="h-4 w-4" />
-              <span>{t("stats.totalWorkouts", { count: totalWorkouts })}</span>
-            </div>
-            {canEdit &&
-              plan._count?.assignedToUsers &&
-              plan._count.assignedToUsers > 0 && (
-                <div className="flex items-center gap-1">
-                  <UsersIcon className="h-4 w-4" />
-                  <span>
-                    {t("stats.assignedAthletes", {
-                      count: plan._count.assignedToUsers,
-                    })}
-                  </span>
-                </div>
-              )}
-          </div>
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
 
+        {/* Top action bar */}
+        <div className="relative z-10 flex items-center justify-between p-4">
           {/* Badges */}
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant="secondary"
-              className={getDifficultyColor(plan.difficulty ?? 1)}
-            >
+          <div className="flex flex-wrap gap-1.5">
+            <Badge className="border-none bg-white/20 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
               {t(`difficulty.${plan.difficulty ?? 1}`)}
             </Badge>
             {plan.isPublic && (
-              <Badge variant="outline" className="gap-1">
-                <GlobeIcon className="h-3 w-3" />
+              <Badge className="border-none bg-white/20 text-[10px] font-semibold text-white backdrop-blur-sm">
+                <GlobeIcon className="mr-1 h-3 w-3" />
                 {t("publicPlans")}
               </Badge>
             )}
             {plan.isTemplate && (
-              <Badge variant="outline">{t("templates")}</Badge>
+              <Badge className="border-none bg-white/20 text-[10px] font-semibold text-white backdrop-blur-sm">
+                {t("templates")}
+              </Badge>
             )}
           </div>
 
-          {/* Creator info - only show for public plans */}
-          {plan.isPublic && plan.createdBy && (
-            <Link
-              href={`/user/${plan.createdBy.id}`}
-              className="flex items-center gap-2 rounded-md p-1.5 transition-colors hover:bg-muted"
-            >
-              <Avatar className="h-5 w-5">
-                <AvatarImage src={plan.createdBy.image || undefined} />
-                <AvatarFallback className="text-[10px]">
-                  {plan.createdBy.name
-                    ?.split(" ")
-                    .map((n: string) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2) || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground">
-                {t("createdBy")}{" "}
-                <span className="font-medium text-foreground">
-                  {plan.createdBy.name}
-                </span>
-              </span>
-            </Link>
-          )}
-        </CardContent>
-
-        <CardFooter className="pt-3">
-          <div className="flex w-full gap-2">
-            <Button asChild variant="outline" className="flex-1">
-              <Link href={`/workouts/plans/${plan.id}`}>{t("viewPlan")}</Link>
-            </Button>
-            {canAssign && (
-              <Button variant="default" size="icon" onClick={onAssign}>
-                <UserPlusIcon className="h-4 w-4" />
+          {/* Action buttons */}
+          <div className="flex items-center gap-1">
+            {canSave && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white/80 hover:bg-white/20 hover:text-white"
+                onClick={handleToggleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                ) : (
+                  <BookmarkIcon
+                    className={`h-4 w-4 ${isSaved ? "fill-current text-white" : ""}`}
+                  />
+                )}
               </Button>
             )}
+            {canEdit && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-white/80 hover:bg-white/20 hover:text-white"
+                  >
+                    <MoreVerticalIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={onEdit}>
+                    <PencilIcon className="mr-2 h-4 w-4" />
+                    {t("editPlan")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onDuplicate}>
+                    <CopyIcon className="mr-2 h-4 w-4" />
+                    {t("duplicatePlan")}
+                  </DropdownMenuItem>
+                  {canAssign && (
+                    <DropdownMenuItem onClick={onAssign}>
+                      <UserPlusIcon className="mr-2 h-4 w-4" />
+                      {t("assignPlan")}
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    <TrashIcon className="mr-2 h-4 w-4" />
+                    {t("deletePlan")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+
+        {/* Creator badge */}
+        {plan.isPublic && plan.createdBy && (
+          <Link
+            href={`/user/${plan.createdBy.id}`}
+            className="relative z-10 mx-4 flex w-fit items-center gap-2 rounded-full bg-black/20 px-3 py-1 backdrop-blur-sm transition-colors hover:bg-black/30"
+          >
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={plan.createdBy.image || undefined} />
+              <AvatarFallback className="bg-white/20 text-[10px] text-white">
+                {plan.createdBy.name
+                  ?.split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2) || "?"}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs font-medium text-white/90">
+              {plan.createdBy.name}
+            </span>
+          </Link>
+        )}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Glass overlay bottom section */}
+        <div className="relative z-10 mx-3 mb-3 flex flex-col gap-3 rounded-xl border-t border-white/20 bg-white/15 p-4 backdrop-blur-md">
+          {/* Title */}
+          <div>
+            <h3 className="line-clamp-1 font-headline text-lg font-bold leading-tight text-white">
+              {plan.name}
+            </h3>
+            {plan.description && (
+              <p className="mt-0.5 line-clamp-1 text-xs text-white/70">
+                {plan.description}
+              </p>
+            )}
+          </div>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-4 text-xs font-medium text-white/90">
+            <span className="flex items-center gap-1">
+              <CalendarDaysIcon className="h-3.5 w-3.5" />
+              {plan.duration ?? 0} {t("weeksCount")}
+            </span>
+            <span className="flex items-center gap-1">
+              <ClipboardListIcon className="h-3.5 w-3.5" />
+              {totalWorkouts}{" "}
+              {t("stats.totalWorkouts", { count: totalWorkouts })
+                .replace(String(totalWorkouts), "")
+                .trim()}
+            </span>
+            {canEdit &&
+              plan._count?.assignedToUsers &&
+              plan._count.assignedToUsers > 0 && (
+                <span className="flex items-center gap-1">
+                  <UsersIcon className="h-3.5 w-3.5" />
+                  {plan._count.assignedToUsers}
+                </span>
+              )}
+          </div>
+
+          {/* Bottom row: Difficulty bars + View button */}
+          <div className="flex items-center justify-between">
+            {/* Difficulty bars */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                {t(`difficulty.${plan.difficulty ?? 1}`)}
+              </span>
+              <div className="flex gap-1">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 w-5 rounded-full ${
+                      i < (plan.difficulty ?? 1)
+                        ? "bg-orange-400"
+                        : "bg-white/25"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <Button
+                asChild
+                size="sm"
+                className="rounded-full bg-white/25 text-white backdrop-blur-sm hover:bg-white/35"
+              >
+                <Link href={`/workouts/plans/${plan.id}`}>
+                  <EyeIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {t("viewPlan")}
+                </Link>
+              </Button>
+              {canAssign && (
+                <Button
+                  size="sm"
+                  className="rounded-full bg-white/25 text-white backdrop-blur-sm hover:bg-white/35"
+                  onClick={onAssign}
+                >
+                  <UserPlusIcon className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

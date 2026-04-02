@@ -65,18 +65,25 @@
     "supportedFormats": "Unterstützte Formate: {formats}"
   },
   "contact": {
-    "title": "Kontaktiere uns",
-    "description": "Sende uns Vorschläge, melde Probleme oder stelle Fragen",
-    "welcomeMessage": "👋 Hallo! Hast du eine Frage, einen Vorschlag oder Feedback? Schick uns eine kurze Nachricht und wir melden uns so schnell wie möglich.",
-    "welcomeMessageLoggedIn": "👋 Hallo {name}! Wie können wir dir helfen?",
+    "title": "Lass uns reden",
+    "description": "Wir sind hier, um deine Leistung zu steigern. Ob du ein einzelner Athlet oder ein Fitnessstudio auf der Suche nach Exzellenz bist, unser Team ist bereit zu helfen.",
+    "welcomeMessage": "\ud83d\udc4b Hallo! Hast du eine Frage, einen Vorschlag oder Feedback? Schick uns eine kurze Nachricht und wir melden uns so schnell wie m\u00f6glich.",
+    "welcomeMessageLoggedIn": "\ud83d\udc4b Hallo {name}! Wie k\u00f6nnen wir dir helfen?",
     "cards": {
-      "suggestions": "Vorschläge",
+      "suggestions": "Vorschl\u00e4ge",
       "suggestionsDesc": "Teile Ideen zur Verbesserung der Plattform",
       "reportProblem": "Problem melden",
       "reportProblemDesc": "Hast du einen Fehler gefunden? Lass es uns wissen!",
       "questions": "Fragen",
-      "questionsDesc": "Hast du eine Frage? Wir sind hier um zu helfen"
+      "questionsDesc": "Hast du eine Frage? Wir sind hier um zu helfen",
+      "techSupport": "Technischer Support",
+      "techSupportDesc": "Probleme mit deinem Konto oder der Plattform? Unser technisches Team antwortet in weniger als 2 Stunden.",
+      "eventPartnerships": "Event-Partnerschaften",
+      "eventPartnershipsDesc": "M\u00f6chtest du Athlifyr zu deinem Wettbewerb bringen? Lass uns zusammen etwas Episches schaffen.",
+      "gymSales": "Vertrieb f\u00fcr Fitnessstudios",
+      "gymSalesDesc": "Enterprise-L\u00f6sungen f\u00fcr Performance-Management und Trainingsgemeinschaften."
     },
+    "formTitle": "Nachricht senden",
     "form": {
       "name": "Name",
       "namePlaceholder": "Dein Name",

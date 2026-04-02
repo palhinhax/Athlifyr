@@ -180,6 +180,13 @@ export function ContactForm({
     );
   }
 
+  // Style overrides for compact mode (floating chat popup)
+  const labelClass = compact ? "text-sm" : "";
+  const inputClass = compact ? "h-9 p-2 text-sm" : "";
+  const textareaClass = compact
+    ? "min-h-[80px] resize-none p-2 text-sm"
+    : "min-h-[150px]";
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -199,8 +206,8 @@ export function ContactForm({
       {/* Name - only show for non-logged in users */}
       {!isLoggedIn && (
         <div className={compact ? "space-y-2" : ""}>
-          <Label htmlFor="contact-name" className={compact ? "text-sm" : ""}>
-            {t("form.name")} <span className="text-destructive">*</span>
+          <Label htmlFor="contact-name" className={labelClass}>
+            {t("form.name")}
           </Label>
           <Input
             id="contact-name"
@@ -209,7 +216,7 @@ export function ContactForm({
             placeholder={t("form.namePlaceholder")}
             required
             aria-required="true"
-            className={compact ? "h-9" : ""}
+            className={inputClass}
           />
         </div>
       )}
@@ -217,8 +224,8 @@ export function ContactForm({
       {/* Email - only show for non-logged in users */}
       {!isLoggedIn && (
         <div className={compact ? "space-y-2" : ""}>
-          <Label htmlFor="contact-email" className={compact ? "text-sm" : ""}>
-            {t("form.email")} <span className="text-destructive">*</span>
+          <Label htmlFor="contact-email" className={labelClass}>
+            {t("form.email")}
           </Label>
           <Input
             id="contact-email"
@@ -230,21 +237,24 @@ export function ContactForm({
             placeholder={t("form.emailPlaceholder")}
             required
             aria-required="true"
-            className={compact ? "h-9" : ""}
+            className={inputClass}
           />
         </div>
       )}
 
       {/* Type */}
       <div className={compact ? "space-y-2" : ""}>
-        <Label htmlFor="contact-type" className={compact ? "text-sm" : ""}>
-          {t("form.type")} <span className="text-destructive">*</span>
+        <Label htmlFor="contact-type" className={labelClass}>
+          {t("form.type")}
         </Label>
         <Select
           value={formData.type}
           onValueChange={(value) => setFormData({ ...formData, type: value })}
         >
-          <SelectTrigger id="contact-type" className={compact ? "h-9" : ""}>
+          <SelectTrigger
+            id="contact-type"
+            className={compact ? "h-9 p-2 text-sm" : ""}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -264,8 +274,8 @@ export function ContactForm({
       {/* Subject - only show in full page mode */}
       {showSubject && (
         <div>
-          <Label htmlFor="contact-subject">
-            {t("form.subject")} <span className="text-destructive">*</span>
+          <Label htmlFor="contact-subject" className={labelClass}>
+            {t("form.subject")}
           </Label>
           <Input
             id="contact-subject"
@@ -275,14 +285,15 @@ export function ContactForm({
             }
             placeholder={t("form.subjectPlaceholder")}
             required
+            className={inputClass}
           />
         </div>
       )}
 
       {/* Message */}
       <div className={compact ? "space-y-2" : ""}>
-        <Label htmlFor="contact-message" className={compact ? "text-sm" : ""}>
-          {t("form.message")} <span className="text-destructive">*</span>
+        <Label htmlFor="contact-message" className={labelClass}>
+          {t("form.message")}
         </Label>
         <Textarea
           id="contact-message"
@@ -292,7 +303,7 @@ export function ContactForm({
           }
           placeholder={messagePlaceholder}
           required
-          className={compact ? "min-h-[80px] resize-none" : "min-h-[150px]"}
+          className={textareaClass}
         />
         {!compact && (
           <p className="mt-1 text-xs text-muted-foreground">
@@ -310,6 +321,8 @@ export function ContactForm({
           !formData.message ||
           (showSubject && !formData.subject)
         }
+        variant={compact ? "default" : "gradient"}
+        size={compact ? "default" : "xl"}
         className="w-full gap-2"
       >
         {isSubmitting ? (

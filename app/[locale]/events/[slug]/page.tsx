@@ -23,6 +23,7 @@ import { LiveRaceSection } from "@/components/live-race-section";
 import { LiveRaceCheckinBanner } from "@/components/live-race-checkin-banner";
 import { EventRegistrationBar } from "@/components/event-registration-bar";
 import { EventRouteSection } from "@/components/event-route-section";
+import { EventParticipationCard } from "@/components/event-participation-card";
 import { Language, Prisma } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -511,8 +512,52 @@ export default async function EventPage({ params }: PageProps) {
 
           {/* Weather Forecast - Mobile Only */}
           {event.weather && event.weather.length > 0 && (
-            <EventWeather weather={event.weather} isPastEvent={isPastEvent} />
+            <div className="lg:hidden">
+              <EventWeather weather={event.weather} isPastEvent={isPastEvent} />
+            </div>
           )}
+
+          {/* Registration / Participation - Mobile Only */}
+          <div className="lg:hidden">
+            <EventParticipationCard
+              eventId={event.id}
+              eventSlug={event.slug}
+              eventTitle={event.title}
+              hasRegistrations={event.hasRegistrations}
+              variants={event.variants.map((v) => ({
+                id: v.id,
+                name: v.name,
+                distanceKm: v.distanceKm,
+                startDate: v.startDate,
+                startTime: v.startTime,
+              }))}
+              registrationVariants={event.variants.map((v) => ({
+                id: v.id,
+                name: v.name,
+                distanceKm: v.distanceKm,
+                startDate: v.startDate,
+                startTime: v.startTime,
+                maxParticipants: v.maxParticipants,
+                registrationCount:
+                  v._count.registrations + v._count.participations,
+                pricingPhases: v.pricingPhases.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  price: p.price,
+                  currency: p.currency,
+                  startDate: p.startDate,
+                  endDate: p.endDate,
+                })),
+                teamSize: v.teamSize,
+              }))}
+              cancelled={event.cancelled}
+              isPastEvent={isPastEvent}
+              registrationFieldSettings={
+                (event.registrationFieldSettings as Record<string, string>) ??
+                {}
+              }
+            />
+          </div>
 
           {/* FAQ Section */}
           {event.faqs.length > 0 && (

@@ -65,18 +65,25 @@
     "supportedFormats": "Formati supportati: {formats}"
   },
   "contact": {
-    "title": "Contattaci",
-    "description": "Inviaci suggerimenti, segnala problemi o fai domande",
-    "welcomeMessage": "👋 Ciao! Hai una domanda, un suggerimento o un feedback? Inviaci un messaggio veloce e ti risponderemo il prima possibile.",
-    "welcomeMessageLoggedIn": "👋 Ciao {name}! Come possiamo aiutarti?",
+    "title": "Parliamone",
+    "description": "Siamo qui per elevare le tue prestazioni. Che tu sia un atleta individuale o una palestra alla ricerca dell'eccellenza, il nostro team \u00e8 pronto ad aiutarti.",
+    "welcomeMessage": "\ud83d\udc4b Ciao! Hai una domanda, un suggerimento o un feedback? Inviaci un messaggio veloce e ti risponderemo il prima possibile.",
+    "welcomeMessageLoggedIn": "\ud83d\udc4b Ciao {name}! Come possiamo aiutarti?",
     "cards": {
       "suggestions": "Suggerimenti",
       "suggestionsDesc": "Condividi idee per migliorare la piattaforma",
       "reportProblem": "Segnala Problema",
       "reportProblemDesc": "Hai trovato un bug? Faccelo sapere!",
       "questions": "Domande",
-      "questionsDesc": "Hai una domanda? Siamo qui per aiutarti"
+      "questionsDesc": "Hai una domanda? Siamo qui per aiutarti",
+      "techSupport": "Supporto Tecnico",
+      "techSupportDesc": "Problemi con il tuo account o la piattaforma? Il nostro team tecnico risponde in meno di 2 ore.",
+      "eventPartnerships": "Partnership Eventi",
+      "eventPartnershipsDesc": "Vuoi portare Athlifyr alla tua competizione? Creiamo qualcosa di epico insieme.",
+      "gymSales": "Vendite per Palestre",
+      "gymSalesDesc": "Soluzioni Enterprise per gestione delle performance e comunit\u00e0 di allenamento."
     },
+    "formTitle": "Invia un Messaggio",
     "form": {
       "name": "Nome",
       "namePlaceholder": "Il tuo nome",

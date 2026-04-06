@@ -1,28 +1,23 @@
-"use client";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { ChatLayoutClient } from "./chat-layout-client";
 
-import { useEffect } from "react";
+interface ChatLayoutProps {
+  readonly children: React.ReactNode;
+  readonly params: Promise<{ locale: string }>;
+}
 
-export default function ChatLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Hide footer when chat page is mounted
-  useEffect(() => {
-    // Find and hide the footer
-    const footer = document.querySelector("footer.border-t");
-    if (footer) {
-      (footer as HTMLElement).style.display = "none";
-    }
+export async function generateMetadata({
+  params,
+}: ChatLayoutProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "chat" });
+  return {
+    title: t("title"),
+    robots: { index: false, follow: false },
+  };
+}
 
-    // Cleanup: show footer when leaving chat
-    return () => {
-      const footer = document.querySelector("footer.border-t");
-      if (footer) {
-        (footer as HTMLElement).style.display = "";
-      }
-    };
-  }, []);
-
-  return <div className="flex h-[calc(100vh-4rem)] flex-col">{children}</div>;
+export default function ChatLayout({ children }: ChatLayoutProps) {
+  return <ChatLayoutClient>{children}</ChatLayoutClient>;
 }

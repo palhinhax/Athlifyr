@@ -169,6 +169,12 @@ export async function GET(request: NextRequest) {
             country: true,
             sportTypes: true,
             cancelled: true,
+            imageUrl: true,
+            _count: {
+              select: {
+                participations: true,
+              },
+            },
           },
         },
         variant: {
@@ -252,6 +258,8 @@ export async function GET(request: NextRequest) {
       variantDistance: p.variant?.distanceKm || null,
       participationStatus: p.status,
       cancelled: p.event.cancelled,
+      imageUrl: p.event.imageUrl || null,
+      participantCount: p.event._count.participations,
     }));
 
     // Combine all schedule items

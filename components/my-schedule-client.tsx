@@ -3,9 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { SessionDetailsDialog } from "@/components/session-details-dialog";
@@ -16,13 +15,12 @@ import {
   Clock,
   Users,
   Building2,
-  Dumbbell,
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
   ExternalLink,
-  Pencil,
   MapPin,
+  ArrowRight,
 } from "lucide-react";
 import {
   format,
@@ -37,7 +35,6 @@ import {
   endOfWeek,
   eachDayOfInterval,
   parseISO,
-  differenceInMinutes,
 } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -109,6 +106,8 @@ interface ScheduleEvent {
   variantDistance: number | null;
   participationStatus: string;
   cancelled: boolean;
+  imageUrl: string | null;
+  participantCount: number;
 }
 
 const localeMap: Record<string, Locale> = {
@@ -367,151 +366,75 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="flex items-center gap-3 text-3xl font-bold">
-          <CalendarClock className="h-8 w-8 text-primary" />
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("description")}</p>
-
-        {/* Today's summary */}
-        {todayItemCount > 0 && (
-          <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2">
-            <CalendarIcon className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">
+      <div className="mb-6 md:mb-8 md:flex md:items-end md:justify-between">
+        <div>
+          <h1 className="font-headline text-2xl font-bold tracking-tight md:text-4xl md:font-extrabold">
+            {t("title")}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("description")}
+          </p>
+        </div>
+        <div className="mt-4 hidden gap-3 md:flex">
+          {todayItemCount > 0 && (
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-semibold shadow-sm">
+              <CalendarIcon className="h-4 w-4 text-primary" />
               {t("todaySessions", { count: todayItemCount })}
-            </span>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Upcoming Events Section */}
-      {upcomingEvents.length > 0 && (
-        <div className="mb-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold">{t("upcomingEvents")}</h2>
-            <Link href="/events">
-              <Button variant="ghost" size="sm">
-                {t("viewAllEvents")}
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {upcomingEvents.map((event) => (
-              <ScheduleEventCard
-                key={`upcoming-event-${event.id}`}
-                event={event}
-                locale={locale}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Upcoming Sessions Section */}
-      {upcomingSessions.length > 0 && (
-        <div className="mb-6">
-          <h2 className="mb-4 text-xl font-semibold">
-            {t("upcomingSessions")}
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {upcomingSessions.map((session) => (
-              <ScheduleSessionCard
-                key={`upcoming-session-${session.id}`}
-                session={session}
-                locale={locale}
-                dateLocale={dateLocale}
-                onClick={() => handleSessionClick(session)}
-                onEdit={() => handleEditSession(session)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-        {/* Sessions for Selected Day */}
-        <div className="order-2 lg:order-1">
-          <div className="rounded-lg border bg-card p-4">
-            <h3 className="mb-4 text-lg font-semibold">
-              {format(selectedDay, "PPP", { locale: dateLocale })}
-            </h3>
-
-            {selectedDayItems.length === 0 ? (
-              <div className="py-12 text-center">
-                <CalendarClock className="mx-auto h-12 w-12 text-muted-foreground/30" />
-                <p className="mt-4 text-muted-foreground">
-                  {t("noSessionsThisDay")}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {selectedDayItems.map(({ type, item }) =>
-                  type === "session" ? (
-                    <ScheduleSessionCard
-                      key={`session-${item.id}`}
-                      session={item as ScheduleSession}
-                      locale={locale}
-                      dateLocale={dateLocale}
-                      onClick={() =>
-                        handleSessionClick(item as ScheduleSession)
-                      }
-                      onEdit={() => handleEditSession(item as ScheduleSession)}
-                    />
-                  ) : (
-                    <ScheduleEventCard
-                      key={`event-${item.id}`}
-                      event={item as ScheduleEvent}
-                      locale={locale}
-                    />
-                  )
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
+      {/* Main Grid: Calendar + Daily Agenda */}
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
         {/* Calendar */}
-        <div className="order-1 lg:order-2">
-          <div className="rounded-lg border bg-card">
-            {/* Header with navigation */}
-            <div className="flex items-center justify-between border-b p-2 md:p-4">
-              <h3 className="text-base font-semibold capitalize md:text-lg">
+        <div className="order-1 xl:col-span-8">
+          {/* Monthly Calendar Grid */}
+          <section className="rounded-2xl border border-border/40 bg-card p-4 shadow-[0_8px_32px_rgba(0,0,0,0.06)] md:p-8">
+            {/* Calendar Header */}
+            <div className="mb-4 flex items-center justify-between md:mb-8">
+              <h2 className="font-headline text-lg font-bold capitalize md:text-xl">
                 {format(currentDate, "MMMM yyyy", { locale: dateLocale })}
-              </h3>
-
-              <div className="flex gap-1">
-                <Button variant="outline" size="sm" onClick={goToPreviousMonth}>
+              </h2>
+              <div className="flex items-center gap-2 md:rounded-lg md:bg-muted md:p-1">
+                <button
+                  onClick={goToPreviousMonth}
+                  className="rounded-lg p-1 transition-all hover:bg-muted md:rounded-md md:p-1.5 md:hover:bg-card"
+                >
                   <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={goToToday}>
-                  <CalendarIcon className="h-4 w-4" />
-                  <span className="ml-1 hidden sm:inline">{t("today")}</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={goToNextMonth}>
+                </button>
+                <button
+                  onClick={goToToday}
+                  className="hidden px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground md:block"
+                >
+                  {t("today")}
+                </button>
+                <button
+                  onClick={goToNextMonth}
+                  className="rounded-lg p-1 transition-all hover:bg-muted md:rounded-md md:p-1.5 md:hover:bg-card"
+                >
                   <ChevronRight className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
             </div>
 
-            {/* Calendar grid */}
-            <div className="p-2 md:p-4">
+            {/* Mobile: Compact Calendar Grid */}
+            <div className="md:hidden">
               {/* Week day headers */}
-              <div className="mb-1 grid grid-cols-7 gap-1">
+              <div className="mb-2 grid grid-cols-7 gap-1 text-center">
                 {localizedWeekDays.map((day) => (
-                  <div
-                    key={day}
-                    className="py-1 text-center text-xs font-medium text-muted-foreground md:py-2"
+                  <span
+                    key={`mobile-header-${day}`}
+                    className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
                   >
                     {day}
-                  </div>
+                  </span>
                 ))}
               </div>
 
-              {/* Calendar days */}
+              {/* Calendar days - compact */}
               <div className="grid grid-cols-7 gap-1">
                 {calendarDays.map((day) => {
                   const dayKey = format(day, "yyyy-MM-dd");
@@ -527,38 +450,307 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
                       key={dayKey}
                       onClick={() => setSelectedDay(day)}
                       className={cn(
-                        "flex min-h-[52px] flex-col items-center justify-start gap-1 rounded-md p-1.5 text-sm transition-colors md:min-h-[56px] md:p-2",
-                        "hover:bg-accent",
+                        "relative flex aspect-square items-center justify-center text-sm transition-colors",
+                        !isCurrentMonth && "text-muted-foreground/30",
+                        isCurrentMonth && "font-medium",
                         isSelected &&
-                          "border-2 border-primary bg-primary/10 ring-2 ring-primary ring-offset-2",
-                        !isCurrentMonth && "text-muted-foreground opacity-40",
-                        isTodayDate && "font-bold"
+                          "rounded-xl bg-primary font-bold text-primary-foreground shadow-md",
+                        isTodayDate && !isSelected && "font-bold",
+                        !isSelected && "hover:bg-muted"
                       )}
                     >
-                      <span className="text-xs md:text-sm">
-                        {format(day, "d")}
-                      </span>
-
-                      {/* Item count badge */}
-                      {itemCount > 0 && (
-                        <span
-                          className={cn(
-                            "min-w-[18px] rounded-full px-1 py-0.5 text-center text-[9px] font-semibold leading-none",
-                            isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-primary/15 text-primary"
-                          )}
-                        >
-                          {itemCount}
-                        </span>
+                      {format(day, "d")}
+                      {/* Dot indicator for items */}
+                      {itemCount > 0 && !isSelected && (
+                        <div className="absolute bottom-1 h-1 w-1 rounded-full bg-primary" />
                       )}
                     </button>
                   );
                 })}
               </div>
             </div>
-          </div>
+
+            {/* Desktop: Full Calendar Grid */}
+            <div className="hidden md:block">
+              <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-border/60 bg-border/60">
+                {/* Week day headers */}
+                {localizedWeekDays.map((day) => (
+                  <div
+                    key={`desktop-header-${day}`}
+                    className="bg-muted/50 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+                  >
+                    {day}
+                  </div>
+                ))}
+
+                {/* Calendar days */}
+                {calendarDays.map((day) => {
+                  const dayKey = format(day, "yyyy-MM-dd");
+                  const itemCount = itemsByDay[dayKey] || 0;
+                  const isSelected = isSameDay(day, selectedDay);
+                  const isCurrentMonth =
+                    day.getMonth() === currentDate.getMonth() &&
+                    day.getFullYear() === currentDate.getFullYear();
+                  const isTodayDate = isToday(day);
+
+                  return (
+                    <button
+                      key={dayKey}
+                      onClick={() => setSelectedDay(day)}
+                      className={cn(
+                        "relative flex h-24 flex-col bg-card p-2 text-left transition-colors hover:bg-primary/5",
+                        !isCurrentMonth && "text-muted-foreground/40",
+                        isSelected &&
+                          "z-10 bg-primary/5 ring-2 ring-inset ring-primary",
+                        isTodayDate && "font-bold"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "text-sm",
+                          isTodayDate &&
+                            "inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground",
+                          !isTodayDate &&
+                            isCurrentMonth &&
+                            "font-bold text-foreground"
+                        )}
+                      >
+                        {format(day, "d")}
+                      </span>
+
+                      {/* Day event indicators */}
+                      {itemCount > 0 && (
+                        <div className="mt-auto space-y-1">
+                          <div className="truncate rounded bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                            {itemCount}{" "}
+                            {itemCount === 1
+                              ? t("itemSingular")
+                              : t("itemPlural")}
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
         </div>
+
+        {/* Right: Daily Focus & Agenda */}
+        <div className="order-2 xl:col-span-4">
+          <section className="rounded-2xl border border-border/40 bg-card p-4 shadow-[0_8px_32px_rgba(0,0,0,0.06)] md:p-6 xl:h-full">
+            {/* Day header */}
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  {isToday(selectedDay)
+                    ? t("today")
+                    : format(selectedDay, "EEEE", { locale: dateLocale })}
+                </p>
+                <h2 className="font-headline text-2xl font-extrabold">
+                  {format(selectedDay, "d MMMM", { locale: dateLocale })}
+                </h2>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <CalendarClock className="h-6 w-6" />
+              </div>
+            </div>
+
+            {/* Timeline */}
+            {selectedDayItems.length === 0 ? (
+              <div className="py-12 text-center">
+                <CalendarClock className="mx-auto h-12 w-12 text-muted-foreground/20" />
+                <p className="mt-4 text-sm text-muted-foreground">
+                  {t("noSessionsThisDay")}
+                </p>
+              </div>
+            ) : (
+              <div className="relative space-y-8">
+                {/* Timeline line */}
+                <div className="absolute bottom-2 left-[15px] top-2 w-0.5 bg-border" />
+
+                {selectedDayItems.map(({ type, item }) => {
+                  if (type === "session") {
+                    const session = item as ScheduleSession;
+                    const sessionStart = parseISO(session.startsAt);
+                    const sessionEnd = parseISO(session.endsAt);
+                    const isCoach = session.userRole === "COACH";
+
+                    return (
+                      <button
+                        type="button"
+                        key={`timeline-session-${session.id}`}
+                        className="relative w-full cursor-pointer pl-10 text-left"
+                        onClick={() => handleSessionClick(session)}
+                      >
+                        {/* Timeline dot */}
+                        <div className="absolute left-0 top-1 z-10 flex h-8 w-8 items-center justify-center rounded-full border-4 border-primary bg-card" />
+
+                        <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
+                          <div className="mb-2 flex items-start justify-between">
+                            <span className="text-xs font-bold text-muted-foreground">
+                              {format(sessionStart, "HH:mm", {
+                                locale: dateLocale,
+                              })}{" "}
+                              –{" "}
+                              {format(sessionEnd, "HH:mm", {
+                                locale: dateLocale,
+                              })}
+                            </span>
+                            <span
+                              className={cn(
+                                "rounded px-2 py-0.5 text-[10px] font-black uppercase",
+                                isCoach
+                                  ? "bg-primary/10 text-primary"
+                                  : "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                              )}
+                            >
+                              {isCoach ? t("asCoach") : t("asParticipant")}
+                            </span>
+                          </div>
+                          <h4 className="font-headline font-bold">
+                            {session.title}
+                          </h4>
+                          {session.description && (
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {session.description}
+                            </p>
+                          )}
+                          <div className="mt-3 flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {session.venue.name}
+                            </span>
+                          </div>
+                          {/* Participants */}
+                          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                            <Users className="h-3.5 w-3.5" />
+                            <span>
+                              {session._count.bookings}
+                              {session.capacity
+                                ? `/${session.capacity}`
+                                : ""}{" "}
+                              {t("participants")}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  } else {
+                    const event = item as ScheduleEvent;
+                    const eventDate = parseISO(event.startsAt);
+
+                    return (
+                      <Link
+                        key={`timeline-event-${event.id}`}
+                        href={`/events/${event.eventSlug}`}
+                        className="relative block pl-10"
+                      >
+                        {/* Timeline dot */}
+                        <div className="absolute left-0 top-1 z-10 flex h-8 w-8 items-center justify-center rounded-full border-4 border-blue-500 bg-card" />
+
+                        <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
+                          <div className="mb-2 flex items-start justify-between">
+                            <span className="text-xs font-bold text-muted-foreground">
+                              {event.startTime ||
+                                format(eventDate, "HH:mm", {
+                                  locale: dateLocale,
+                                })}
+                            </span>
+                            <span className="rounded bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                              {t("eventLabel")}
+                            </span>
+                          </div>
+                          <h4 className="font-headline font-bold">
+                            {event.title}
+                          </h4>
+                          <div className="mt-3 flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {event.city}, {event.country}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  }
+                })}
+              </div>
+            )}
+
+            {/* Upcoming Sessions mini-list */}
+            {upcomingSessions.length > 0 && (
+              <div className="mt-8 border-t border-border pt-6">
+                <h3 className="mb-4 font-headline text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  {t("upcomingSessions")}
+                </h3>
+                <div className="space-y-3">
+                  {upcomingSessions.slice(0, 3).map((session) => {
+                    const sessionStart = parseISO(session.startsAt);
+                    return (
+                      <button
+                        key={`mini-session-${session.id}`}
+                        type="button"
+                        className="w-full cursor-pointer rounded-lg border border-border/60 bg-muted/20 p-3 text-left transition-colors hover:bg-muted/40"
+                        onClick={() => handleSessionClick(session)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-muted-foreground">
+                            {format(sessionStart, "EEE, d MMM", {
+                              locale: dateLocale,
+                            })}
+                          </span>
+                          <span className="text-xs font-bold text-primary">
+                            {format(sessionStart, "HH:mm", {
+                              locale: dateLocale,
+                            })}
+                          </span>
+                        </div>
+                        <h4 className="mt-1 text-sm font-bold">
+                          {session.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {session.venue.name}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Upcoming Events Section - order-3 so it appears after daily agenda on mobile */}
+        {upcomingEvents.length > 0 && (
+          <div className="order-3 xl:col-span-8">
+            <section>
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="font-headline text-xl font-bold md:text-2xl">
+                  {t("upcomingEvents")}
+                </h2>
+                <Link
+                  href="/events"
+                  className="flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+                >
+                  {t("viewAllEvents")}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {upcomingEvents.map((event) => (
+                  <ScheduleEventCard
+                    key={`upcoming-event-${event.id}`}
+                    event={event}
+                    locale={locale}
+                    dateLocale={dateLocale}
+                  />
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
       </div>
 
       {/* Session Details Dialog */}
@@ -617,290 +809,120 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
 interface ScheduleEventCardProps {
   event: ScheduleEvent;
   locale: string;
+  dateLocale: Locale;
 }
 
-function ScheduleEventCard({ event, locale }: ScheduleEventCardProps) {
+function ScheduleEventCard({
+  event,
+  locale: _locale,
+  dateLocale,
+}: Readonly<ScheduleEventCardProps>) {
   const tEvents = useTranslations("events");
+  const t = useTranslations("schedule");
 
   const eventDate = parseISO(event.startsAt);
-  const dateLocale = localeMap[locale] || enUS;
   const isCancelled = event.cancelled;
 
   return (
     <Link
       href={`/events/${event.eventSlug}`}
       className={cn(
-        "block cursor-pointer rounded-lg border p-4 transition-colors",
-        isCancelled
-          ? "border-destructive/30 bg-destructive/5 opacity-75 hover:bg-destructive/10"
-          : "bg-gradient-to-r from-accent/5 to-primary/5 hover:from-accent/10 hover:to-primary/10"
+        "group block overflow-hidden rounded-2xl border border-border/40 bg-card shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)]",
+        isCancelled && "opacity-60"
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1 space-y-1.5">
-          {/* Title */}
-          <div className="flex items-center gap-2">
-            <h4
-              className={cn(
-                "text-base font-semibold leading-tight",
-                isCancelled && "text-muted-foreground line-through"
-              )}
-            >
-              {event.title}
-            </h4>
-            {isCancelled && (
-              <Badge
-                variant="destructive"
-                className="h-5 shrink-0 px-2 text-xs"
-              >
-                {tEvents("cancelled")}
-              </Badge>
-            )}
+      {/* Image Header */}
+      <div className="relative h-40 bg-muted">
+        {event.imageUrl ? (
+          <Image
+            src={event.imageUrl}
+            alt={event.title}
+            fill
+            className="object-cover grayscale-[0.2] transition-all group-hover:grayscale-0"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-muted">
+            <CalendarIcon className="h-12 w-12 text-primary/20" />
           </div>
+        )}
 
-          {/* Date + time + registered badge in one line */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div
-              className={cn(
-                "flex items-center gap-1.5 text-sm font-medium",
-                isCancelled ? "text-muted-foreground" : "text-accent"
-              )}
-            >
-              <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
-              <span>{format(eventDate, "PPP", { locale: dateLocale })}</span>
-            </div>
-            {event.startTime && (
-              <span className="text-xs text-muted-foreground">
-                {event.startTime}
-              </span>
-            )}
-            {!isCancelled && (
-              <Badge
-                variant="default"
-                className="h-5 bg-accent px-2 text-xs text-accent-foreground"
-              >
-                {tEvents("registered")}
-              </Badge>
-            )}
+        {/* Registered / Cancelled badge */}
+        {isCancelled ? (
+          <Badge
+            variant="destructive"
+            className="absolute right-4 top-4 text-[10px]"
+          >
+            {tEvents("cancelled")}
+          </Badge>
+        ) : (
+          <div className="absolute right-4 top-4 rounded-full bg-card/90 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary shadow-sm backdrop-blur">
+            {tEvents("registered")}
           </div>
+        )}
 
-          {/* Variant */}
-          {event.variantName && (
-            <Badge variant="secondary" className="text-xs">
-              {event.variantName}
-              {event.variantDistance && ` - ${event.variantDistance} km`}
-            </Badge>
+        {/* Date badge */}
+        <div className="absolute bottom-4 left-4 flex min-w-[56px] flex-col items-center rounded-xl bg-card p-3 shadow-lg">
+          <span className="text-[10px] font-bold uppercase text-muted-foreground">
+            {format(eventDate, "MMM", { locale: dateLocale })}
+          </span>
+          <span className="text-xl font-extrabold leading-none text-foreground">
+            {format(eventDate, "dd")}
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-6">
+        <h3
+          className={cn(
+            "font-headline text-lg font-bold",
+            isCancelled && "text-muted-foreground line-through"
           )}
+        >
+          {event.title}
+        </h3>
 
-          {/* Location + sport types */}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
+        {/* Variant */}
+        {event.variantName && (
+          <p className="mt-1 text-xs font-semibold text-primary">
+            {event.variantName}
+            {event.variantDistance && ` · ${event.variantDistance} km`}
+          </p>
+        )}
+
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4 shrink-0" />
+            <span>
               {event.city}, {event.country}
-            </div>
-            {event.sportTypes.map((sport) => (
-              <Badge key={sport} variant="outline" className="h-5 px-2 text-xs">
-                {sport}
-              </Badge>
-            ))}
+            </span>
           </div>
+          {event.startTime && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 shrink-0" />
+              <span>{event.startTime}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Footer: participants + details */}
+        <div className="mt-6 flex items-center justify-between">
+          {event.participantCount > 10 ? (
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-bold text-muted-foreground">
+                {event.participantCount} {t("participants")}
+              </span>
+            </div>
+          ) : (
+            <div />
+          )}
+          <span className="flex items-center gap-1 text-sm font-bold text-foreground transition-colors group-hover:text-primary">
+            {t("viewDetails")}
+            <ArrowRight className="h-4 w-4" />
+          </span>
         </div>
       </div>
     </Link>
-  );
-}
-
-// --- Session Card Sub-component ---
-
-interface ScheduleSessionCardProps {
-  session: ScheduleSession;
-  locale: string;
-  dateLocale: Locale;
-  onClick: () => void;
-  onEdit: () => void;
-}
-
-function ScheduleSessionCard({
-  session,
-  locale: _locale,
-  dateLocale,
-  onClick,
-  onEdit,
-}: ScheduleSessionCardProps) {
-  const t = useTranslations("schedule");
-
-  const sessionStart = parseISO(session.startsAt);
-  const sessionEnd = parseISO(session.endsAt);
-  const duration = differenceInMinutes(sessionEnd, sessionStart);
-  const isFull = session.capacity
-    ? session._count.bookings >= session.capacity
-    : false;
-  const spotsLeft = session.capacity
-    ? session.capacity - session._count.bookings
-    : null;
-
-  return (
-    <div
-      className="cursor-pointer rounded-lg border bg-background p-4 transition-colors hover:bg-muted/30"
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          {/* Time + Title */}
-          <div className="flex items-center gap-2">
-            <span className="shrink-0 text-lg font-bold text-primary">
-              {format(sessionStart, "HH:mm", { locale: dateLocale })}
-            </span>
-            <span className="text-sm text-muted-foreground">–</span>
-            <span className="text-sm text-muted-foreground">
-              {format(sessionEnd, "HH:mm", { locale: dateLocale })}
-            </span>
-          </div>
-          <div className="mt-1 flex items-center gap-2">
-            <h4 className="font-semibold">{session.title}</h4>
-            {session.userRole && (
-              <Badge
-                variant={session.userRole === "COACH" ? "default" : "secondary"}
-                className="text-[10px]"
-              >
-                {session.userRole === "COACH"
-                  ? t("asCoach")
-                  : t("asParticipant")}
-              </Badge>
-            )}
-          </div>
-
-          {/* Venue */}
-          <Link
-            href={`/venues/${session.venue.slug}`}
-            className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {session.venue.logo ? (
-              <Avatar className="h-4 w-4">
-                <AvatarImage
-                  src={session.venue.logo}
-                  alt={session.venue.name}
-                />
-                <AvatarFallback className="text-[8px]">
-                  {session.venue.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <Building2 className="h-3.5 w-3.5" />
-            )}
-            {session.venue.name}
-            <ExternalLink className="h-3 w-3" />
-          </Link>
-
-          {/* Meta info */}
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              {duration} min
-            </span>
-
-            <span className="flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" />
-              {session._count.bookings}
-              {session.capacity ? `/${session.capacity}` : ""}{" "}
-              {t("participants")}
-            </span>
-
-            {session.workouts.length > 0 && (
-              <span className="flex items-center gap-1">
-                <Dumbbell className="h-3.5 w-3.5" />
-                {session.workouts.length}{" "}
-                {session.workouts.length === 1 ? t("workout") : t("workouts")}
-              </span>
-            )}
-          </div>
-
-          {/* Tags */}
-          {session.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {session.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* Participants preview */}
-          {session.bookings.length > 0 && (
-            <div className="mt-3">
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                {t("bookedParticipants")}:
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {session.bookings.slice(0, 8).map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5"
-                  >
-                    <Avatar className="h-4 w-4">
-                      <AvatarImage
-                        src={booking.user?.image || undefined}
-                        alt={booking.user?.name || booking.guestName || ""}
-                      />
-                      <AvatarFallback className="text-[8px]">
-                        {(booking.user?.name || booking.guestName || "?")
-                          .charAt(0)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs">
-                      {booking.user?.name || booking.guestName || t("guest")}
-                    </span>
-                  </div>
-                ))}
-                {session.bookings.length > 8 && (
-                  <span className="flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    +{session.bookings.length - 8}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Actions and status */}
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          {session.userRole === "COACH" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              title={t("editSession")}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
-
-          {isFull ? (
-            <Badge variant="destructive" className="text-xs">
-              {t("full")}
-            </Badge>
-          ) : spotsLeft !== null && spotsLeft <= 3 ? (
-            <Badge variant="outline" className="text-xs text-orange-600">
-              {t("spotsLeft", { count: spotsLeft })}
-            </Badge>
-          ) : null}
-        </div>
-      </div>
-    </div>
   );
 }

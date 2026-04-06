@@ -69,12 +69,79 @@
           "cookies": "Usamos cookies (puedes gestionar en la configuración)",
           "protected": "Tus datos están protegidos"
         }
+      },
+      "badge": "Transparencia & Rendimiento",
+      "highlights": {
+        "title": "Puntos Clave",
+        "privacyByDesign": "Privacidad por Diseño",
+        "privacyByDesignDesc": "La privacidad está integrada en la arquitectura de cada funcionalidad.",
+        "totalControl": "Control Total",
+        "totalControlDesc": "Tú decides qué compartir con la comunidad y entrenadores.",
+        "encryption": "Encriptación de Élite",
+        "encryptionDesc": "Datos sensibles protegidos por encriptación de extremo a extremo."
+      },
+      "questions": {
+        "title": "¿Dudas sobre datos?",
+        "description": "Nuestro equipo de cumplimiento está disponible para aclarar cualquier punto.",
+        "cta": "Contactar DPO"
+      },
+      "table": {
+        "title": "Resumen de Uso de Datos",
+        "category": "Categoría de Dato",
+        "purpose": "Propósito Principal",
+        "retention": "Período de Retención",
+        "thirdParties": "Terceros Involucrados",
+        "rows": {
+          "profile": {
+            "name": "Perfil de Usuario",
+            "detail": "Email, Nombre, Contraseña",
+            "purpose": "Autenticación y Gestión de Cuenta",
+            "retention": "Hasta cierre de cuenta",
+            "thirdParties": "Ninguno"
+          },
+          "vitals": {
+            "name": "Signos Vitales",
+            "detail": "FC, Sueño, Estrés",
+            "purpose": "Análisis de Recuperación Atleta",
+            "retention": "5 años (Histórico)",
+            "thirdParties": "Wearable Sync API"
+          },
+          "geo": {
+            "name": "Geolocalización",
+            "detail": "Trayectos GPS, Mapas",
+            "purpose": "Mapeo de Rutas",
+            "retention": "Mientras activo en el servicio",
+            "thirdParties": "Map Provider (Anónimo)"
+          },
+          "transactions": {
+            "name": "Transacciones",
+            "detail": "Facturación, Suscripciones",
+            "purpose": "Procesamiento de Pagos",
+            "retention": "10 años (Legal)",
+            "thirdParties": "Stripe"
+          }
+        }
       }
     },
     "terms": {
+      "badge": "Términos & Condiciones",
       "title": "Términos de Servicio",
       "lastUpdated": "Última actualización: {date}",
       "intro": "Al usar Athlifyr, aceptas estos términos. Léelos atentamente.",
+      "summary": {
+        "title": "Resumen Rápido",
+        "excellence": "Compromiso de Excelencia",
+        "excellenceDesc": "Garantizamos las mejores prácticas y metodologías para nuestra comunidad.",
+        "security": "Seguridad de Datos",
+        "securityDesc": "Tus datos están protegidos y encriptados.",
+        "community": "Respeto a la Comunidad",
+        "communityDesc": "Tolerancia cero para comportamientos tóxicos."
+      },
+      "questions": {
+        "title": "¿Dudas?",
+        "description": "Nuestro equipo de soporte está listo para ayudarte.",
+        "cta": "Contactar Soporte"
+      },
       "sections": {
         "acceptance": {
           "title": "1. Aceptación de los Términos",
@@ -123,10 +190,15 @@
         "contact": {
           "title": "12. Contacto",
           "content": "Para cuestiones sobre estos términos, contáctanos a través de la página de contacto."
+        },
+        "credits": {
+          "title": "13. Créditos Athlifyr",
+          "content": "Los Créditos Athlifyr son créditos de la plataforma para uso dentro del ecosistema Athlifyr. No son dinero electrónico, cuenta bancaria ni producto financiero. Los créditos no pueden ser transferidos, retirados ni utilizados fuera de la plataforma."
         }
       }
     },
     "cookies": {
+      "badge": "Privacidad & Transparencia",
       "title": "Política de Cookies",
       "lastUpdated": "Última actualización: {date}",
       "intro": "Utilizamos cookies para mejorar tu experiencia en Athlifyr. Esta página explica qué son las cookies y cómo las usamos.",

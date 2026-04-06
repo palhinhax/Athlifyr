@@ -408,8 +408,8 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
             <Fragment key={group.key}>
               <div className="mb-4 mt-8 flex items-center gap-3 first:mt-0">
                 <Calendar className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold capitalize text-foreground">
-                  {group.label}
+                <h3 className="text-lg font-semibold text-foreground">
+                  {group.label.charAt(0).toUpperCase() + group.label.slice(1)}
                 </h3>
                 <div className="h-px flex-1 bg-border" />
                 <span className="text-sm text-muted-foreground">

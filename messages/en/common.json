@@ -65,18 +65,25 @@
     "supportedFormats": "Supported formats: {formats}"
   },
   "contact": {
-    "title": "Contact Us",
-    "description": "Send us suggestions, report issues or ask questions",
-    "welcomeMessage": "👋 Hi there! Have a question, suggestion or feedback? Send us a quick message and we'll get back to you as soon as possible.",
-    "welcomeMessageLoggedIn": "👋 Hi {name}! How can we help you?",
+    "title": "Let's Talk",
+    "description": "We're here to elevate your performance. Whether you're an individual athlete or a gym seeking excellence, our team is ready to help.",
+    "welcomeMessage": "\ud83d\udc4b Hi there! Have a question, suggestion or feedback? Send us a quick message and we'll get back to you as soon as possible.",
+    "welcomeMessageLoggedIn": "\ud83d\udc4b Hi {name}! How can we help you?",
     "cards": {
       "suggestions": "Suggestions",
       "suggestionsDesc": "Share ideas to improve the platform",
       "reportProblem": "Report Problem",
       "reportProblemDesc": "Found a bug? Let us know!",
       "questions": "Questions",
-      "questionsDesc": "Have a question? We're here to help"
+      "questionsDesc": "Have a question? We're here to help",
+      "techSupport": "Technical Support",
+      "techSupportDesc": "Issues with your account or platform? Our tech team responds in under 2h.",
+      "eventPartnerships": "Event Partnerships",
+      "eventPartnershipsDesc": "Want to bring Athlifyr to your competition? Let's create something epic together.",
+      "gymSales": "Gym Sales",
+      "gymSalesDesc": "Enterprise solutions for performance management and training communities."
     },
+    "formTitle": "Send a Message",
     "form": {
       "name": "Name",
       "namePlaceholder": "Your name",

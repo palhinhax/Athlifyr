@@ -952,7 +952,11 @@
         "events": "Posts de Eventos",
         "weekly": "Resumo Semanal",
         "lastCall": "Última Chamada",
-        "compilation": "Compilação Semanal"
+        "compilation": "Compilação Semanal",
+        "country": "País",
+        "allCountries": "Todos os Países",
+        "customTitle": "Título personalizado",
+        "customTitlePlaceholder": "Ex: TRAILS DA SEMANA"
       },
       "schedule": {
         "title": "Agendar Publicação",

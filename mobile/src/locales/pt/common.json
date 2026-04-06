@@ -527,6 +527,13 @@
       "admin": "Administrador",
       "coach": "Treinador",
       "client": "Membro"
+    },
+    "member": "membro",
+    "members": "membros",
+    "a11y": {
+      "venueCard": "{{name}}, {{location}}",
+      "listView": "Vista em lista",
+      "mapView": "Vista no mapa"
     }
   },
   "venueDetail": {

@@ -26,6 +26,33 @@ import { WorkoutHistory } from "@/components/workout-history";
 import { Link } from "@/i18n/routing";
 import type { WorkoutWithBlocks } from "@/types/workout";
 import type { UserTrainingPlanWithDetails } from "@/types/training-plan";
+import Image from "next/image";
+
+// Plan card images and hash helper (shared with training-plan-card)
+const PLAN_IMAGES = [
+  "/images/workouts/strength.jpg",
+  "/images/workouts/crossfit.jpg",
+  "/images/workouts/running.jpg",
+  "/images/workouts/kettlebell.jpg",
+  "/images/workouts/endurance.jpg",
+  "/images/workouts/hiit.jpg",
+  "/images/workouts/boxing.jpg",
+  "/images/workouts/rowing.jpg",
+  "/images/workouts/gym-dark.jpg",
+  "/images/workouts/sprinting.jpg",
+  "/images/workouts/pullups.jpg",
+  "/images/workouts/battle-ropes.jpg",
+  "/images/workouts/deadlift.jpg",
+  "/images/workouts/jumping.jpg",
+];
+
+function planHashIndex(id: string, length: number): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % length;
+}
 
 interface WorkoutsPageClientProps {
   userId: string;
@@ -584,66 +611,77 @@ function SavedContentTab({
         {savedPlans.map((plan) => (
           <div
             key={plan.id}
-            className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
+            className="group relative flex h-[340px] flex-col overflow-hidden rounded-2xl bg-slate-900 shadow-lg transition-shadow duration-300 hover:shadow-xl"
           >
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleUnsavePlan(e, plan.id);
-              }}
-              disabled={savingPlanId === plan.id}
-              className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
-              aria-label={tPlans("unsave")}
-            >
-              <BookmarkIcon
-                className={`h-5 w-5 fill-current text-accent transition-colors hover:text-muted-foreground ${
-                  savingPlanId === plan.id ? "animate-pulse" : ""
-                }`}
-              />
-            </button>
+            <Image
+              src={PLAN_IMAGES[planHashIndex(plan.id, PLAN_IMAGES.length)]}
+              alt=""
+              fill
+              className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-110"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+
+            {/* Top bar: bookmark */}
+            <div className="relative z-10 flex items-center justify-end p-4">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleUnsavePlan(e, plan.id);
+                }}
+                disabled={savingPlanId === plan.id}
+                className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                aria-label={tPlans("unsave")}
+              >
+                <BookmarkIcon
+                  className={`h-5 w-5 fill-current ${
+                    savingPlanId === plan.id ? "animate-pulse" : ""
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Creator badge */}
+            {plan.createdBy?.name && (
+              <div className="relative z-10 mx-4 flex w-fit items-center gap-2 rounded-full bg-black/20 px-3 py-1 backdrop-blur-sm">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={plan.createdBy.image || undefined} />
+                  <AvatarFallback className="bg-white/20 text-[10px] text-white">
+                    {plan.createdBy.name
+                      ?.split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2) || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-medium text-white/90">
+                  {plan.createdBy.name}
+                </span>
+              </div>
+            )}
+
+            <div className="flex-1" />
+
+            {/* Glass overlay bottom */}
             <Link
               href={`/workouts/plans/${plan.id}`}
-              className="flex flex-1 cursor-pointer flex-col"
+              className="relative z-10 mx-3 mb-3 flex flex-col gap-2.5 rounded-xl border-t border-white/20 bg-white/15 p-4 backdrop-blur-md transition-colors hover:bg-white/20"
             >
-              <div className="flex-1 pr-8">
-                <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
-                  {plan.name}
-                </h3>
-                {plan.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                    {plan.description}
-                  </p>
-                )}
-              </div>
-              <div className="mt-auto pt-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDaysIcon className="h-4 w-4 text-p-info" />
-                  <span>
-                    {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
-                  </span>
-                </div>
-                {plan.createdBy?.name && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={plan.createdBy.image || undefined} />
-                      <AvatarFallback className="text-[10px]">
-                        {plan.createdBy.name
-                          ?.split(" ")
-                          .map((n: string) => n[0])
-                          .join("")
-                          .toUpperCase()
-                          .slice(0, 2) || "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-muted-foreground">
-                      {tPlans("createdByLabel")}{" "}
-                      <span className="font-medium text-foreground">
-                        {plan.createdBy.name}
-                      </span>
-                    </span>
-                  </div>
-                )}
+              <h3 className="line-clamp-1 font-headline text-lg font-bold leading-tight text-white">
+                {plan.name}
+              </h3>
+              {plan.description && (
+                <p className="line-clamp-1 text-xs text-white/70">
+                  {plan.description}
+                </p>
+              )}
+              <div className="flex items-center gap-4 text-xs font-medium text-white/90">
+                <span className="flex items-center gap-1">
+                  <CalendarDaysIcon className="h-3.5 w-3.5" />
+                  {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
+                </span>
               </div>
             </Link>
           </div>
@@ -867,68 +905,77 @@ function PublicContentTab({
         {filteredPlans.map((plan) => (
           <div
             key={plan.id}
-            className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
+            className="group relative flex h-[340px] flex-col overflow-hidden rounded-2xl bg-slate-900 shadow-lg transition-shadow duration-300 hover:shadow-xl"
           >
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSavePlan(e, plan.id, !!plan.isSaved);
-              }}
-              disabled={savingPlanId === plan.id}
-              className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
-              aria-label={plan.isSaved ? tPlans("unsave") : tPlans("save")}
-            >
-              <BookmarkIcon
-                className={`h-5 w-5 transition-colors ${
-                  plan.isSaved
-                    ? "fill-current text-accent"
-                    : "text-muted-foreground hover:text-accent"
-                } ${savingPlanId === plan.id ? "animate-pulse" : ""}`}
-              />
-            </button>
+            <Image
+              src={PLAN_IMAGES[planHashIndex(plan.id, PLAN_IMAGES.length)]}
+              alt=""
+              fill
+              className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-110"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+
+            {/* Top bar: bookmark */}
+            <div className="relative z-10 flex items-center justify-end p-4">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSavePlan(e, plan.id, !!plan.isSaved);
+                }}
+                disabled={savingPlanId === plan.id}
+                className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                aria-label={plan.isSaved ? tPlans("unsave") : tPlans("save")}
+              >
+                <BookmarkIcon
+                  className={`h-5 w-5 transition-colors ${
+                    plan.isSaved ? "fill-current" : ""
+                  } ${savingPlanId === plan.id ? "animate-pulse" : ""}`}
+                />
+              </button>
+            </div>
+
+            {/* Creator badge */}
+            {plan.createdBy?.name && (
+              <div className="relative z-10 mx-4 flex w-fit items-center gap-2 rounded-full bg-black/20 px-3 py-1 backdrop-blur-sm">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={plan.createdBy.image || undefined} />
+                  <AvatarFallback className="bg-white/20 text-[10px] text-white">
+                    {plan.createdBy.name
+                      ?.split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2) || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-medium text-white/90">
+                  {plan.createdBy.name}
+                </span>
+              </div>
+            )}
+
+            <div className="flex-1" />
+
+            {/* Glass overlay bottom */}
             <Link
               href={`/workouts/plans/${plan.id}`}
-              className="flex flex-1 cursor-pointer flex-col"
+              className="relative z-10 mx-3 mb-3 flex flex-col gap-2.5 rounded-xl border-t border-white/20 bg-white/15 p-4 backdrop-blur-md transition-colors hover:bg-white/20"
             >
-              <div className="flex-1 pr-8">
-                <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
-                  {plan.name}
-                </h3>
-                {plan.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                    {plan.description}
-                  </p>
-                )}
-              </div>
-              <div className="mt-auto pt-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDaysIcon className="h-4 w-4 text-p-info" />
-                  <span>
-                    {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
-                  </span>
-                </div>
-                {plan.createdBy?.name && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={plan.createdBy.image || undefined} />
-                      <AvatarFallback className="text-[10px]">
-                        {plan.createdBy.name
-                          ?.split(" ")
-                          .map((n: string) => n[0])
-                          .join("")
-                          .toUpperCase()
-                          .slice(0, 2) || "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-muted-foreground">
-                      {tPlans("createdByLabel")}{" "}
-                      <span className="font-medium text-foreground">
-                        {plan.createdBy.name}
-                      </span>
-                    </span>
-                  </div>
-                )}
+              <h3 className="line-clamp-1 font-headline text-lg font-bold leading-tight text-white">
+                {plan.name}
+              </h3>
+              {plan.description && (
+                <p className="line-clamp-1 text-xs text-white/70">
+                  {plan.description}
+                </p>
+              )}
+              <div className="flex items-center gap-4 text-xs font-medium text-white/90">
+                <span className="flex items-center gap-1">
+                  <CalendarDaysIcon className="h-3.5 w-3.5" />
+                  {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
+                </span>
               </div>
             </Link>
           </div>
@@ -1015,42 +1062,56 @@ function AssignedPlansTab({
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {assignedPlans.map((userPlan) => (
         <Link key={userPlan.id} href={`/workouts/plans/${userPlan.plan.id}`}>
-          <div className="group flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-colors hover:border-p-info/30 hover:bg-muted/50 hover:shadow-md">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <UserCheckIcon className="h-4 w-4 text-p-info" />
-                  <span className="text-xs font-medium text-p-info">
-                    {t("plans.assignedToYou")}
-                  </span>
-                </div>
-                <h3 className="mt-2 line-clamp-1 font-semibold group-hover:text-accent">
-                  {userPlan.plan.name}
-                </h3>
-                {userPlan.plan.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                    {userPlan.plan.description}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="mt-auto pt-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CalendarDaysIcon className="h-4 w-4 text-p-info" />
-                <span>
-                  {userPlan.plan.weeks?.length || 0} {tPlans("weeksCount")}
+          <div className="group relative flex h-[340px] flex-col overflow-hidden rounded-2xl bg-slate-900 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+            <Image
+              src={
+                PLAN_IMAGES[planHashIndex(userPlan.plan.id, PLAN_IMAGES.length)]
+              }
+              alt=""
+              fill
+              className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-110"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+
+            {/* Top bar: assigned badge */}
+            <div className="relative z-10 flex items-center justify-between p-4">
+              <div className="flex items-center gap-2 rounded-full bg-black/20 px-3 py-1 backdrop-blur-sm">
+                <UserCheckIcon className="h-3.5 w-3.5 text-white" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-white">
+                  {t("plans.assignedToYou")}
                 </span>
               </div>
-              {userPlan.assignedBy?.name && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {t("plans.assignedByLabel")} {userPlan.assignedBy.name}
+            </div>
+
+            <div className="flex-1" />
+
+            {/* Glass overlay bottom */}
+            <div className="relative z-10 mx-3 mb-3 flex flex-col gap-2.5 rounded-xl border-t border-white/20 bg-white/15 p-4 backdrop-blur-md">
+              <h3 className="line-clamp-1 font-headline text-lg font-bold leading-tight text-white">
+                {userPlan.plan.name}
+              </h3>
+              {userPlan.plan.description && (
+                <p className="line-clamp-1 text-xs text-white/70">
+                  {userPlan.plan.description}
                 </p>
               )}
+              <div className="flex items-center gap-4 text-xs font-medium text-white/90">
+                <span className="flex items-center gap-1">
+                  <CalendarDaysIcon className="h-3.5 w-3.5" />
+                  {userPlan.plan.weeks?.length || 0} {tPlans("weeksCount")}
+                </span>
+                {userPlan.assignedBy?.name && (
+                  <span className="text-white/70">
+                    {t("plans.assignedByLabel")} {userPlan.assignedBy.name}
+                  </span>
+                )}
+              </div>
               {userPlan.startDate && (
-                <p className="mt-1 text-xs text-muted-foreground">
+                <span className="text-[10px] text-white/60">
                   {t("plans.startDateLabel")}{" "}
                   {new Date(userPlan.startDate).toLocaleDateString()}
-                </p>
+                </span>
               )}
             </div>
           </div>

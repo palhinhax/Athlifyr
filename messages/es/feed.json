@@ -13,6 +13,22 @@
     "replies": "respuestas",
     "loadingMore": "Cargando más publicaciones...",
     "allPostsLoaded": "Todas las publicaciones cargadas",
-    "loginToInteract": "Inicia sesión para dar me gusta a publicaciones y dejar comentarios."
+    "loginToInteract": "Inicia sesión para dar me gusta a publicaciones y dejar comentarios.",
+    "sidebar": {
+      "upcomingEvents": "Próximos Eventos",
+      "viewAll": "Ver Todos",
+      "attending": "Atletas inscritos",
+      "suggestedAthletes": "Atletas que Puedes Conocer",
+      "addFriend": "Añadir",
+      "trending": "Tendencias",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio"
+    },
+    "stories": {
+      "myStory": "Mi Story"
+    },
+    "post": {
+      "addComment": "Añadir un comentario"
+    }
   }
 }

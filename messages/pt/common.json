@@ -65,8 +65,8 @@
     "supportedFormats": "Formatos suportados: {formats}"
   },
   "contact": {
-    "title": "Contacta-nos",
-    "description": "Envia-nos sugestões, reporta problemas ou faz perguntas",
+    "title": "Vamos Conversar",
+    "description": "Estamos aqui para elevar o teu desempenho. Quer sejas um atleta individual ou um ginásio à procura de excelência, a nossa equipa está pronta para ajudar.",
     "welcomeMessage": "👋 Olá! Tens alguma dúvida, sugestão ou feedback? Envia-nos uma mensagem rápida e respondemos o mais breve possível.",
     "welcomeMessageLoggedIn": "👋 Olá {name}! Como te podemos ajudar?",
     "cards": {
@@ -75,8 +75,15 @@
       "reportProblem": "Reportar Problema",
       "reportProblemDesc": "Encontraste um bug? Avisa-nos!",
       "questions": "Perguntas",
-      "questionsDesc": "Tens alguma dúvida? Estamos aqui para ajudar"
+      "questionsDesc": "Tens alguma dúvida? Estamos aqui para ajudar",
+      "techSupport": "Suporte Técnico",
+      "techSupportDesc": "Problemas com a tua conta ou plataforma? A nossa equipa técnica responde em menos de 2h.",
+      "eventPartnerships": "Parcerias de Eventos",
+      "eventPartnershipsDesc": "Queres levar a Athlifyr para a tua competição? Vamos criar algo épico juntos.",
+      "gymSales": "Vendas para Ginásios",
+      "gymSalesDesc": "Soluções Enterprise para gestão de performance e comunidades de treino."
     },
+    "formTitle": "Envia uma Mensagem",
     "form": {
       "name": "Nome",
       "namePlaceholder": "O teu nome",

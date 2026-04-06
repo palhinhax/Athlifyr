@@ -141,11 +141,13 @@ export default function VenuesScreen() {
               placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              accessibilityLabel={t("venues.filters.searchPlaceholder")}
+              accessibilityRole="search"
             />
           </View>
 
           {/* View Mode Toggle */}
-          <View style={styles.viewToggle}>
+          <View style={styles.viewToggle} accessibilityRole="tablist">
             <TouchableOpacity
               style={[
                 styles.viewToggleButton,
@@ -153,6 +155,9 @@ export default function VenuesScreen() {
               ]}
               onPress={() => setViewMode("list")}
               activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityLabel={t("venues.a11y.listView")}
+              accessibilityState={{ selected: viewMode === "list" }}
             >
               <LayoutGrid
                 size={18}
@@ -170,6 +175,9 @@ export default function VenuesScreen() {
               ]}
               onPress={() => setViewMode("map")}
               activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityLabel={t("venues.a11y.mapView")}
+              accessibilityState={{ selected: viewMode === "map" }}
             >
               <Map
                 size={18}
@@ -255,8 +263,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   viewToggleButton: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colors.backgroundSecondary,

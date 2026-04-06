@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
@@ -52,6 +52,12 @@ export function GlobalSearch() {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("search");
+  const isMac = useMemo(
+    () =>
+      typeof navigator !== "undefined" &&
+      /Mac|iPhone|iPad|iPod/.test(navigator.platform),
+    []
+  );
 
   // Handle keyboard shortcut to open search
   useEffect(() => {
@@ -186,7 +192,7 @@ export function GlobalSearch() {
         <Search className="h-4 w-4 shrink-0" />
         <span className="flex-1 text-left">{t("placeholder")}</span>
         <kbd className="pointer-events-none flex h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">
-          <Command className="h-3 w-3" />K
+          {isMac ? <Command className="h-3 w-3" /> : "Ctrl+"}K
         </kbd>
       </button>
 

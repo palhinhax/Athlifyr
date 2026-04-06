@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
       maxEvents?: number;
       daysUntilDeadline?: number;
       scheduledFor?: string;
+      country?: string;
+      customTitle?: string;
     };
 
     if (!body.type || !VALID_TYPES.includes(body.type)) {
@@ -102,6 +104,8 @@ export async function POST(request: NextRequest) {
         const result = await generateWeeklyCompilation({
           days: body.days ?? 7,
           sport: body.sport,
+          country: body.country,
+          customTitle: body.customTitle,
           userId,
           scheduledFor,
         });

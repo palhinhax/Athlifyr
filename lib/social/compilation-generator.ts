@@ -47,16 +47,34 @@ export async function generateWeeklyCompilation(params: {
     scheduledFor,
   } = params;
 
+  // Map ISO country codes to all known DB variants
+  const countryAliases: Record<string, string[]> = {
+    PT: ["PT", "Portugal"],
+    ES: ["ES", "Spain", "España", "Espanha"],
+    FR: ["FR", "France", "França"],
+    DE: ["DE", "Germany", "Alemanha"],
+    IT: ["IT", "Italy", "Itália"],
+    GB: ["GB", "United Kingdom", "Reino Unido"],
+    US: ["US", "USA", "United States", "Estados Unidos"],
+  };
+
   const now = new Date();
   const futureDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
   // Fetch upcoming events with translations and variants
+  const countryFilter =
+    country && countryAliases[country]
+      ? { country: { in: countryAliases[country] } }
+      : country
+        ? { country }
+        : {};
+
   const events = await prisma.event.findMany({
     where: {
       startDate: { gte: now, lte: futureDate },
       cancelled: false,
       ...(sport ? { sportTypes: { has: sport as SportType } } : {}),
-      ...(country ? { country } : {}),
+      ...countryFilter,
     },
     select: {
       id: true,

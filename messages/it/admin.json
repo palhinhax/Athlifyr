@@ -948,7 +948,11 @@
         "events": "Post di Eventi",
         "weekly": "Riepilogo Settimanale",
         "lastCall": "Ultima Chiamata",
-        "compilation": "Compilazione Settimanale"
+        "compilation": "Compilazione Settimanale",
+        "country": "Paese",
+        "allCountries": "Tutti i Paesi",
+        "customTitle": "Titolo personalizzato",
+        "customTitlePlaceholder": "Es: TRAIL DELLA SETTIMANA"
       },
       "schedule": {
         "title": "Programma Pubblicazione",

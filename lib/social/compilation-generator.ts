@@ -32,11 +32,20 @@ interface CompilationResult {
 export async function generateWeeklyCompilation(params: {
   days?: number;
   sport?: string;
+  country?: string;
+  customTitle?: string;
   userId?: string;
   /** If set, auto-schedule the post for this date instead of DRAFT */
   scheduledFor?: Date;
 }): Promise<CompilationResult | null> {
-  const { days = 7, sport, userId, scheduledFor } = params;
+  const {
+    days = 7,
+    sport,
+    country,
+    customTitle,
+    userId,
+    scheduledFor,
+  } = params;
 
   const now = new Date();
   const futureDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
@@ -47,6 +56,7 @@ export async function generateWeeklyCompilation(params: {
       startDate: { gte: now, lte: futureDate },
       cancelled: false,
       ...(sport ? { sportTypes: { has: sport as SportType } } : {}),
+      ...(country ? { country } : {}),
     },
     select: {
       id: true,
@@ -87,7 +97,8 @@ export async function generateWeeklyCompilation(params: {
   const imageBuffers = await composeCompilationImages(
     "weekly",
     eventsForImage,
-    days
+    days,
+    customTitle
   );
   if (imageBuffers.length === 0) return null;
 

@@ -751,6 +751,8 @@ function GenerateSection({
   const [generating, setGenerating] = useState<string | null>(null);
   const [days, setDays] = useState("7");
   const [sport, setSport] = useState("");
+  const [country, setCountry] = useState("");
+  const [customTitle, setCustomTitle] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
 
   const sportOptions = [
@@ -797,6 +799,8 @@ function GenerateSection({
         body.days = parseInt(days, 10);
       }
       if (sport) body.sport = sport;
+      if (country) body.country = country;
+      if (customTitle.trim()) body.customTitle = customTitle.trim();
       if (type === "weekly") body.maxEvents = 5;
       if (type === "lastcall") body.daysUntilDeadline = 3;
       if (autoSchedule) {
@@ -873,6 +877,38 @@ function GenerateSection({
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">{t("generate.country")}</label>
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">{t("generate.allCountries")}</option>
+            <option value="PT">Portugal</option>
+            <option value="ES">Espanha</option>
+            <option value="FR">França</option>
+            <option value="DE">Alemanha</option>
+            <option value="IT">Itália</option>
+            <option value="GB">Reino Unido</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            {t("generate.customTitle")}
+          </label>
+          <Input
+            type="text"
+            value={customTitle}
+            onChange={(e) => setCustomTitle(e.target.value)}
+            placeholder={t("generate.customTitlePlaceholder")}
+            className="w-full"
+          />
         </div>
 
         <div className="space-y-2">

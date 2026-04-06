@@ -149,16 +149,18 @@ function computeGateLine(
   cpSegmentIdx: number,
   halfWidthM?: number
 ): GateLine {
-  const width = halfWidthM ?? cp.radiusM; // default: use checkpoint radius
+  // Default gate half-width: at least 50 m so the gate is wide enough for
+  // trail races with GPS noise of ±15–30 m. Use a wider value if the
+  // checkpoint radius itself exceeds 50 m.
+  const width = halfWidthM ?? Math.max(cp.radiusM, 50);
 
-  // Derive local route bearing directly from the precomputed segment at this
-  // checkpoint. This correctly handles out-and-back routes: the FINISH
-  // checkpoint (return leg) uses the inbound segment bearing while the START
-  // checkpoint uses the outbound segment bearing.
+  // Derive local route bearing using spherical bearing (bearingDeg) instead
+  // of flat lat/lng subtraction. Raw degree subtraction distorts at higher
+  // latitudes (a degree of longitude shrinks by cos(lat)).
   const seg = segments[cpSegmentIdx];
-  const dLat = seg.endLat - seg.startLat;
-  const dLng = seg.endLng - seg.startLng;
-  const routeBearing = Math.atan2(dLng, dLat); // radians
+  const routeBearing =
+    (bearingDeg(seg.startLat, seg.startLng, seg.endLat, seg.endLng) * Math.PI) /
+    180;
 
   // Perpendicular bearing (90° rotated)
   const perpBearing = routeBearing + Math.PI / 2;
@@ -821,7 +823,26 @@ export function detectStartLineCrossing(
   );
   if (!gate) return false;
 
-  return crossesGateLine(prevLat, prevLng, currLat, currLng, gate);
+  if (!crossesGateLine(prevLat, prevLng, currLat, currLng, gate)) return false;
+
+  // Direction check: the athlete must be crossing in the forward (race)
+  // direction. Without this, an athlete approaching the start from the wrong
+  // side (e.g. on a loop that returns near the start) would trigger a false
+  // start detection. We verify by checking that the movement vector has a
+  // positive projection along the route direction at the start segment.
+  const seg = routeHelper.segments[0];
+  if (!seg) return true; // no segment info — accept the crossing
+  const movementBearing = bearingDeg(prevLat, prevLng, currLat, currLng);
+  const routeBearing = bearingDeg(
+    seg.startLat,
+    seg.startLng,
+    seg.endLat,
+    seg.endLng
+  );
+  const angleDiff = Math.abs(
+    ((movementBearing - routeBearing + 540) % 360) - 180
+  );
+  return angleDiff <= 90;
 }
 
 // ─── Anti-cheat: Speed Validation ───────────────────────────────────────────
@@ -838,7 +859,10 @@ export function isPlausibleUpdate(
   const distM = haversineM(prev.lat, prev.lng, next.lat, next.lng);
   const timeDeltaMs = next.timestamp - prev.timestamp;
 
-  if (timeDeltaMs <= 0) return false; // Invalid timestamp
+  if (timeDeltaMs < 0) return false; // Backwards in time
+  // Equal timestamps happen in batch replay when multiple points share the
+  // same millisecond. Accept if the points are essentially the same location.
+  if (timeDeltaMs === 0) return distM < 1;
 
   const speedKmh = distM / 1000 / (timeDeltaMs / 3_600_000);
   return speedKmh <= maxSpeedKmh;
@@ -849,7 +873,7 @@ export function isPlausibleUpdate(
  */
 export function isAccuracyAcceptable(
   accuracy: number | undefined,
-  maxAccuracyM = 100
+  maxAccuracyM = 50
 ): boolean {
   if (accuracy === undefined) return true; // No accuracy info — accept
   return accuracy <= maxAccuracyM;
@@ -860,8 +884,10 @@ export function isAccuracyAcceptable(
 /** Maximum allowed future offset for a GPS timestamp (1 minute tolerance for clock drift). */
 const MAX_FUTURE_MS = 60_000;
 
-/** Default maximum age for a single GPS update (configurable via maxAgeMs param). */
-const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+/** Default maximum age for a single GPS update (configurable via maxAgeMs param).
+ *  Reduced from 24h to 6h — a 24h window would accept yesterday's GPS track
+ *  replayed as a batch, bypassing speed validation per-point. */
+const DEFAULT_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 /**
  * Check if a GPS timestamp is valid.

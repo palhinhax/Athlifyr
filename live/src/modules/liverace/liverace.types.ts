@@ -114,6 +114,10 @@ export interface AthleteState {
   distanceAlongRouteM: number; // meters from start along the route polyline
   deviationM: number; // perpendicular distance from route
   progressPercent: number; // 0-100
+  /** Consecutive GPS points exceeding the deviation threshold. Used for
+   *  hysteresis: only transition to OFF_ROUTE after N consecutive off-route
+   *  points, preventing single-point oscillation from noisy GPS. */
+  consecutiveOffRouteCount: number;
 
   // Checkpoint tracking
   checkpointsReached: CheckpointSplit[];

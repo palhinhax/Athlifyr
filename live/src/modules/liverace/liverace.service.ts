@@ -429,6 +429,7 @@ export async function joinAthlete(
     distanceAlongRouteM: 0,
     deviationM: 0,
     progressPercent: 0,
+    consecutiveOffRouteCount: 0,
     checkpointsReached: [],
     lastCheckpointOrder: -1,
     rank: 0,
@@ -638,25 +639,45 @@ export function processGpsUpdate(
         )
       : 0;
 
-  // Off-route detection
-  if (projection.deviationM > room.config.settings.deviationThresholdM) {
-    if (athlete.status !== "OFF_ROUTE" && athlete.status !== "FINISHED") {
-      athlete.status = "OFF_ROUTE";
-      io.to(eventRoom(eventId)).emit("liverace:athlete_status", {
-        eventId,
-        userId,
-        status: "OFF_ROUTE",
-      });
+  // Off-route detection with hysteresis.
+  // Require OFF_ROUTE_ENTER_COUNT consecutive off-route points before
+  // transitioning, and use a tighter threshold for the return transition.
+  // This prevents noisy GPS at the edge of the threshold from spamming
+  // status-change broadcasts.
+  const OFF_ROUTE_ENTER_COUNT = 3;
+  const offRouteThreshold = room.config.settings.deviationThresholdM;
+  const returnThreshold = offRouteThreshold * 0.75;
+
+  if (athlete.status !== "FINISHED") {
+    if (projection.deviationM > offRouteThreshold) {
+      athlete.consecutiveOffRouteCount++;
+      if (
+        athlete.status !== "OFF_ROUTE" &&
+        athlete.consecutiveOffRouteCount >= OFF_ROUTE_ENTER_COUNT
+      ) {
+        athlete.status = "OFF_ROUTE";
+        io.to(eventRoom(eventId)).emit("liverace:athlete_status", {
+          eventId,
+          userId,
+          status: "OFF_ROUTE",
+        });
+      }
+    } else {
+      athlete.consecutiveOffRouteCount = 0;
+      if (
+        athlete.status === "OFF_ROUTE" &&
+        projection.deviationM <= returnThreshold
+      ) {
+        athlete.status = "ACTIVE";
+        io.to(eventRoom(eventId)).emit("liverace:athlete_status", {
+          eventId,
+          userId,
+          status: "ACTIVE",
+        });
+      } else if (athlete.status !== "OFF_ROUTE") {
+        athlete.status = "ACTIVE";
+      }
     }
-  } else if (athlete.status === "OFF_ROUTE") {
-    athlete.status = "ACTIVE";
-    io.to(eventRoom(eventId)).emit("liverace:athlete_status", {
-      eventId,
-      userId,
-      status: "ACTIVE",
-    });
-  } else if (athlete.status !== "FINISHED") {
-    athlete.status = "ACTIVE";
   }
 
   // Skip further processing if already finished
@@ -802,13 +823,13 @@ const MAX_POINT_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
  *
  * Returns { processed, skipped, newCheckpoints }.
  */
-export function processGpsBatch(
+export async function processGpsBatch(
   eventId: string,
   userId: string,
   rawPoints: GPSPoint[],
   io: LiveIO,
   socket?: LiveSocket
-): { processed: number; skipped: number; newCheckpoints: number } {
+): Promise<{ processed: number; skipped: number; newCheckpoints: number }> {
   const startMs = Date.now();
   const room = rooms.get(eventId);
   if (!room) return { processed: 0, skipped: 0, newCheckpoints: 0 };
@@ -929,13 +950,29 @@ export function processGpsBatch(
           )
         : 0;
 
-    // Off-route detection (silent during batch — no per-point broadcast)
-    if (projection.deviationM > room.config.settings.deviationThresholdM) {
-      if (athlete.status !== "OFF_ROUTE" && athlete.status !== "FINISHED") {
-        athlete.status = "OFF_ROUTE";
+    // Off-route detection (silent during batch — no per-point broadcast).
+    // Uses the same hysteresis counter as real-time to stay consistent.
+    if (athlete.status !== "FINISHED") {
+      if (projection.deviationM > room.config.settings.deviationThresholdM) {
+        athlete.consecutiveOffRouteCount++;
+        if (
+          athlete.status !== "OFF_ROUTE" &&
+          athlete.consecutiveOffRouteCount >= 3
+        ) {
+          athlete.status = "OFF_ROUTE";
+        }
+      } else {
+        athlete.consecutiveOffRouteCount = 0;
+        if (
+          athlete.status === "OFF_ROUTE" &&
+          projection.deviationM <=
+            room.config.settings.deviationThresholdM * 0.75
+        ) {
+          athlete.status = "ACTIVE";
+        } else if (athlete.status !== "OFF_ROUTE") {
+          athlete.status = "ACTIVE";
+        }
       }
-    } else if (athlete.status !== "FINISHED") {
-      athlete.status = "ACTIVE";
     }
 
     // Detect personal start: athlete exiting the START zone (batch replay)
@@ -1026,6 +1063,12 @@ export function processGpsBatch(
     prevPoint = point;
     processed++;
 
+    // Yield the event loop every 500 points so real-time GPS updates from
+    // other athletes are not blocked during a large batch replay.
+    if (processed % 500 === 0) {
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    }
+
     // Progress feedback (avoids flooding — every N points)
     if (socket && processed % PROGRESS_INTERVAL === 0) {
       socket.emit("liverace:sync_progress", {
@@ -1108,78 +1151,83 @@ function haversineForBatch(
 export function computeLeaderboard(room: EventRoomState): LeaderboardEntry[] {
   const athletes = Array.from(room.athletes.values());
 
-  // Sort:
-  // 1. Finished athletes first (by finish time ascending)
-  // 2. Then by distance along route descending
-  // 3. Tie-breaker: last checkpoint time
-  athletes.sort((a, b) => {
-    // Finished always ranked first
-    const aFinished = a.status === "FINISHED";
-    const bFinished = b.status === "FINISHED";
-    if (aFinished && !bFinished) return -1;
-    if (!aFinished && bFinished) return 1;
-    if (aFinished && bFinished) {
-      return (a.finishTimeMs ?? Infinity) - (b.finishTimeMs ?? Infinity);
-    }
+  // Group by variant so that a 10 km athlete is never ranked against a 50 km
+  // athlete — raw distanceAlongRouteM is meaningless across different routes.
+  const byVariant = new Map<string, typeof athletes>();
+  for (const a of athletes) {
+    const group = byVariant.get(a.variantId) ?? [];
+    group.push(a);
+    byVariant.set(a.variantId, group);
+  }
 
-    // Then by distance (descending = further along is better)
-    if (b.distanceAlongRouteM !== a.distanceAlongRouteM) {
-      return b.distanceAlongRouteM - a.distanceAlongRouteM;
-    }
-
-    // Tie-breaker: who reached a checkpoint first
-    return (a.lastUpdateAt ?? 0) - (b.lastUpdateAt ?? 0);
-  });
-
-  // Assign ranks
   const leaderEntries: LeaderboardEntry[] = [];
-  let currentRank = 0;
 
-  for (let i = 0; i < athletes.length; i++) {
-    const a = athletes[i];
-    currentRank = i + 1;
-    a.rank = currentRank;
+  for (const [, group] of byVariant) {
+    // Sort within each variant:
+    // 1. Finished first (by finish time ascending)
+    // 2. Then by distance along route descending
+    // 3. Tie-breaker: last update timestamp
+    group.sort((a, b) => {
+      const aFinished = a.status === "FINISHED";
+      const bFinished = b.status === "FINISHED";
+      if (aFinished && !bFinished) return -1;
+      if (!aFinished && bFinished) return 1;
+      if (aFinished && bFinished) {
+        return (a.finishTimeMs ?? Infinity) - (b.finishTimeMs ?? Infinity);
+      }
+      if (b.distanceAlongRouteM !== a.distanceAlongRouteM) {
+        return b.distanceAlongRouteM - a.distanceAlongRouteM;
+      }
+      return (a.lastUpdateAt ?? 0) - (b.lastUpdateAt ?? 0);
+    });
 
-    // Compute gap to leader
-    let gap: string | null = null;
-    if (i > 0) {
-      const leader = athletes[0];
-      if (a.status === "FINISHED" && leader.status === "FINISHED") {
-        const diffMs = (a.finishTimeMs ?? 0) - (leader.finishTimeMs ?? 0);
-        gap = `+${formatTimeMs(diffMs)}`;
-      } else {
-        const distGap = leader.distanceAlongRouteM - a.distanceAlongRouteM;
-        if (distGap > 1000) {
-          gap = `+${(distGap / 1000).toFixed(1)}km`;
+    // Assign per-variant ranks and compute gaps against the variant leader
+    const leader = group[0];
+
+    for (let i = 0; i < group.length; i++) {
+      const a = group[i];
+      const rank = i + 1;
+      a.rank = rank;
+
+      let gap: string | null = null;
+      if (i > 0 && leader) {
+        if (a.status === "FINISHED" && leader.status === "FINISHED") {
+          const diffMs = (a.finishTimeMs ?? 0) - (leader.finishTimeMs ?? 0);
+          gap = `+${formatTimeMs(diffMs)}`;
         } else {
-          gap = `+${Math.round(distGap)}m`;
+          const distGap = leader.distanceAlongRouteM - a.distanceAlongRouteM;
+          if (distGap > 1000) {
+            gap = `+${(distGap / 1000).toFixed(1)}km`;
+          } else {
+            gap = `+${Math.round(distGap)}m`;
+          }
         }
       }
+
+      const lastCp =
+        a.checkpointsReached.length > 0
+          ? a.checkpointsReached[a.checkpointsReached.length - 1]
+          : null;
+
+      leaderEntries.push({
+        rank,
+        userId: a.userId,
+        name: a.name,
+        image: a.image,
+        bibNumber: a.bibNumber,
+        variantId: a.variantId,
+        variantName: a.variantName,
+        status: a.status,
+        visibility: a.visibility,
+        distanceAlongRouteM: Math.round(a.distanceAlongRouteM),
+        progressPercent: Math.round(a.progressPercent * 10) / 10,
+        lastCheckpointOrder: a.lastCheckpointOrder,
+        lastCheckpointName: lastCp?.checkpointName ?? null,
+        finishTimeMs: a.finishTimeMs,
+        personalStartTime: a.personalStartTime,
+        gap,
+      });
     }
-
-    const lastCp =
-      a.checkpointsReached.length > 0
-        ? a.checkpointsReached[a.checkpointsReached.length - 1]
-        : null;
-
-    leaderEntries.push({
-      rank: currentRank,
-      userId: a.userId,
-      name: a.name,
-      image: a.image,
-      bibNumber: a.bibNumber,
-      variantId: a.variantId,
-      variantName: a.variantName,
-      status: a.status,
-      visibility: a.visibility,
-      distanceAlongRouteM: Math.round(a.distanceAlongRouteM),
-      progressPercent: Math.round(a.progressPercent * 10) / 10,
-      lastCheckpointOrder: a.lastCheckpointOrder,
-      lastCheckpointName: lastCp?.checkpointName ?? null,
-      finishTimeMs: a.finishTimeMs,
-      personalStartTime: a.personalStartTime,
-      gap,
-    });
   }
 
   return leaderEntries;

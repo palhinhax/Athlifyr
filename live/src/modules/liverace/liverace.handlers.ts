@@ -321,6 +321,7 @@ export function registerLiveRaceHandlers(
     }));
 
     try {
+      const startMs = Date.now();
       const result = await processGpsBatch(
         eventId,
         userId,
@@ -328,8 +329,20 @@ export function registerLiveRaceHandlers(
         io,
         socket
       );
+      const durationMs = Date.now() - startMs;
+
+      // Notify the client that the batch has been fully processed so it
+      // can unlock the UI and clear syncing state.
+      socket.emit("liverace:sync_complete", {
+        eventId,
+        processed: result.processed,
+        skipped: result.skipped,
+        newCheckpoints: result.newCheckpoints,
+        durationMs,
+      });
+
       console.log(
-        `[LiveRace] Batch sync for ${userName || userId}: ${result.processed} processed, ${result.skipped} skipped`
+        `[LiveRace] Batch sync for ${userName || userId}: ${result.processed} processed, ${result.skipped} skipped (${durationMs}ms)`
       );
     } catch (err) {
       console.error("[LiveRace] Error processing GPS batch:", err);

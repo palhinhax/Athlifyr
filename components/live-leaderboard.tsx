@@ -75,6 +75,8 @@ interface LiveLeaderboardProps {
   status: EventLiveStatus;
   spectatorCount: number;
   connected: boolean;
+  /** True while socket.io is retrying after an unexpected drop */
+  reconnecting?: boolean;
   maxDisplay?: number;
   className?: string;
 }
@@ -86,12 +88,21 @@ export function LiveLeaderboard({
   status,
   spectatorCount,
   connected,
+  reconnecting = false,
   maxDisplay = 20,
   className,
 }: LiveLeaderboardProps) {
   const t = useTranslations("liveRace");
 
   const displayEntries = leaderboard.slice(0, maxDisplay);
+
+  // Show a skeleton while we're connected to an active race but haven't
+  // received the first leaderboard payload yet — otherwise the user briefly
+  // sees a confusing "no athletes" empty state on every page load.
+  const showLoadingSkeleton =
+    connected &&
+    leaderboard.length === 0 &&
+    (status === "LIVE" || status === "PAUSED" || status === "WARMUP");
 
   return (
     <Card className={cn("relative overflow-hidden", className)}>
@@ -119,9 +130,22 @@ export function LiveLeaderboard({
                 {connected ? (
                   <Wifi className="h-3 w-3 text-green-500" />
                 ) : (
-                  <WifiOff className="h-3 w-3 text-red-500" />
+                  <WifiOff
+                    className={cn(
+                      "h-3 w-3",
+                      reconnecting
+                        ? "animate-pulse text-amber-500"
+                        : "text-red-500"
+                    )}
+                  />
                 )}
-                <span>{connected ? t("connected") : t("disconnected")}</span>
+                <span>
+                  {connected
+                    ? t("connected")
+                    : reconnecting
+                      ? t("reconnecting")
+                      : t("disconnected")}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
@@ -140,14 +164,45 @@ export function LiveLeaderboard({
           </div>
         )}
 
+        {status === "PAUSED" && (
+          <div className="mb-3 rounded-lg bg-orange-50 p-3 text-center text-sm text-orange-700 dark:bg-orange-950/30 dark:text-orange-400">
+            {t("pausedMessage")}
+          </div>
+        )}
+
         {status === "FINISHED" && (
           <div className="mb-3 rounded-lg bg-green-50 p-3 text-center text-sm text-green-700 dark:bg-green-950/30 dark:text-green-400">
             {t("finishedMessage")}
           </div>
         )}
 
-        {/* Empty state */}
-        {displayEntries.length === 0 && (
+        {!connected && reconnecting && (
+          <div className="mb-3 rounded-lg bg-amber-50 p-3 text-center text-sm text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+            {t("reconnectingMessage")}
+          </div>
+        )}
+
+        {/* Loading skeleton — shown on first connect before leaderboard arrives */}
+        {showLoadingSkeleton && (
+          <div className="space-y-2 py-2" aria-label={t("loading")}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg px-3 py-2"
+              >
+                <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+                  <div className="h-2 w-1/2 animate-pulse rounded bg-muted" />
+                </div>
+                <div className="h-4 w-12 animate-pulse rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty state — only when we're definitely not loading */}
+        {displayEntries.length === 0 && !showLoadingSkeleton && (
           <div className="py-8 text-center text-sm text-muted-foreground">
             {status === "WARMUP"
               ? t("waitingForAthletes")

@@ -339,7 +339,17 @@
         "resumeBtn": "Reanudar",
         "finish": "Terminar carrera",
         "finishHelp": "Cierra la carrera y guarda los resultados finales.",
-        "finishBtn": "Terminar carrera"
+        "finishBtn": "Terminar carrera",
+        "cancel": "Cancelar carrera",
+        "cancelHelp": "Cancela la carrera. Atletas y espectadores serán notificados.",
+        "cancelBtn": "Cancelar carrera"
+      },
+      "confirm": {
+        "back": "Volver",
+        "finishTitle": "¿Terminar esta carrera?",
+        "finishDescription": "Esto cerrará la carrera y guardará los resultados finales. Los atletas aún en el recorrido se marcarán como terminados. Esta acción no se puede deshacer.",
+        "cancelTitle": "¿Cancelar esta carrera?",
+        "cancelDescription": "Esto cancelará la carrera para todos los participantes y espectadores. Todo progreso en vivo se descartará y la sala se cerrará. Esta acción no se puede deshacer."
       },
       "commandSuccess": {
         "checkin": "Check-in abierto.",
@@ -347,7 +357,8 @@
         "start": "Carrera iniciada.",
         "pause": "Carrera pausada.",
         "resume": "Carrera reanudada.",
-        "finish": "Carrera terminada."
+        "finish": "Carrera terminada.",
+        "cancel": "Carrera cancelada."
       },
       "readiness": {
         "allGood": "Lista para iniciar",

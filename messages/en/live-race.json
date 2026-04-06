@@ -49,6 +49,14 @@
     "checkinOpenDescription": "Athlete check-in is now open. The race will begin shortly. Stay tuned for live tracking.",
     "checkInOpen": "Check-in open",
     "countdownLabel": "Race starts in",
-    "countdownReady": "Race is ready to start!"
+    "countdownReady": "Race is ready to start!",
+    "paused": "Paused",
+    "cancelled": "Cancelled",
+    "pausedMessage": "The race is temporarily paused. Live updates will resume shortly.",
+    "reconnecting": "Reconnecting…",
+    "reconnectingMessage": "Connection lost. Trying to reconnect to the live server…",
+    "loading": "Loading",
+    "errorTitle": "Live race error",
+    "finalResultsError": "Could not load the final results. Please refresh the page."
   }
 }

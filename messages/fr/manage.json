@@ -339,7 +339,17 @@
         "resumeBtn": "Reprendre",
         "finish": "Terminer la course",
         "finishHelp": "Clôture la course et enregistre les résultats finaux.",
-        "finishBtn": "Terminer la course"
+        "finishBtn": "Terminer la course",
+        "cancel": "Annuler la course",
+        "cancelHelp": "Annule la course. Les athlètes et spectateurs seront notifiés.",
+        "cancelBtn": "Annuler la course"
+      },
+      "confirm": {
+        "back": "Retour",
+        "finishTitle": "Terminer cette course ?",
+        "finishDescription": "Cela clôturera la course et enregistrera les résultats finaux. Les athlètes encore en course seront marqués comme terminés. Cette action est irréversible.",
+        "cancelTitle": "Annuler cette course ?",
+        "cancelDescription": "Cela annulera la course pour tous les participants et spectateurs. Toute progression en direct sera perdue et la salle sera fermée. Cette action est irréversible."
       },
       "commandSuccess": {
         "checkin": "Check-in ouvert.",
@@ -347,7 +357,8 @@
         "start": "Course démarrée.",
         "pause": "Course mise en pause.",
         "resume": "Course reprise.",
-        "finish": "Course terminée."
+        "finish": "Course terminée.",
+        "cancel": "Course annulée."
       },
       "readiness": {
         "allGood": "Prête à démarrer",

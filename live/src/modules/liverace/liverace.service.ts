@@ -1214,27 +1214,23 @@ function startBroadcastTimers(room: EventRoomState, io: LiveIO): void {
   const { positionBroadcastMs, leaderboardBroadcastMs, inactiveTimeoutMs } =
     room.config.settings;
 
-  // Position broadcast
+  // Position broadcast — per-socket filtering applies athlete visibility
+  // (PUBLIC / FRIENDS / ORGANIZER_ONLY). Without this loop every connected
+  // client would receive the raw GPS of every athlete, leaking the position
+  // of athletes who set their race to FRIENDS or ORGANIZER_ONLY.
   room.positionInterval = setInterval(() => {
     if (room.status !== "LIVE" && room.status !== "WARMUP") return;
     const positions = getPositionUpdates(room);
-    if (positions.length > 0) {
-      io.to(eventRoom(room.eventId)).emit("liverace:positions", {
-        eventId: room.eventId,
-        athletes: positions,
-      });
-    }
+    if (positions.length === 0) return;
+    void broadcastPositionsFiltered(room, io, positions);
   }, positionBroadcastMs);
 
-  // Leaderboard broadcast
+  // Leaderboard broadcast — same per-socket filtering as positions.
+  // Hidden athletes are anonymized (not dropped) to preserve ranking.
   room.leaderboardInterval = setInterval(() => {
     if (room.status !== "LIVE") return;
     const entries = computeLeaderboard(room);
-    io.to(eventRoom(room.eventId)).emit("liverace:leaderboard", {
-      eventId: room.eventId,
-      entries,
-      timestamp: Date.now(),
-    });
+    void broadcastLeaderboardFiltered(room, io, entries);
   }, leaderboardBroadcastMs);
 
   // Inactivity check
@@ -1550,6 +1546,101 @@ async function persistFinalResults(room: EventRoomState): Promise<void> {
     );
   } catch (err) {
     console.error(`[LiveRace] Failed to persist results:`, err);
+  }
+}
+
+// ─── Filtered Broadcast Helpers ─────────────────────────────────────────────
+
+/**
+ * Emit per-socket filtered position updates to every client in the event room.
+ * Each viewer gets only the athletes they are allowed to see based on the
+ * athlete's visibility setting (PUBLIC / FRIENDS / ORGANIZER_ONLY) combined
+ * with the viewer's friendship graph.
+ *
+ * This is deliberately per-socket: using `io.to(room).emit(...)` would send
+ * the unfiltered payload to every viewer, defeating the privacy system.
+ */
+async function broadcastPositionsFiltered(
+  room: EventRoomState,
+  io: LiveIO,
+  positions: AthletePositionUpdate[]
+): Promise<void> {
+  try {
+    const sockets = await io.in(eventRoom(room.eventId)).fetchSockets();
+    if (sockets.length === 0) return;
+
+    // Fast path: if all athletes are PUBLIC, no filtering is required.
+    const allPublic = positions.every((p) => p.visibility === "PUBLIC");
+    if (allPublic) {
+      io.to(eventRoom(room.eventId)).emit("liverace:positions", {
+        eventId: room.eventId,
+        athletes: positions,
+      });
+      return;
+    }
+
+    for (const socket of sockets) {
+      const viewerUserId = socket.data.userId as string | undefined;
+      const friendIds = await getSpectatorFriends(viewerUserId);
+      const filtered = filterPositionsForViewer(
+        positions,
+        viewerUserId,
+        friendIds,
+        false
+      );
+      if (filtered.length > 0) {
+        socket.emit("liverace:positions", {
+          eventId: room.eventId,
+          athletes: filtered,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("[LiveRace] broadcastPositionsFiltered failed:", err);
+  }
+}
+
+/**
+ * Emit per-socket filtered leaderboard updates. Hidden athletes are kept in
+ * the list (to preserve rank/gap) but anonymized — see filterLeaderboardForViewer.
+ */
+async function broadcastLeaderboardFiltered(
+  room: EventRoomState,
+  io: LiveIO,
+  entries: LeaderboardEntry[]
+): Promise<void> {
+  try {
+    const sockets = await io.in(eventRoom(room.eventId)).fetchSockets();
+    if (sockets.length === 0) return;
+
+    const allPublic = entries.every((e) => e.visibility === "PUBLIC");
+    if (allPublic) {
+      io.to(eventRoom(room.eventId)).emit("liverace:leaderboard", {
+        eventId: room.eventId,
+        entries,
+        timestamp: Date.now(),
+      });
+      return;
+    }
+
+    const timestamp = Date.now();
+    for (const socket of sockets) {
+      const viewerUserId = socket.data.userId as string | undefined;
+      const friendIds = await getSpectatorFriends(viewerUserId);
+      const filtered = filterLeaderboardForViewer(
+        entries,
+        viewerUserId,
+        friendIds,
+        false
+      );
+      socket.emit("liverace:leaderboard", {
+        eventId: room.eventId,
+        entries: filtered,
+        timestamp,
+      });
+    }
+  } catch (err) {
+    console.error("[LiveRace] broadcastLeaderboardFiltered failed:", err);
   }
 }
 

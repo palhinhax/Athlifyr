@@ -339,7 +339,17 @@
         "resumeBtn": "Fortsetzen",
         "finish": "Rennen beenden",
         "finishHelp": "Beendet das Rennen und speichert die Endergebnisse.",
-        "finishBtn": "Rennen beenden"
+        "finishBtn": "Rennen beenden",
+        "cancel": "Rennen abbrechen",
+        "cancelHelp": "Bricht das Rennen ab. Athleten und Zuschauer werden benachrichtigt.",
+        "cancelBtn": "Rennen abbrechen"
+      },
+      "confirm": {
+        "back": "Zurück",
+        "finishTitle": "Dieses Rennen beenden?",
+        "finishDescription": "Dies beendet das Rennen und speichert die Endergebnisse. Athleten, die sich noch auf der Strecke befinden, werden als beendet markiert. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "cancelTitle": "Dieses Rennen abbrechen?",
+        "cancelDescription": "Dies bricht das Rennen für alle Teilnehmer und Zuschauer ab. Der Live-Fortschritt geht verloren und der Raum wird geschlossen. Diese Aktion kann nicht rückgängig gemacht werden."
       },
       "commandSuccess": {
         "checkin": "Check-in geöffnet.",
@@ -347,7 +357,8 @@
         "start": "Rennen gestartet.",
         "pause": "Rennen pausiert.",
         "resume": "Rennen fortgesetzt.",
-        "finish": "Rennen beendet."
+        "finish": "Rennen beendet.",
+        "cancel": "Rennen abgebrochen."
       },
       "readiness": {
         "allGood": "Bereit zum Starten",

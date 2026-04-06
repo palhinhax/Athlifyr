@@ -70,11 +70,18 @@ export async function POST(
       });
     }
 
-    // Trigger the Live Service
+    // Trigger the Live Service. The live server now fail-closes on
+    // POST /live/start without the shared secret, so Next.js must forward
+    // it. Keeping this endpoint gated prevents unauthenticated clients from
+    // forcing room creation directly on the live server.
     try {
       const liveRes = await fetch(`${LIVE_SERVICE_URL}/live/start`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-live-server": "true",
+          "x-live-secret": process.env.LIVE_INTERNAL_SECRET ?? "",
+        },
         body: JSON.stringify({ eventId }),
       });
 

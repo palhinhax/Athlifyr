@@ -10,8 +10,19 @@ import {
   Ban,
   XCircle,
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useTranslations } from "next-intl";
 
 type LiveCommand =
@@ -133,6 +144,21 @@ export function LiveRaceControls({
 }: Readonly<LiveRaceControlsProps>) {
   const t = useTranslations("manage.liverace");
 
+  // Destructive actions (finish, cancel) are irreversible: finishing persists
+  // results and cancelling tears down the room. Require explicit confirmation
+  // via a modal so a mis-click on the race-day control panel can't end the
+  // event prematurely.
+  const [confirmCommand, setConfirmCommand] = useState<
+    "finish" | "cancel" | null
+  >(null);
+
+  const canCancel =
+    status === "SCHEDULED" ||
+    status === "CHECK_IN_OPEN" ||
+    status === "WARMUP" ||
+    status === "LIVE" ||
+    status === "PAUSED";
+
   return (
     <Card>
       <CardHeader>
@@ -201,25 +227,67 @@ export function LiveRaceControls({
             help={t("actions.finishHelp")}
             buttonLabel={t("actions.finishBtn")}
             icon={<Square className="h-4 w-4" />}
-            onClick={() => onCommand("finish")}
+            onClick={() => setConfirmCommand("finish")}
             isLoading={isLoading}
             borderClass="border-purple-200 dark:border-purple-800"
             buttonClass="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-400"
           />
         )}
 
-        {(status === "LIVE" || status === "PAUSED") && (
+        {canCancel && (
           <ControlAction
             label={t("actions.cancel")}
             help={t("actions.cancelHelp")}
             buttonLabel={t("actions.cancelBtn")}
             icon={<Ban className="h-4 w-4" />}
-            onClick={() => onCommand("cancel")}
+            onClick={() => setConfirmCommand("cancel")}
             isLoading={isLoading}
             borderClass="border-red-200 dark:border-red-800"
             buttonClass="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
           />
         )}
+
+        <AlertDialog
+          open={confirmCommand !== null}
+          onOpenChange={(open) => {
+            if (!open) setConfirmCommand(null);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {confirmCommand === "finish"
+                  ? t("confirm.finishTitle")
+                  : t("confirm.cancelTitle")}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {confirmCommand === "finish"
+                  ? t("confirm.finishDescription")
+                  : t("confirm.cancelDescription")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("confirm.back")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (confirmCommand) {
+                    onCommand(confirmCommand);
+                    setConfirmCommand(null);
+                  }
+                }}
+                className={
+                  confirmCommand === "cancel"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-purple-600 hover:bg-purple-700"
+                }
+              >
+                {confirmCommand === "finish"
+                  ? t("actions.finishBtn")
+                  : t("actions.cancelBtn")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {(status === "FINISHED" || status === "CANCELLED") && (
           <div className="rounded-lg border p-4">

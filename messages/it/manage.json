@@ -339,7 +339,17 @@
         "resumeBtn": "Riprendi",
         "finish": "Termina gara",
         "finishHelp": "Chiude la gara e salva i risultati finali.",
-        "finishBtn": "Termina gara"
+        "finishBtn": "Termina gara",
+        "cancel": "Annulla gara",
+        "cancelHelp": "Annulla la gara. Atleti e spettatori verranno notificati.",
+        "cancelBtn": "Annulla gara"
+      },
+      "confirm": {
+        "back": "Indietro",
+        "finishTitle": "Terminare questa gara?",
+        "finishDescription": "Questo chiuderà la gara e salverà i risultati finali. Gli atleti ancora in gara verranno contrassegnati come terminati. Questa azione non può essere annullata.",
+        "cancelTitle": "Annullare questa gara?",
+        "cancelDescription": "Questo annullerà la gara per tutti i partecipanti e spettatori. Tutti i progressi in diretta verranno persi e la stanza verrà chiusa. Questa azione non può essere annullata."
       },
       "commandSuccess": {
         "checkin": "Check-in aperto.",
@@ -347,7 +357,8 @@
         "start": "Gara avviata.",
         "pause": "Gara in pausa.",
         "resume": "Gara ripresa.",
-        "finish": "Gara terminata."
+        "finish": "Gara terminata.",
+        "cancel": "Gara annullata."
       },
       "readiness": {
         "allGood": "Pronta per partire",

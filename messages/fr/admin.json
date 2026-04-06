@@ -953,7 +953,11 @@
         "events": "Posts d'Événements",
         "weekly": "Résumé Hebdomadaire",
         "lastCall": "Dernier Appel",
-        "compilation": "Compilation Hebdomadaire"
+        "compilation": "Compilation Hebdomadaire",
+        "country": "Pays",
+        "allCountries": "Tous les Pays",
+        "customTitle": "Titre personnalisé",
+        "customTitlePlaceholder": "Ex : TRAILS DE LA SEMAINE"
       },
       "schedule": {
         "title": "Planifier la Publication",

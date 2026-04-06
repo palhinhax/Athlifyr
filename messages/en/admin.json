@@ -952,7 +952,11 @@
         "events": "Event Posts",
         "weekly": "Weekly Roundup",
         "lastCall": "Last Call",
-        "compilation": "Weekly Compilation"
+        "compilation": "Weekly Compilation",
+        "country": "Country",
+        "allCountries": "All Countries",
+        "customTitle": "Custom title",
+        "customTitlePlaceholder": "e.g. WEEKLY TRAILS"
       },
       "schedule": {
         "title": "Schedule Post",

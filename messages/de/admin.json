@@ -952,7 +952,11 @@
         "events": "Event-Posts",
         "weekly": "Wöchentliche Zusammenfassung",
         "lastCall": "Letzter Aufruf",
-        "compilation": "Wöchentliche Zusammenstellung"
+        "compilation": "Wöchentliche Zusammenstellung",
+        "country": "Land",
+        "allCountries": "Alle Länder",
+        "customTitle": "Benutzerdefinierter Titel",
+        "customTitlePlaceholder": "z.B. TRAILS DER WOCHE"
       },
       "schedule": {
         "title": "Beitrag planen",

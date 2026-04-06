@@ -14,7 +14,10 @@
       "Bash(__NEW_LINE_d1a6430141f5ced8__ node -e \":*)",
       "Bash(done)",
       "Bash(node -e \":*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(gh pr:*)",
+      "Bash(where gh:*)"
     ]
   }
 }

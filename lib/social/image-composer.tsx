@@ -480,6 +480,7 @@ function CompilationLayout({
   pageIndex,
   totalPages,
   days,
+  customTitle,
 }: {
   _mode: ComposeMode;
   events: EventForImage[];
@@ -487,8 +488,9 @@ function CompilationLayout({
   pageIndex: number;
   totalPages: number;
   days: number;
+  customTitle?: string;
 }) {
-  const title = buildTitle(events, days);
+  const title = customTitle || buildTitle(events, days);
   const now = new Date();
   const endDate = new Date(now.getTime() + days * 86400000);
   const dateRange = `${now.toLocaleDateString("pt-PT", { day: "numeric", month: "short" })} — ${endDate.toLocaleDateString("pt-PT", { day: "numeric", month: "short" })}`;
@@ -644,7 +646,8 @@ function CompilationLayout({
 export async function composeCompilationImages(
   mode: ComposeMode,
   events: EventForImage[],
-  days?: number
+  days?: number,
+  customTitle?: string
 ): Promise<Buffer[]> {
   if (events.length === 0) return [];
 
@@ -678,6 +681,7 @@ export async function composeCompilationImages(
         pageIndex={p}
         totalPages={pages.length}
         days={effectiveDays}
+        customTitle={customTitle}
       />,
       {
         width: CANVAS_W,

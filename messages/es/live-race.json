@@ -57,6 +57,8 @@
     "reconnectingMessage": "Conexión perdida. Intentando reconectar con el servidor en vivo…",
     "loading": "Cargando",
     "errorTitle": "Error en la carrera en vivo",
-    "finalResultsError": "No se pudieron cargar los resultados finales. Por favor actualiza la página."
+    "finalResultsError": "No se pudieron cargar los resultados finales. Por favor actualiza la página.",
+    "filterByVariant": "Filtrar por variante",
+    "allVariants": "Todas"
   }
 }

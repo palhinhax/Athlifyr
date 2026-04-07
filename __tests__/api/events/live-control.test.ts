@@ -46,6 +46,7 @@ jest.mock("@/lib/prisma", () => ({
     event: {
       findUnique: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
   },
 }));
@@ -119,7 +120,7 @@ function mockAdminPermission() {
   (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
   (getUserEventContext as jest.Mock).mockResolvedValue({});
   (hasEventPermission as jest.Mock).mockReturnValue(true);
-  (prisma.event.update as jest.Mock).mockResolvedValue({});
+  (prisma.event.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -190,8 +191,13 @@ describe("POST /api/events/[id]/live-control", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.liveStatus).toBe("CANCELLED");
-    expect(prisma.event.update).toHaveBeenCalledWith({
-      where: { id: "event-1" },
+    expect(prisma.event.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "event-1",
+        liveStatus: {
+          in: ["SCHEDULED", "CHECK_IN_OPEN", "WARMUP", "LIVE", "PAUSED"],
+        },
+      },
       data: { liveStatus: "CANCELLED" },
     });
   });
@@ -288,6 +294,70 @@ describe("POST /api/events/[id]/live-control", () => {
     expect(body.liveStatus).toBe("PAUSED");
   });
 
+  // ── Cancel from early states (Tier 1 Task 8) ──────────────────────────────
+
+  it("supports cancel from SCHEDULED", async () => {
+    mockAdminPermission();
+    (prisma.event.findUnique as jest.Mock).mockResolvedValue(
+      makeValidEvent("SCHEDULED")
+    );
+
+    const res = await POST(makeRequest("cancel"), makeParams());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.liveStatus).toBe("CANCELLED");
+  });
+
+  it("supports cancel from CHECK_IN_OPEN", async () => {
+    mockAdminPermission();
+    (prisma.event.findUnique as jest.Mock).mockResolvedValue(
+      makeValidEvent("CHECK_IN_OPEN")
+    );
+
+    const res = await POST(makeRequest("cancel"), makeParams());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.liveStatus).toBe("CANCELLED");
+  });
+
+  it("supports cancel from WARMUP", async () => {
+    mockAdminPermission();
+    (prisma.event.findUnique as jest.Mock).mockResolvedValue(
+      makeValidEvent("WARMUP")
+    );
+
+    const res = await POST(makeRequest("cancel"), makeParams());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.liveStatus).toBe("CANCELLED");
+  });
+
+  it("does not allow cancel from FINISHED", async () => {
+    mockAdminPermission();
+    (prisma.event.findUnique as jest.Mock).mockResolvedValue(
+      makeValidEvent("FINISHED")
+    );
+
+    const res = await POST(makeRequest("cancel"), makeParams());
+    expect(res.status).toBe(409);
+  });
+
+  // ── Optimistic lock (Tier 1 Task 9) ───────────────────────────────────────
+
+  it("returns 409 STATE_CONFLICT when concurrent update changes status", async () => {
+    mockAdminPermission();
+    (prisma.event.findUnique as jest.Mock).mockResolvedValue(
+      makeValidEvent("LIVE")
+    );
+    // Simulate: updateMany matched 0 rows (another request changed status first)
+    (prisma.event.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
+
+    const res = await POST(makeRequest("pause"), makeParams());
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.code).toBe("STATE_CONFLICT");
+  });
+
   it("succeeds for a fully valid checkin command", async () => {
     mockAdminPermission();
     (prisma.event.findUnique as jest.Mock).mockResolvedValue(
@@ -298,8 +368,11 @@ describe("POST /api/events/[id]/live-control", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.liveStatus).toBe("CHECK_IN_OPEN");
-    expect(prisma.event.update).toHaveBeenCalledWith({
-      where: { id: "event-1" },
+    expect(prisma.event.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "event-1",
+        liveStatus: { in: ["SCHEDULED"] },
+      },
       data: { liveStatus: "CHECK_IN_OPEN" },
     });
   });

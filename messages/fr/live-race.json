@@ -57,6 +57,8 @@
     "reconnectingMessage": "Connexion perdue. Tentative de reconnexion au serveur en direct…",
     "loading": "Chargement",
     "errorTitle": "Erreur de course en direct",
-    "finalResultsError": "Impossible de charger les résultats finaux. Veuillez rafraîchir la page."
+    "finalResultsError": "Impossible de charger les résultats finaux. Veuillez rafraîchir la page.",
+    "filterByVariant": "Filtrer par variante",
+    "allVariants": "Toutes"
   }
 }

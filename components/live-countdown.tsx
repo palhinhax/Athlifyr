@@ -76,6 +76,8 @@ export function LiveCountdown({
   if (timeLeft === null || targetMs === null) {
     return (
       <div
+        role="status"
+        aria-label={t("loading")}
         className={cn(
           "flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-950/20",
           className
@@ -90,12 +92,13 @@ export function LiveCountdown({
   if (timeLeft.total <= 0) {
     return (
       <div
+        role="status"
         className={cn(
           "flex items-center justify-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/20",
           className
         )}
       >
-        <Timer className="h-5 w-5 text-green-600" />
+        <Timer className="h-5 w-5 text-green-600" aria-hidden="true" />
         <span className="text-sm font-semibold text-green-700 dark:text-green-400">
           {t("countdownReady")}
         </span>
@@ -103,20 +106,27 @@ export function LiveCountdown({
     );
   }
 
+  const countdownText = `${padTwo(timeLeft.hours)}:${padTwo(timeLeft.minutes)}:${padTwo(timeLeft.seconds)}`;
+
   return (
     <div
+      role="timer"
+      aria-label={`${t("countdownLabel")} ${countdownText}`}
       className={cn(
         "flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-950/20",
         className
       )}
     >
       <div className="flex items-center gap-2">
-        <Clock className="h-4 w-4 text-amber-600" />
+        <Clock className="h-4 w-4 text-amber-600" aria-hidden="true" />
         <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
           {t("countdownLabel")}
         </span>
       </div>
-      <div className="flex items-baseline gap-1 font-mono text-4xl font-bold tabular-nums text-amber-800 dark:text-amber-300">
+      <div
+        className="flex items-baseline gap-1 font-mono text-4xl font-bold tabular-nums text-amber-800 dark:text-amber-300"
+        aria-hidden="true"
+      >
         <span>{padTwo(timeLeft.hours)}</span>
         <span className="animate-pulse">:</span>
         <span>{padTwo(timeLeft.minutes)}</span>

@@ -57,6 +57,8 @@
     "reconnectingMessage": "Connection lost. Trying to reconnect to the live server…",
     "loading": "Loading",
     "errorTitle": "Live race error",
-    "finalResultsError": "Could not load the final results. Please refresh the page."
+    "finalResultsError": "Could not load the final results. Please refresh the page.",
+    "filterByVariant": "Filter by variant",
+    "allVariants": "All"
   }
 }

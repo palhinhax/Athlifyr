@@ -57,6 +57,8 @@
     "reconnectingMessage": "Connessione persa. Tentativo di riconnessione al server in diretta…",
     "loading": "Caricamento",
     "errorTitle": "Errore gara in diretta",
-    "finalResultsError": "Impossibile caricare i risultati finali. Aggiornare la pagina."
+    "finalResultsError": "Impossibile caricare i risultati finali. Aggiornare la pagina.",
+    "filterByVariant": "Filtra per variante",
+    "allVariants": "Tutte"
   }
 }

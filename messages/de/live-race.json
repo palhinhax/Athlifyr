@@ -57,6 +57,8 @@
     "reconnectingMessage": "Verbindung verloren. Verbindung zum Live-Server wird wiederhergestellt…",
     "loading": "Wird geladen",
     "errorTitle": "Live-Rennen-Fehler",
-    "finalResultsError": "Endergebnisse konnten nicht geladen werden. Bitte Seite neu laden."
+    "finalResultsError": "Endergebnisse konnten nicht geladen werden. Bitte Seite neu laden.",
+    "filterByVariant": "Nach Variante filtern",
+    "allVariants": "Alle"
   }
 }

@@ -146,7 +146,10 @@ export function LiveRaceSection({
     effectiveStatus === "CHECK_IN_OPEN" || effectiveStatus === "WARMUP";
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <section
+      className={cn("space-y-4", className)}
+      aria-label={t("sectionTitle")}
+    >
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
@@ -160,7 +163,11 @@ export function LiveRaceSection({
           <h2 className="text-xl font-semibold">{t("sectionTitle")}</h2>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          role="status"
+          aria-live="polite"
+        >
           {effectiveStatus === "LIVE" && (
             <Badge className="animate-pulse bg-red-500 text-white">LIVE</Badge>
           )}
@@ -223,8 +230,11 @@ export function LiveRaceSection({
       {/* Final-results fetch failure banner — otherwise spectators on a
           terminal race would see an empty leaderboard with no explanation. */}
       {isTerminalFromDb && finalResultsError && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/20 dark:text-red-400">
-          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+        <div
+          role="alert"
+          className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/20 dark:text-red-400"
+        >
+          <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
           <span>{t("finalResultsError")}</span>
         </div>
       )}
@@ -245,6 +255,6 @@ export function LiveRaceSection({
         {/* Event Feed — 1 col */}
         <LiveEventFeed events={recentEvents} className="lg:col-span-1" />
       </div>
-    </div>
+    </section>
   );
 }

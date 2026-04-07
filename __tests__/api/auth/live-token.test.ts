@@ -23,9 +23,9 @@ jest.mock("@/lib/auth-helpers", () => ({
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 
 jest.mock("@/lib/jwt", () => ({
-  generateAccessToken: jest.fn().mockReturnValue("mock-live-token"),
+  generateLiveToken: jest.fn().mockReturnValue("mock-live-token"),
 }));
-import { generateAccessToken } from "@/lib/jwt";
+import { generateLiveToken } from "@/lib/jwt";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -85,7 +85,7 @@ describe("GET /api/auth/live-token", () => {
     const body = await res.json();
     expect(body.token).toBe("mock-live-token");
 
-    expect(generateAccessToken).toHaveBeenCalledWith({
+    expect(generateLiveToken).toHaveBeenCalledWith({
       userId: "user-1",
       email: "test@example.com",
       role: "ADMIN",
@@ -102,7 +102,7 @@ describe("GET /api/auth/live-token", () => {
     const res = await GET(makeRequest());
     expect(res.status).toBe(200);
 
-    expect(generateAccessToken).toHaveBeenCalledWith({
+    expect(generateLiveToken).toHaveBeenCalledWith({
       userId: "user-1",
       email: "test@example.com",
       role: "USER",

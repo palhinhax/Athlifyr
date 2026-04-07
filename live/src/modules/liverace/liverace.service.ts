@@ -37,6 +37,10 @@ import type {
 import type { LiveIO } from "../../plugins/socket.js";
 import type { LiveSocket } from "../../plugins/socket.js";
 
+// Redis key TTL for event data (24 hours). Prevents stale data from
+// accumulating if a race is never explicitly stopped.
+const REDIS_EVENT_TTL_S = 24 * 60 * 60;
+
 // ─── In-memory rooms ────────────────────────────────────────────────────────
 
 const rooms = new Map<string, EventRoomState>();
@@ -68,6 +72,99 @@ export function eventRoom(eventId: string): string {
  * Idempotent start: prepare a live race room for an event.
  * Returns the room state (existing or newly created).
  */
+/**
+ * Attempt to recover athlete state from Redis after a server restart.
+ * Reads athlete metadata and position snapshots, merging them into the room.
+ * Non-fatal: if Redis is down or data is stale, the room starts fresh.
+ */
+async function recoverAthletesFromRedis(room: EventRoomState): Promise<number> {
+  if (!isRedisAvailable()) return 0;
+
+  const redis = getRedis();
+  const athleteKey = `live:event:${room.eventId}:athletes`;
+  const positionKey = `live:event:${room.eventId}:positions`;
+
+  try {
+    const [athleteData, positionData] = await Promise.all([
+      redis.hgetall(athleteKey),
+      redis.hgetall(positionKey),
+    ]);
+
+    if (!athleteData || Object.keys(athleteData).length === 0) return 0;
+
+    let recovered = 0;
+    for (const [userId, raw] of Object.entries(athleteData)) {
+      try {
+        const meta = JSON.parse(raw) as {
+          userId: string;
+          name: string;
+          variantId: string;
+          variantName: string;
+          bibNumber: string | null;
+        };
+
+        // Parse position snapshot if available
+        const posRaw = positionData?.[userId];
+        const pos = posRaw
+          ? (JSON.parse(posRaw) as {
+              lat: number;
+              lng: number;
+              ts: number;
+              dist: number;
+              dev: number;
+              prog: number;
+              status: string;
+            })
+          : null;
+
+        const athleteState: AthleteState = {
+          userId: meta.userId,
+          name: meta.name,
+          image: null,
+          variantId: meta.variantId,
+          variantName: meta.variantName,
+          bibNumber: meta.bibNumber,
+          status: (pos?.status as AthleteState["status"]) ?? "ACTIVE",
+          visibility: "PUBLIC",
+          currentPosition: pos
+            ? { lat: pos.lat, lng: pos.lng, timestamp: pos.ts }
+            : null,
+          lastUpdateAt: pos?.ts ?? null,
+          personalStartTime: null,
+          wasInsideStartZone: false,
+          distanceAlongRouteM: pos?.dist ?? 0,
+          deviationM: pos?.dev ?? 0,
+          progressPercent: pos?.prog ?? 0,
+          consecutiveOffRouteCount: 0,
+          checkpointsReached: [],
+          lastCheckpointOrder: 0,
+          rank: 0,
+          finishTimeMs: null,
+        };
+
+        room.athletes.set(userId, athleteState);
+        recovered++;
+      } catch {
+        // Skip malformed entries
+      }
+    }
+
+    if (recovered > 0) {
+      console.log(
+        `[LiveRace] Recovered ${recovered} athletes from Redis for event ${room.eventId}`
+      );
+    }
+
+    return recovered;
+  } catch (err) {
+    console.warn(
+      `[LiveRace] Redis recovery failed for event ${room.eventId}:`,
+      err
+    );
+    return 0;
+  }
+}
+
 export async function startEvent(
   eventId: string,
   io: LiveIO
@@ -135,6 +232,9 @@ export async function startEvent(
   };
 
   rooms.set(eventId, room);
+
+  // Attempt to recover athlete state from Redis (survives server restart)
+  await recoverAthletesFromRedis(room);
 
   // Update DB status to WARMUP (if was SCHEDULED)
   if (liveConfig.liveStatus === "SCHEDULED") {
@@ -358,10 +458,19 @@ export async function stopEvent(
     status: reason,
   });
 
-  // Release Redis lock
+  // Release Redis lock and clean up event data
   if (isRedisAvailable()) {
     const redis = getRedis();
-    await redis.del(`live:event:${eventId}:lock`);
+    await Promise.all([
+      redis.del(`live:event:${eventId}:lock`),
+      redis.del(`live:event:${eventId}:athletes`),
+      redis.del(`live:event:${eventId}:positions`),
+    ]).catch((err) => {
+      console.warn(
+        `[LiveRace] Redis cleanup failed for event ${eventId}:`,
+        err
+      );
+    });
   }
 
   // Cleanup (keep room briefly for late joiners, then destroy)
@@ -454,8 +563,9 @@ export async function joinAthlete(
   // Store in Redis for persistence across reconnections
   if (isRedisAvailable()) {
     const redis = getRedis();
+    const athleteKey = `live:event:${eventId}:athletes`;
     await redis.hset(
-      `live:event:${eventId}:athletes`,
+      athleteKey,
       userId,
       JSON.stringify({
         userId,
@@ -465,6 +575,7 @@ export async function joinAthlete(
         bibNumber: athleteState.bibNumber,
       })
     );
+    redis.expire(athleteKey, REDIS_EVENT_TTL_S).catch(() => {});
   }
 
   console.log(
@@ -777,10 +888,11 @@ export function processGpsUpdate(
   // Update Redis (debounced — store position every N updates or by timer)
   if (isRedisAvailable()) {
     const redis = getRedis();
+    const posKey = `live:event:${eventId}:positions`;
     // Fire and forget — we don't block on Redis writes in the hot path
     redis
       .hset(
-        `live:event:${eventId}:positions`,
+        posKey,
         userId,
         JSON.stringify({
           lat: point.lat,
@@ -793,6 +905,7 @@ export function processGpsUpdate(
         })
       )
       .catch(() => {}); // Ignore Redis errors in hot path
+    redis.expire(posKey, REDIS_EVENT_TTL_S).catch(() => {});
   }
 }
 
@@ -1101,9 +1214,10 @@ export async function processGpsBatch(
   // Update Redis with final position
   if (isRedisAvailable() && athlete.currentPosition) {
     const redis = getRedis();
+    const posKey = `live:event:${eventId}:positions`;
     redis
       .hset(
-        `live:event:${eventId}:positions`,
+        posKey,
         userId,
         JSON.stringify({
           lat: athlete.currentPosition.lat,
@@ -1116,6 +1230,7 @@ export async function processGpsBatch(
         })
       )
       .catch(() => {});
+    redis.expire(posKey, REDIS_EVENT_TTL_S).catch(() => {});
   }
 
   const durationMs = Date.now() - startMs;

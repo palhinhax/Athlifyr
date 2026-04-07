@@ -57,6 +57,8 @@
     "reconnectingMessage": "Ligação perdida. A tentar reconectar ao servidor em direto…",
     "loading": "A carregar",
     "errorTitle": "Erro na corrida em direto",
-    "finalResultsError": "Não foi possível carregar os resultados finais. Por favor atualize a página."
+    "finalResultsError": "Não foi possível carregar os resultados finais. Por favor atualize a página.",
+    "filterByVariant": "Filtrar por variante",
+    "allVariants": "Todas"
   }
 }

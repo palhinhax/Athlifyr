@@ -17,7 +17,9 @@
       "Bash(npx tsc:*)",
       "mcp__Claude_Preview__preview_start",
       "Bash(gh pr:*)",
-      "Bash(where gh:*)"
+      "Bash(where gh:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx jest:*)"
     ]
   }
 }

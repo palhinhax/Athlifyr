@@ -39,7 +39,13 @@ const COMMAND_TRANSITIONS: Record<
   pause: { from: ["LIVE"], to: "PAUSED" },
   resume: { from: ["PAUSED"], to: "LIVE" },
   finish: { from: ["LIVE", "PAUSED"], to: "FINISHED" },
-  cancel: { from: ["LIVE", "PAUSED"], to: "CANCELLED" },
+  // Cancel is allowed from any pre-finished state. Organizers frequently
+  // need to cancel during check-in or warmup (weather, safety, no-shows)
+  // and should not be forced to progress to LIVE just to cancel.
+  cancel: {
+    from: ["SCHEDULED", "CHECK_IN_OPEN", "WARMUP", "LIVE", "PAUSED"],
+    to: "CANCELLED",
+  },
 };
 
 /** Commands that require full readiness validation before execution. */
@@ -271,10 +277,27 @@ export async function POST(
     }
   }
 
-  await prisma.event.update({
-    where: { id: eventId },
+  // Optimistic lock: only update if the row is still in one of the allowed
+  // source states. This prevents two concurrent organizers (or double-clicks)
+  // from racing each other and producing an invalid transition like
+  // LIVE → PAUSED → LIVE when the intent was a single pause.
+  const updated = await prisma.event.updateMany({
+    where: {
+      id: eventId,
+      liveStatus: { in: transition.from },
+    },
     data: { liveStatus: transition.to },
   });
+
+  if (updated.count === 0) {
+    return NextResponse.json(
+      {
+        error: `Conflict: event status changed concurrently. Refresh and retry.`,
+        code: "STATE_CONFLICT",
+      },
+      { status: 409 }
+    );
+  }
 
   await notifyLiveServer(eventId, transition.to);
 

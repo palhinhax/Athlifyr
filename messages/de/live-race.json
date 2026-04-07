@@ -49,6 +49,14 @@
     "checkinOpenDescription": "Die Athleten-Anmeldung ist geöffnet. Das Rennen beginnt in Kürze. Bleib dran für das Live-Tracking.",
     "checkInOpen": "Check-in offen",
     "countdownLabel": "Rennen startet in",
-    "countdownReady": "Das Rennen ist startbereit!"
+    "countdownReady": "Das Rennen ist startbereit!",
+    "paused": "Pausiert",
+    "cancelled": "Abgebrochen",
+    "pausedMessage": "Das Rennen ist vorübergehend pausiert. Live-Updates werden in Kürze fortgesetzt.",
+    "reconnecting": "Verbindung wird wiederhergestellt…",
+    "reconnectingMessage": "Verbindung verloren. Verbindung zum Live-Server wird wiederhergestellt…",
+    "loading": "Wird geladen",
+    "errorTitle": "Live-Rennen-Fehler",
+    "finalResultsError": "Endergebnisse konnten nicht geladen werden. Bitte Seite neu laden."
   }
 }

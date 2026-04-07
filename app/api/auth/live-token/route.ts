@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
-import { generateAccessToken } from "@/lib/jwt";
+import { generateLiveToken } from "@/lib/jwt";
 import type { UserRole } from "@prisma/client";
 
 /**
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const token = generateAccessToken({
+  const token = generateLiveToken({
     userId: user.id,
     email: user.email,
     role: (user.role ?? "USER") as UserRole,

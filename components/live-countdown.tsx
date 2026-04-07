@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Clock, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LiveCountdownProps {
-  eventId: string;
+  /** Target unix-ms timestamp to count down to. `null` = loading. */
+  targetMs: number | null;
+  /** Clock offset (ms): server time - client time. Sourced from the WebSocket hook. */
+  serverOffset: number;
   className?: string;
 }
 
@@ -37,71 +40,51 @@ function padTwo(n: number): string {
 }
 
 /**
- * Countdown timer that syncs with server time.
- * Displays HH:MM:SS until the event start time.
+ * Countdown timer driven by the Live Race WebSocket hook.
+ *
+ * Both the target timestamp and the server clock offset come from the hook
+ * (`scheduledStartTimes`, `serverTimeOffset`) so there is exactly one source
+ * of truth per page. Previously this component fetched its own time sync,
+ * which could diverge from the hook after any reconnect.
  */
-export function LiveCountdown({ eventId, className }: LiveCountdownProps) {
+export function LiveCountdown({
+  targetMs,
+  serverOffset,
+  className,
+}: LiveCountdownProps) {
   const t = useTranslations("liveRace");
-  const [targetTime, setTargetTime] = useState<number | null>(null);
-  const [serverOffset, setServerOffset] = useState(0);
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(
+    targetMs !== null ? computeTimeLeft(targetMs, serverOffset) : null
+  );
 
-  // Fetch server time and compute offset
-  const syncTime = useCallback(async () => {
-    try {
-      const beforeFetch = Date.now();
-      const res = await fetch(`/api/events/${eventId}/live-time`);
-      if (!res.ok) return;
-      const afterFetch = Date.now();
-      const data = (await res.json()) as {
-        serverTime: string;
-        eventStartDate: string;
-        variantStartTimes: Record<string, string | null>;
-      };
-
-      // Estimate one-way latency
-      const roundTrip = afterFetch - beforeFetch;
-      const serverTimeMs = new Date(data.serverTime).getTime();
-      const clientAtReceive = beforeFetch + roundTrip / 2;
-      const offset = serverTimeMs - clientAtReceive;
-      setServerOffset(offset);
-
-      // Use earliest variant start time (or event start)
-      const times = Object.values(data.variantStartTimes)
-        .filter((v): v is string => v !== null)
-        .map((v) => new Date(v).getTime());
-
-      const earliest =
-        times.length > 0
-          ? Math.min(...times)
-          : new Date(data.eventStartDate).getTime();
-
-      setTargetTime(earliest);
-    } catch {
-      // Ignore — countdown will show nothing
+  useEffect(() => {
+    if (targetMs === null) {
+      setTimeLeft(null);
+      return;
     }
-  }, [eventId]);
-
-  // Sync on mount
-  useEffect(() => {
-    void syncTime();
-  }, [syncTime]);
-
-  // Tick every second
-  useEffect(() => {
-    if (targetTime === null) return;
 
     const tick = () => {
-      setTimeLeft(computeTimeLeft(targetTime, serverOffset));
+      setTimeLeft(computeTimeLeft(targetMs, serverOffset));
     };
 
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [targetTime, serverOffset]);
+  }, [targetMs, serverOffset]);
 
-  if (timeLeft === null || targetTime === null) {
-    return null;
+  // Loading skeleton while the hook is still syncing with the server.
+  if (timeLeft === null || targetMs === null) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-950/20",
+          className
+        )}
+      >
+        <div className="h-4 w-24 animate-pulse rounded bg-amber-200/60 dark:bg-amber-900/40" />
+        <div className="h-10 w-40 animate-pulse rounded bg-amber-200/60 dark:bg-amber-900/40" />
+      </div>
+    );
   }
 
   if (timeLeft.total <= 0) {

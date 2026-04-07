@@ -339,7 +339,17 @@
         "resumeBtn": "Resume",
         "finish": "Finish race",
         "finishHelp": "Ends the race and saves the final results.",
-        "finishBtn": "Finish race"
+        "finishBtn": "Finish race",
+        "cancel": "Cancel race",
+        "cancelHelp": "Cancels the race. Athletes and spectators will be notified.",
+        "cancelBtn": "Cancel race"
+      },
+      "confirm": {
+        "back": "Back",
+        "finishTitle": "Finish this race?",
+        "finishDescription": "This will end the race and persist the final results. Athletes still on the course will be marked as finished. This action cannot be undone.",
+        "cancelTitle": "Cancel this race?",
+        "cancelDescription": "This will cancel the race for all participants and spectators. Any live progress will be discarded and the room will be torn down. This action cannot be undone."
       },
       "commandSuccess": {
         "checkin": "Check-in opened.",
@@ -347,7 +357,8 @@
         "start": "Race started.",
         "pause": "Race paused.",
         "resume": "Race resumed.",
-        "finish": "Race finished."
+        "finish": "Race finished.",
+        "cancel": "Race cancelled."
       },
       "readiness": {
         "allGood": "Ready to go live",

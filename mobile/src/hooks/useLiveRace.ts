@@ -19,6 +19,7 @@ import { LIVE_SERVER_URL, fetchLiveToken } from "../lib/live";
 
 export type EventLiveStatus =
   | "SCHEDULED"
+  | "CHECK_IN_OPEN"
   | "WARMUP"
   | "LIVE"
   | "PAUSED"
@@ -114,6 +115,8 @@ export interface LiveRaceState {
   // Connection
   connected: boolean;
   connecting: boolean;
+  /** True while socket.io is actively retrying after an unexpected drop */
+  reconnecting: boolean;
   raceStatus: EventLiveStatus;
   raceStartTime: number | null;
 
@@ -139,6 +142,8 @@ export interface LiveRaceState {
 
 interface UseLiveRaceOptions {
   eventId: string;
+  /** Authenticated user's ID — used to match own entries in leaderboard/events */
+  userId?: string;
   /** Auto-start GPS and connect on mount */
   autoStart?: boolean;
 }
@@ -149,6 +154,8 @@ const GPS_INTERVAL_MS = 2000;
 const GPS_MIN_DISTANCE_M = 5;
 const MAX_OFFLINE_BUFFER = 5000;
 const KEEP_AWAKE_TAG = "LIVE_RACE_GPS";
+/** Refresh the live JWT well before the 2h expiry */
+const TOKEN_REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
 // ─── Haversine for local distance/elevation calc ────────────────────────────
 
@@ -189,11 +196,12 @@ const initialStats: RaceStats = {
 };
 
 export function useLiveRace(options: UseLiveRaceOptions) {
-  const { eventId, autoStart = false } = options;
+  const { eventId, userId, autoStart = false } = options;
 
   const [state, setState] = useState<LiveRaceState>({
     connected: false,
     connecting: false,
+    reconnecting: false,
     raceStatus: "SCHEDULED",
     raceStartTime: null,
     gpsPermission: "undetermined",
@@ -219,6 +227,13 @@ export function useLiveRace(options: UseLiveRaceOptions) {
   const totalGpsDistRef = useRef(0);
   const raceStartRef = useRef<number | null>(null);
   const elapsedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tokenRefreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
+  /** Server clock offset: server time - client time (ms) */
+  const serverTimeOffsetRef = useRef(0);
+  const userIdRef = useRef(userId);
+  userIdRef.current = userId;
 
   // ─── GPS Permission ─────────────────────────────────────────────────
 
@@ -265,13 +280,62 @@ export function useLiveRace(options: UseLiveRaceOptions) {
         ...prev,
         connected: true,
         connecting: false,
+        reconnecting: false,
         error: null,
       }));
 
-      // Join as athlete
+      // Join as athlete — the server will confirm via liverace:joined,
+      // which is where we flush the offline buffer (not here).
       socket.emit("liverace:join_athlete", { eventId });
+    });
 
-      // Flush offline buffer on reconnect
+    socket.on("disconnect", (reason) => {
+      const willRetry = reason !== "io client disconnect";
+      setState((prev) => ({
+        ...prev,
+        connected: false,
+        reconnecting: willRetry,
+      }));
+    });
+
+    socket.on("connect_error", (err) => {
+      setState((prev) => ({
+        ...prev,
+        connected: false,
+        connecting: false,
+        reconnecting: true,
+        error: `Connection error: ${err.message}`,
+      }));
+    });
+
+    // ─── Token Refresh ──────────────────────────────────────────────
+    // The live JWT expires after 2h. Refresh well before that so the
+    // socket can re-handshake on reconnect with a valid token.
+    if (tokenRefreshTimerRef.current) {
+      clearInterval(tokenRefreshTimerRef.current);
+    }
+    tokenRefreshTimerRef.current = setInterval(async () => {
+      const newToken = await fetchLiveToken();
+      if (newToken && socketRef.current) {
+        socketRef.current.auth = { token: newToken };
+      }
+    }, TOKEN_REFRESH_MS);
+
+    // ─── LiveRace Server Events ─────────────────────────────────────
+
+    socket.on("liverace:joined", (data) => {
+      // Capture server clock offset for accurate elapsed-time calculation
+      const offset = data.serverTime ? data.serverTime - Date.now() : 0;
+      serverTimeOffsetRef.current = offset;
+
+      setState((prev) => ({
+        ...prev,
+        raceStatus: data.status,
+      }));
+
+      // Flush offline buffer *after* the server has acknowledged our join.
+      // Flushing on raw `connect` would send the batch before the server
+      // knows who we are, causing it to be silently dropped.
       const buffer = offlineBufferRef.current;
       if (buffer.length > 0) {
         setState((prev) => ({
@@ -286,28 +350,6 @@ export function useLiveRace(options: UseLiveRaceOptions) {
         offlineBufferRef.current = [];
         setState((prev) => ({ ...prev, offlineQueueSize: 0 }));
       }
-    });
-
-    socket.on("disconnect", () => {
-      setState((prev) => ({ ...prev, connected: false }));
-    });
-
-    socket.on("connect_error", (err) => {
-      setState((prev) => ({
-        ...prev,
-        connected: false,
-        connecting: false,
-        error: `Connection error: ${err.message}`,
-      }));
-    });
-
-    // ─── LiveRace Server Events ─────────────────────────────────────
-
-    socket.on("liverace:joined", (data) => {
-      setState((prev) => ({
-        ...prev,
-        raceStatus: data.status,
-      }));
     });
 
     socket.on("liverace:error", (data) => {
@@ -333,7 +375,7 @@ export function useLiveRace(options: UseLiveRaceOptions) {
       setState((prev) => {
         // Find own entry to update stats
         const ownEntry = data.entries.find(
-          (e) => e.userId === socket.auth?.userId
+          (e) => e.userId === userIdRef.current
         );
         const newStats = { ...prev.stats };
         if (ownEntry) {
@@ -361,7 +403,7 @@ export function useLiveRace(options: UseLiveRaceOptions) {
       setState((prev) => {
         // If this is our own checkpoint, add to our stats
         const newCheckpoints =
-          data.userId === socket.auth?.userId
+          data.userId === userIdRef.current
             ? [...prev.stats.checkpointsReached, data.checkpoint]
             : prev.stats.checkpointsReached;
         return {
@@ -376,7 +418,7 @@ export function useLiveRace(options: UseLiveRaceOptions) {
 
     socket.on("liverace:athlete_finished", (data) => {
       setState((prev) => {
-        if (data.userId === socket.auth?.userId) {
+        if (data.userId === userIdRef.current) {
           return {
             ...prev,
             stats: {
@@ -393,7 +435,7 @@ export function useLiveRace(options: UseLiveRaceOptions) {
 
     socket.on("liverace:athlete_status", (data) => {
       setState((prev) => {
-        if (data.userId === socket.auth?.userId) {
+        if (data.userId === userIdRef.current) {
           return {
             ...prev,
             stats: { ...prev.stats, status: data.status, deviationM: 0 },
@@ -478,33 +520,43 @@ export function useLiveRace(options: UseLiveRaceOptions) {
 
         lastPointRef.current = point;
 
-        // Update local state
+        // Update local state — use server-synced clock for accurate elapsed time
+        const serverNow = Date.now() + serverTimeOffsetRef.current;
         const elapsedMs = raceStartRef.current
-          ? Date.now() - raceStartRef.current
+          ? serverNow - raceStartRef.current
           : 0;
-        const distKm = totalGpsDistRef.current / 1000;
-        const elapsedMin = elapsedMs / 60_000;
-        const avgPace =
-          distKm > 0.1 && elapsedMin > 0 ? elapsedMin / distKm : null;
+        setState((prev) => {
+          // Compute pace from the server's route-snapped distance (prev.stats.distanceM)
+          // when available, else fall back to local GPS distance. This keeps pace
+          // consistent with the distance shown in the HUD.
+          const bestDistM =
+            prev.stats.distanceM > 0
+              ? prev.stats.distanceM
+              : totalGpsDistRef.current;
+          const distKm = bestDistM / 1000;
+          const elapsedMin = elapsedMs / 60_000;
+          const avgPace =
+            distKm > 0.1 && elapsedMin > 0 ? elapsedMin / distKm : null;
 
-        setState((prev) => ({
-          ...prev,
-          currentPosition: point,
-          gpsActive: true,
-          stats: {
-            ...prev.stats,
-            elevationGainM: Math.round(elevGainRef.current),
-            elevationLossM: Math.round(elevLossRef.current),
-            currentAltitudeM:
-              point.altitude != null ? Math.round(point.altitude) : null,
-            currentSpeedKmh:
-              point.speed != null
-                ? Math.round(point.speed * 3.6 * 10) / 10
-                : null,
-            avgPaceMinKm: avgPace ? Math.round(avgPace * 100) / 100 : null,
-            elapsedTimeMs: elapsedMs,
-          },
-        }));
+          return {
+            ...prev,
+            currentPosition: point,
+            gpsActive: true,
+            stats: {
+              ...prev.stats,
+              elevationGainM: Math.round(elevGainRef.current),
+              elevationLossM: Math.round(elevLossRef.current),
+              currentAltitudeM:
+                point.altitude != null ? Math.round(point.altitude) : null,
+              currentSpeedKmh:
+                point.speed != null
+                  ? Math.round(point.speed * 3.6 * 10) / 10
+                  : null,
+              avgPaceMinKm: avgPace ? Math.round(avgPace * 100) / 100 : null,
+              elapsedTimeMs: elapsedMs,
+            },
+          };
+        });
 
         // Send to server or buffer offline
         const socket = socketRef.current;
@@ -521,14 +573,16 @@ export function useLiveRace(options: UseLiveRaceOptions) {
             },
           });
         } else {
-          // Buffer for offline sync
-          if (offlineBufferRef.current.length < MAX_OFFLINE_BUFFER) {
-            offlineBufferRef.current.push(point);
-            setState((prev) => ({
-              ...prev,
-              offlineQueueSize: offlineBufferRef.current.length,
-            }));
+          // Buffer for offline sync — FIFO: drop oldest when full so the
+          // most recent (most valuable for route reconstruction) are kept.
+          if (offlineBufferRef.current.length >= MAX_OFFLINE_BUFFER) {
+            offlineBufferRef.current.shift();
           }
+          offlineBufferRef.current.push(point);
+          setState((prev) => ({
+            ...prev,
+            offlineQueueSize: offlineBufferRef.current.length,
+          }));
         }
       }
     );
@@ -568,7 +622,8 @@ export function useLiveRace(options: UseLiveRaceOptions) {
           ...prev,
           stats: {
             ...prev.stats,
-            elapsedTimeMs: Date.now() - raceStartRef.current!,
+            elapsedTimeMs:
+              Date.now() + serverTimeOffsetRef.current - raceStartRef.current!,
           },
         }));
       }
@@ -579,10 +634,14 @@ export function useLiveRace(options: UseLiveRaceOptions) {
     // Stop GPS
     stopGps();
 
-    // Clear elapsed timer
+    // Clear timers
     if (elapsedTimerRef.current) {
       clearInterval(elapsedTimerRef.current);
       elapsedTimerRef.current = null;
+    }
+    if (tokenRefreshTimerRef.current) {
+      clearInterval(tokenRefreshTimerRef.current);
+      tokenRefreshTimerRef.current = null;
     }
 
     // Flush remaining buffer
@@ -625,12 +684,17 @@ export function useLiveRace(options: UseLiveRaceOptions) {
   useEffect(() => {
     const handleAppState = (nextState: AppStateStatus) => {
       if (nextState === "active") {
-        // Returning to foreground — re-establish socket if needed
+        // Returning to foreground — re-establish socket if needed.
+        // Clear a stale (disconnected) socket ref first so
+        // connectSocket() doesn't bail on the `.connected` guard.
         if (state.gpsActive && !socketRef.current?.connected) {
+          if (socketRef.current) {
+            socketRef.current.disconnect();
+            socketRef.current = null;
+          }
           connectSocket();
         }
       }
-      // Keep GPS running in background (expo-location still delivers)
     };
 
     const sub = AppState.addEventListener("change", handleAppState);
@@ -644,6 +708,8 @@ export function useLiveRace(options: UseLiveRaceOptions) {
       locationSubRef.current?.remove();
       socketRef.current?.disconnect();
       if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+      if (tokenRefreshTimerRef.current)
+        clearInterval(tokenRefreshTimerRef.current);
       try {
         deactivateKeepAwake(KEEP_AWAKE_TAG);
       } catch {

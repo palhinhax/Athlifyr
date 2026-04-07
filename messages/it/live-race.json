@@ -49,6 +49,14 @@
     "checkinOpenDescription": "Il check-in degli atleti è aperto. La gara inizierà a breve. Rimani sintonizzato per il tracciamento in diretta.",
     "checkInOpen": "Check-in aperto",
     "countdownLabel": "La gara inizia tra",
-    "countdownReady": "La gara è pronta per iniziare!"
+    "countdownReady": "La gara è pronta per iniziare!",
+    "paused": "In pausa",
+    "cancelled": "Annullata",
+    "pausedMessage": "La gara è temporaneamente in pausa. Gli aggiornamenti in diretta riprenderanno a breve.",
+    "reconnecting": "Riconnessione…",
+    "reconnectingMessage": "Connessione persa. Tentativo di riconnessione al server in diretta…",
+    "loading": "Caricamento",
+    "errorTitle": "Errore gara in diretta",
+    "finalResultsError": "Impossibile caricare i risultati finali. Aggiornare la pagina."
   }
 }

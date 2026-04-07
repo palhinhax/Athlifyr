@@ -50,6 +50,47 @@ const socketEventRoles = new Map<
   { eventId: string; role: "athlete" | "spectator" }
 >();
 
+/**
+ * Validate a client-supplied GPS point.
+ *
+ * Without this guard, NaN, Infinity, or out-of-range values flow into the
+ * route engine's haversine / projection math and produce NaN distances that
+ * propagate through the whole leaderboard (poisoning ranking state).
+ */
+function isValidGpsPoint(p: {
+  lat: unknown;
+  lng: unknown;
+  timestamp?: unknown;
+  accuracy?: unknown;
+  speed?: unknown;
+  altitude?: unknown;
+}): p is {
+  lat: number;
+  lng: number;
+  timestamp?: number;
+  accuracy?: number;
+  speed?: number;
+  altitude?: number;
+} {
+  if (typeof p.lat !== "number" || typeof p.lng !== "number") return false;
+  if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return false;
+  if (p.lat < -90 || p.lat > 90) return false;
+  if (p.lng < -180 || p.lng > 180) return false;
+  if (p.timestamp !== undefined) {
+    if (typeof p.timestamp !== "number" || !Number.isFinite(p.timestamp))
+      return false;
+  }
+  // accuracy/speed/altitude are advisory and not used directly in geometry,
+  // but we still reject non-finite numbers to keep downstream code simple.
+  for (const k of ["accuracy", "speed", "altitude"] as const) {
+    const v = p[k];
+    if (v !== undefined && (typeof v !== "number" || !Number.isFinite(v))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Register all LiveRace event handlers for a connected socket */
 export function registerLiveRaceHandlers(
   io: LiveServer,
@@ -91,17 +132,33 @@ export function registerLiveRaceHandlers(
         variantStartTimes: getScheduledVariantStartTimes(room),
       });
 
-      // Send current snapshot to the newly joined athlete
+      // Send current snapshot to the newly joined athlete — with visibility
+      // filtering applied. An athlete is NOT an event organizer, so they must
+      // go through the same filter as a spectator. The athlete always sees
+      // themselves regardless of their own visibility setting.
       const snapshot = getSnapshot(eventId);
       if (snapshot) {
+        const athleteFriends = await getSpectatorFriends(userId);
+        const filteredLeaderboard = filterLeaderboardForViewer(
+          snapshot.leaderboard,
+          userId,
+          athleteFriends,
+          false
+        );
+        const filteredPositions = filterPositionsForViewer(
+          snapshot.athletes,
+          userId,
+          athleteFriends,
+          false
+        );
         socket.emit("liverace:leaderboard", {
           eventId,
-          entries: snapshot.leaderboard,
+          entries: filteredLeaderboard,
           timestamp: Date.now(),
         });
         socket.emit("liverace:positions", {
           eventId,
-          athletes: snapshot.athletes,
+          athletes: filteredPositions,
         });
       }
 
@@ -204,6 +261,14 @@ export function registerLiveRaceHandlers(
       return;
     }
 
+    if (!isValidGpsPoint(point)) {
+      socket.emit("liverace:error", {
+        message: "Invalid GPS point",
+        code: "INVALID_GPS",
+      });
+      return;
+    }
+
     const gpsPoint: GPSPoint = {
       lat: point.lat,
       lng: point.lng,
@@ -228,7 +293,25 @@ export function registerLiveRaceHandlers(
       return;
     }
 
-    const gpsPoints: GPSPoint[] = points.map((p) => ({
+    // Drop invalid points from the batch rather than rejecting the whole
+    // payload — a single corrupted sample shouldn't force the client to
+    // retry a 1000-point backlog.
+    const validPoints = points.filter(isValidGpsPoint);
+    const droppedCount = points.length - validPoints.length;
+    if (droppedCount > 0) {
+      console.warn(
+        `[LiveRace] gps_batch: dropped ${droppedCount}/${points.length} invalid points from ${userName || userId}`
+      );
+    }
+    if (validPoints.length === 0) {
+      socket.emit("liverace:error", {
+        message: "Batch contains no valid GPS points",
+        code: "INVALID_GPS_BATCH",
+      });
+      return;
+    }
+
+    const gpsPoints: GPSPoint[] = validPoints.map((p) => ({
       lat: p.lat,
       lng: p.lng,
       timestamp: p.timestamp ?? Date.now(),
@@ -238,6 +321,7 @@ export function registerLiveRaceHandlers(
     }));
 
     try {
+      const startMs = Date.now();
       const result = await processGpsBatch(
         eventId,
         userId,
@@ -245,8 +329,20 @@ export function registerLiveRaceHandlers(
         io,
         socket
       );
+      const durationMs = Date.now() - startMs;
+
+      // Notify the client that the batch has been fully processed so it
+      // can unlock the UI and clear syncing state.
+      socket.emit("liverace:sync_complete", {
+        eventId,
+        processed: result.processed,
+        skipped: result.skipped,
+        newCheckpoints: result.newCheckpoints,
+        durationMs,
+      });
+
       console.log(
-        `[LiveRace] Batch sync for ${userName || userId}: ${result.processed} processed, ${result.skipped} skipped`
+        `[LiveRace] Batch sync for ${userName || userId}: ${result.processed} processed, ${result.skipped} skipped (${durationMs}ms)`
       );
     } catch (err) {
       console.error("[LiveRace] Error processing GPS batch:", err);

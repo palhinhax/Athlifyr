@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Eye } from "lucide-react";
+import { Eye, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
 import {
   useLiveRace,
   type EventLiveStatus,
@@ -44,44 +45,97 @@ export function LiveRaceSection({
   className,
 }: LiveRaceSectionProps) {
   const t = useTranslations("liveRace");
+  const { toast } = useToast();
 
   // Terminal states — render static results without connecting to the live server
-  const isTerminal = dbStatus === "FINISHED" || dbStatus === "CANCELLED";
+  const isTerminalFromDb = dbStatus === "FINISHED" || dbStatus === "CANCELLED";
 
   // Fetch persisted final results for terminal races
   const [finalLeaderboard, setFinalLeaderboard] = useState<LeaderboardEntry[]>(
     []
   );
+  const [finalResultsError, setFinalResultsError] = useState(false);
 
   useEffect(() => {
-    if (!isTerminal) return;
+    if (!isTerminalFromDb) return;
+    let cancelled = false;
 
     async function fetchFinalResults() {
       try {
         const res = await fetch(`/api/events/${eventId}/final-leaderboard`);
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (!cancelled) setFinalResultsError(true);
+          return;
+        }
         const data = (await res.json()) as { entries: LeaderboardEntry[] };
-        setFinalLeaderboard(data.entries ?? []);
+        if (!cancelled) {
+          setFinalLeaderboard(data.entries ?? []);
+          setFinalResultsError(false);
+        }
       } catch {
-        // Silently fail — empty leaderboard is acceptable
+        if (!cancelled) setFinalResultsError(true);
       }
     }
 
     fetchFinalResults();
-  }, [isTerminal, eventId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [isTerminalFromDb, eventId]);
 
-  const { connected, status, leaderboard, spectatorCount, recentEvents } =
-    useLiveRace({
-      eventId,
-      role: "spectator",
-      autoConnect: !isTerminal,
-      initialStatus: dbStatus,
-    });
+  const {
+    connected,
+    reconnecting,
+    status,
+    leaderboard,
+    spectatorCount,
+    recentEvents,
+    error,
+    scheduledStartTimes,
+    serverTimeOffset,
+  } = useLiveRace({
+    eventId,
+    role: "spectator",
+    autoConnect: !isTerminalFromDb,
+    initialStatus: dbStatus,
+  });
+
+  // Surface server-emitted errors and connection errors via toast. Without
+  // this the user saw no feedback at all when the live server refused the
+  // join or dropped the connection with an error payload.
+  const lastShownError = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== lastShownError.current) {
+      lastShownError.current = error;
+      toast({
+        title: t("errorTitle"),
+        description: error,
+        variant: "destructive",
+      });
+    } else if (!error) {
+      lastShownError.current = null;
+    }
+  }, [error, toast, t]);
+
+  // Treat a live-resolved FINISHED/CANCELLED status as terminal as well:
+  // if the race finishes while the spectator is on-page, we should stop
+  // reconnecting and rely on persisted results.
+  const isTerminal =
+    isTerminalFromDb || status === "FINISHED" || status === "CANCELLED";
 
   // Use the DB status for terminal races (no WebSocket needed)
-  const effectiveStatus = isTerminal ? dbStatus : status;
+  const effectiveStatus = isTerminalFromDb ? dbStatus : status;
   // Use persisted results for terminal races, live data otherwise
-  const effectiveLeaderboard = isTerminal ? finalLeaderboard : leaderboard;
+  const effectiveLeaderboard = isTerminalFromDb
+    ? finalLeaderboard
+    : leaderboard;
+
+  // Earliest scheduled variant start time — drives the countdown display.
+  const countdownTargetMs = useMemo(() => {
+    if (!scheduledStartTimes) return null;
+    const times = Object.values(scheduledStartTimes);
+    return times.length > 0 ? Math.min(...times) : null;
+  }, [scheduledStartTimes]);
 
   // Don't render anything if the race hasn't been prepared yet
   if (effectiveStatus === "SCHEDULED" && !connected) {
@@ -126,6 +180,19 @@ export function LiveRaceSection({
               {t("warmup")}
             </Badge>
           )}
+          {effectiveStatus === "PAUSED" && (
+            <Badge
+              variant="outline"
+              className="border-orange-500 text-orange-600"
+            >
+              {t("paused")}
+            </Badge>
+          )}
+          {effectiveStatus === "CANCELLED" && (
+            <Badge variant="outline" className="border-red-500 text-red-600">
+              {t("cancelled")}
+            </Badge>
+          )}
           {effectiveStatus === "FINISHED" && (
             <Badge
               variant="outline"
@@ -146,7 +213,21 @@ export function LiveRaceSection({
       </div>
 
       {/* Countdown Timer — shown during CHECK_IN_OPEN and WARMUP */}
-      {showCountdown && <LiveCountdown eventId={eventId} />}
+      {showCountdown && (
+        <LiveCountdown
+          targetMs={countdownTargetMs}
+          serverOffset={serverTimeOffset}
+        />
+      )}
+
+      {/* Final-results fetch failure banner — otherwise spectators on a
+          terminal race would see an empty leaderboard with no explanation. */}
+      {isTerminalFromDb && finalResultsError && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/20 dark:text-red-400">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          <span>{t("finalResultsError")}</span>
+        </div>
+      )}
 
       {/* Leaderboard + Feed side by side on desktop */}
       <div className="grid gap-4 lg:grid-cols-3">
@@ -156,6 +237,7 @@ export function LiveRaceSection({
           status={effectiveStatus}
           spectatorCount={isTerminal ? 0 : spectatorCount}
           connected={isTerminal ? false : connected}
+          reconnecting={isTerminal ? false : reconnecting}
           maxDisplay={20}
           className="lg:col-span-2"
         />

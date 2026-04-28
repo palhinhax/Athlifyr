@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -107,6 +107,12 @@ export default function AdminGiveawaysPage() {
 
   const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  const [eventSearch, setEventSearch] = useState("");
+  const filteredEvents = useMemo(() => {
+    const query = eventSearch.trim().toLowerCase();
+    if (!query) return events;
+    return events.filter((e) => e.title.toLowerCase().includes(query));
+  }, [events, eventSearch]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -637,6 +643,7 @@ export default function AdminGiveawaysPage() {
           if (!open) {
             setEditingGiveawayId(null);
             setEditingOriginalStatus(null);
+            setEventSearch("");
             setFormData({
               eventId: "",
               drawAt: "",
@@ -663,9 +670,10 @@ export default function AdminGiveawaysPage() {
               <Label>{t("fields.event")}</Label>
               <Select
                 value={formData.eventId}
-                onValueChange={(v) =>
-                  setFormData((p) => ({ ...p, eventId: v }))
-                }
+                onValueChange={(v) => {
+                  setFormData((p) => ({ ...p, eventId: v }));
+                  setEventSearch("");
+                }}
                 disabled={
                   editingOriginalStatus !== null &&
                   editingOriginalStatus !== GiveawayStatus.DRAFT
@@ -675,11 +683,44 @@ export default function AdminGiveawaysPage() {
                   <SelectValue placeholder={t("fields.event")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {events.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>
-                      {e.title}
-                    </SelectItem>
-                  ))}
+                  <div className="sticky top-0 z-10 border-b border-border bg-popover p-2">
+                    <div className="relative">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        value={eventSearch}
+                        onChange={(e) => setEventSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          // Prevent Radix Select typeahead from intercepting
+                          // character keys, but allow navigation keys
+                          // (Escape, Tab, Enter, Arrow keys) to propagate
+                          // so the dropdown's keyboard interactions still work.
+                          if (
+                            e.key !== "Escape" &&
+                            e.key !== "Tab" &&
+                            e.key !== "Enter" &&
+                            !e.key.startsWith("Arrow")
+                          ) {
+                            e.stopPropagation();
+                          }
+                        }}
+                        placeholder={t("fields.searchEventPlaceholder")}
+                        aria-label={t("fields.searchEventPlaceholder")}
+                        className="h-10 pl-9"
+                      />
+                    </div>
+                  </div>
+                  {filteredEvents.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                      {t("fields.noEventsFound")}
+                    </div>
+                  ) : (
+                    filteredEvents.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.title}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

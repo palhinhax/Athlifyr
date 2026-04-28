@@ -462,7 +462,9 @@
         "variantPlaceholder": "Select a variant",
         "variantAll": "All variants",
         "variantHelp": "Restricts giveaway participation to registrants of this specific variant.",
-        "platform": "Platform"
+        "platform": "Platform",
+        "searchEventPlaceholder": "Search event by name...",
+        "noEventsFound": "No events found"
       },
       "form": {
         "title": "Title",

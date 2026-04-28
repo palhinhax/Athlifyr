@@ -462,7 +462,9 @@
         "variantPlaceholder": "Selecionar uma variante",
         "variantAll": "Todas as variantes",
         "variantHelp": "Limita a participação no sorteio aos inscritos nesta variante específica.",
-        "platform": "Plataforma"
+        "platform": "Plataforma",
+        "searchEventPlaceholder": "Pesquisar evento pelo nome...",
+        "noEventsFound": "Nenhum evento encontrado"
       },
       "form": {
         "title": "Título",

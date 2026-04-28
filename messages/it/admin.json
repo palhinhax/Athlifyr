@@ -458,7 +458,9 @@
         "variantPlaceholder": "Seleziona una variante",
         "variantAll": "Tutte le varianti",
         "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica.",
-        "platform": "Piattaforma"
+        "platform": "Piattaforma",
+        "searchEventPlaceholder": "Cerca evento per nome...",
+        "noEventsFound": "Nessun evento trovato"
       },
       "form": {
         "title": "Titolo",

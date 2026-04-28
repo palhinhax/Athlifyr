@@ -460,7 +460,8 @@
         "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica.",
         "platform": "Piattaforma",
         "searchEventPlaceholder": "Cerca evento per nome...",
-        "noEventsFound": "Nessun evento trovato"
+        "noEventsFound": "Nessun evento trovato",
+        "clearSelection": "Cancella selezione"
       },
       "form": {
         "title": "Titolo",

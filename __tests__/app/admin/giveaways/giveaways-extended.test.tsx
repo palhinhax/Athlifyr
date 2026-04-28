@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Import setup (runs all mocks)
@@ -336,6 +336,65 @@ describe("AdminGiveawaysPage – Create/Edit Form", () => {
         expect.objectContaining({ title: "toast.updated" })
       );
     });
+  });
+
+  it("performs a server-side debounced event search and keeps the input focused while typing", async () => {
+    jest.useFakeTimers();
+    const user = userEvent.setup({
+      advanceTimers: jest.advanceTimersByTime,
+    });
+    mockInitialLoad([]);
+    render(<AdminGiveawaysPage />);
+
+    // Wait for the initial empty state
+    await waitFor(() => {
+      expect(screen.getByText("noGiveaways")).toBeInTheDocument();
+    });
+
+    // Initial fetch calls: giveaways + events
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(/\/api\/admin\/events\?/)
+    );
+
+    await user.click(screen.getByText("new"));
+
+    // Type into the event search input — focus must be retained between keystrokes.
+    const searchInput = screen.getByLabelText(
+      "fields.searchEventPlaceholder"
+    ) as HTMLInputElement;
+    searchInput.focus();
+    expect(document.activeElement).toBe(searchInput);
+
+    // Mock the debounced server-side search response.
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ events: [{ id: "e9", title: "Hidden Event" }] }),
+    });
+
+    await user.type(searchInput, "hid");
+
+    // Focus must NOT have been lost while typing.
+    expect(document.activeElement).toBe(searchInput);
+
+    // Flush the debounce window (the implementation uses ~300ms; advance well
+    // past that to avoid coupling the test to the exact internal constant).
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    await waitFor(() => {
+      const searchCall = mockFetch.mock.calls.find(
+        ([url]: [string]) =>
+          typeof url === "string" &&
+          url.includes("/api/admin/events?") &&
+          url.includes("search=hid")
+      );
+      expect(searchCall).toBeDefined();
+    });
+
+    jest.useRealTimers();
   });
 });
 

@@ -464,7 +464,8 @@
         "variantHelp": "Restricts giveaway participation to registrants of this specific variant.",
         "platform": "Platform",
         "searchEventPlaceholder": "Search event by name...",
-        "noEventsFound": "No events found"
+        "noEventsFound": "No events found",
+        "clearSelection": "Clear selection"
       },
       "form": {
         "title": "Title",

@@ -464,7 +464,8 @@
         "variantHelp": "Beschränkt die Teilnahme am Gewinnspiel auf Teilnehmer dieser spezifischen Variante.",
         "platform": "Plattform",
         "searchEventPlaceholder": "Veranstaltung nach Name suchen...",
-        "noEventsFound": "Keine Veranstaltungen gefunden"
+        "noEventsFound": "Keine Veranstaltungen gefunden",
+        "clearSelection": "Auswahl löschen"
       },
       "form": {
         "title": "Titel",

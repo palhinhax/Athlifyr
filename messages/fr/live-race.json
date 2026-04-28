@@ -49,6 +49,14 @@
     "checkinOpenDescription": "L'enregistrement des athlètes est ouvert. La course débutera bientôt. Restez connecté pour le suivi en direct.",
     "checkInOpen": "Check-in ouvert",
     "countdownLabel": "La course commence dans",
-    "countdownReady": "La course est prête à démarrer !"
+    "countdownReady": "La course est prête à démarrer !",
+    "paused": "En pause",
+    "cancelled": "Annulée",
+    "pausedMessage": "La course est temporairement en pause. Les mises à jour en direct reprendront bientôt.",
+    "reconnecting": "Reconnexion…",
+    "reconnectingMessage": "Connexion perdue. Tentative de reconnexion au serveur en direct…",
+    "loading": "Chargement",
+    "errorTitle": "Erreur de course en direct",
+    "finalResultsError": "Impossible de charger les résultats finaux. Veuillez rafraîchir la page."
   }
 }

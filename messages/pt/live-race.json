@@ -49,6 +49,14 @@
     "checkinOpenDescription": "O check-in dos atletas está aberto. A corrida começa em breve. Fica atento para o acompanhamento em direto.",
     "checkInOpen": "Check-in aberto",
     "countdownLabel": "A corrida começa em",
-    "countdownReady": "A corrida está pronta para começar!"
+    "countdownReady": "A corrida está pronta para começar!",
+    "paused": "Pausada",
+    "cancelled": "Cancelada",
+    "pausedMessage": "A corrida está temporariamente pausada. As atualizações em direto vão retomar em breve.",
+    "reconnecting": "A reconectar…",
+    "reconnectingMessage": "Ligação perdida. A tentar reconectar ao servidor em direto…",
+    "loading": "A carregar",
+    "errorTitle": "Erro na corrida em direto",
+    "finalResultsError": "Não foi possível carregar os resultados finais. Por favor atualize a página."
   }
 }

@@ -81,6 +81,8 @@ export interface FinishEvent {
 
 export interface LiveRaceState {
   connected: boolean;
+  /** True while socket.io is actively attempting to reconnect after a drop */
+  reconnecting: boolean;
   status: EventLiveStatus;
   raceStartTime: number | null;
   athletes: AthletePosition[];
@@ -163,7 +165,12 @@ function registerConnectionListeners(
   const { setState, reconnectAttempts, role, eventId } = deps;
 
   socket.on("connect", () => {
-    setState((prev) => ({ ...prev, connected: true, error: null }));
+    setState((prev) => ({
+      ...prev,
+      connected: true,
+      reconnecting: false,
+      error: null,
+    }));
     reconnectAttempts.current = 0;
 
     if (role === "athlete") {
@@ -173,8 +180,16 @@ function registerConnectionListeners(
     }
   });
 
-  socket.on("disconnect", () => {
-    setState((prev) => ({ ...prev, connected: false, syncing: false }));
+  // socket.io will auto-retry after an unexpected drop. Mark `reconnecting`
+  // so the UI can show a banner ("Reconnecting…") instead of a bare red icon.
+  socket.on("disconnect", (reason) => {
+    const willRetry = reason !== "io client disconnect";
+    setState((prev) => ({
+      ...prev,
+      connected: false,
+      reconnecting: willRetry,
+      syncing: false,
+    }));
   });
 
   socket.on("connect_error", (err) => {
@@ -182,6 +197,7 @@ function registerConnectionListeners(
     setState((prev) => ({
       ...prev,
       connected: false,
+      reconnecting: true,
       error: `Connection error: ${err.message}`,
     }));
   });
@@ -226,13 +242,19 @@ function registerLiveRaceListeners(
     setState((prev) => ({ ...prev, error: message }));
   });
 
-  socket.on("liverace:status_changed", ({ status, raceStartTime }) => {
-    setState((prev) => ({
-      ...prev,
-      status,
-      raceStartTime: raceStartTime ?? prev.raceStartTime,
-    }));
-  });
+  socket.on(
+    "liverace:status_changed",
+    ({ status, raceStartTime, variantStartTimes }) => {
+      setState((prev) => ({
+        ...prev,
+        status,
+        raceStartTime: raceStartTime ?? prev.raceStartTime,
+        // Server may emit updated per-variant start times (e.g. WARMUP with
+        // adjusted schedule). Merge them so the countdown picks up the change.
+        scheduledStartTimes: variantStartTimes ?? prev.scheduledStartTimes,
+      }));
+    }
+  );
 
   socket.on("liverace:positions", ({ athletes }) => {
     setState((prev) => ({ ...prev, athletes }));
@@ -311,6 +333,7 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
 
   const [state, setState] = useState<LiveRaceState>({
     connected: false,
+    reconnecting: false,
     status: initialStatus,
     raceStartTime: null,
     athletes: [],
@@ -395,7 +418,12 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
       socketRef.current.disconnect();
       socketRef.current = null;
       hasJoinedRef.current = false;
-      setState((prev) => ({ ...prev, connected: false, syncing: false }));
+      setState((prev) => ({
+        ...prev,
+        connected: false,
+        reconnecting: false,
+        syncing: false,
+      }));
     }
   }, [eventId]);
 

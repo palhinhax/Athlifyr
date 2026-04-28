@@ -7,7 +7,17 @@
       "Bash(grep:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(find /c/Users/jduarte/Documents/workSpace/Athlifyr/.claude/worktrees/great-hellman -type f \\\\\\(-name *live* -o -name *liveRace* -o -name *liveStatus* \\\\\\))"
+      "Bash(find /c/Users/jduarte/Documents/workSpace/Athlifyr/.claude/worktrees/great-hellman -type f \\\\\\(-name *live* -o -name *liveRace* -o -name *liveStatus* \\\\\\))",
+      "Bash(for loc:*)",
+      "Bash(do)",
+      "Bash(echo \"=== $loc ===\")",
+      "Bash(__NEW_LINE_d1a6430141f5ced8__ node -e \":*)",
+      "Bash(done)",
+      "Bash(node -e \":*)",
+      "Bash(npx tsc:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(gh pr:*)",
+      "Bash(where gh:*)"
     ]
   }
 }

@@ -73,7 +73,7 @@ export default function LiveRaceScreen() {
   const [routeError, setRouteError] = useState<string | null>(null);
 
   // Live race hook
-  const liveRace = useLiveRace({ eventId: eventId ?? "" });
+  const liveRace = useLiveRace({ eventId: eventId ?? "", userId });
 
   const {
     connected,

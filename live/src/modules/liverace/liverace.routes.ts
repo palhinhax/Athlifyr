@@ -9,7 +9,7 @@
 // ============================================================================
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { authGuard } from "../../plugins/auth.js";
+import { authGuard, verifyToken, extractToken } from "../../plugins/auth.js";
 import {
   startEvent,
   stopEvent,
@@ -17,6 +17,9 @@ import {
   getActiveRoomIds,
   getSnapshot,
   eventRoom,
+  getSpectatorFriends,
+  filterLeaderboardForViewer,
+  filterPositionsForViewer,
 } from "./liverace.service.js";
 import type { JWTPayload } from "../../types/index.js";
 import type { EventLiveStatus } from "./liverace.types.js";
@@ -30,13 +33,52 @@ export function setLiveRaceIO(io: Parameters<typeof startEvent>[1]): void {
   ioRef = io;
 }
 
+// ─── Internal Secret Validation ─────────────────────────────────────────────
+// Defined early so `liveRaceRoutes` can guard server-to-server endpoints.
+
+function validateInternalSecret(
+  request: FastifyRequest,
+  reply: FastifyReply
+): boolean {
+  const secret = process.env.LIVE_INTERNAL_SECRET;
+  if (!secret) {
+    // Fail-closed: if the secret is not configured, no caller can be trusted.
+    reply.code(500).send({ error: "LIVE_INTERNAL_SECRET not configured" });
+    return false;
+  }
+  if (request.headers["x-live-secret"] !== secret) {
+    reply.code(401).send({ error: "Unauthorized" });
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Best-effort extraction of a viewer identity from an optional Bearer token.
+ * Used by public-read endpoints to apply per-viewer privacy filtering.
+ * Returns undefined for anonymous callers (who only get PUBLIC athletes).
+ */
+function tryExtractViewerId(request: FastifyRequest): string | undefined {
+  const token = extractToken(request.headers.authorization);
+  if (!token) return undefined;
+  try {
+    const payload = verifyToken(token);
+    if (payload.type === "refresh") return undefined;
+    return payload.userId;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function liveRaceRoutes(app: FastifyInstance): Promise<void> {
   // ─── POST /live/start ───────────────────────────────────────────────────
-  // Idempotent: can be called by spectator activation or admin trigger.
-  // Does NOT require auth (called from server-side by the Next.js frontend).
-  // Validates via internal headers (X-Live-Server).
+  // Server-to-server only: triggered by Next.js on spectator activation.
+  // Requires the shared internal secret to prevent unauthenticated clients
+  // from forcing room creation (DoS surface) on the live server.
 
   app.post("/start", async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!validateInternalSecret(request, reply)) return;
+
     const body = request.body as { eventId?: string } | null;
     const eventId = body?.eventId;
 
@@ -107,7 +149,13 @@ export async function liveRaceRoutes(app: FastifyInstance): Promise<void> {
   );
 
   // ─── GET /live/status ───────────────────────────────────────────────────
-  // Public: get current status of a live event or list all active rooms.
+  // Public read: returns status + current snapshot for a single event.
+  // Per-viewer privacy filtering is applied using the optional Bearer token:
+  // authenticated viewers see FRIENDS athletes they are friends with; anon
+  // viewers only see PUBLIC athletes. Without this filter the endpoint would
+  // leak full GPS/leaderboard data for FRIENDS/ORGANIZER_ONLY athletes.
+  //
+  // Listing all active rooms is restricted to internal callers only.
 
   app.get("/status", async (request: FastifyRequest, reply: FastifyReply) => {
     const eventId = (request.query as { eventId?: string }).eventId;
@@ -117,10 +165,37 @@ export async function liveRaceRoutes(app: FastifyInstance): Promise<void> {
       if (!snapshot) {
         return reply.code(404).send({ error: "No active room for this event" });
       }
-      return reply.send({ eventId, ...snapshot });
+
+      const viewerUserId = tryExtractViewerId(request);
+      const friendIds = await getSpectatorFriends(viewerUserId);
+      const filteredLeaderboard = filterLeaderboardForViewer(
+        snapshot.leaderboard,
+        viewerUserId,
+        friendIds,
+        false
+      );
+      const filteredAthletes = filterPositionsForViewer(
+        snapshot.athletes,
+        viewerUserId,
+        friendIds,
+        false
+      );
+
+      return reply.send({
+        eventId,
+        status: snapshot.status,
+        raceStartTime: snapshot.raceStartTime,
+        variantStartTimes: snapshot.variantStartTimes,
+        spectatorCount: snapshot.spectatorCount,
+        leaderboard: filteredLeaderboard,
+        athletes: filteredAthletes,
+      });
     }
 
-    // List all active rooms
+    // Listing every active room exposes operational data about the whole
+    // platform and has no legitimate public use case — restrict to internal.
+    if (!validateInternalSecret(request, reply)) return;
+
     const roomIds = getActiveRoomIds();
     const summaries = roomIds.map((id) => {
       const room = getRoom(id);
@@ -134,20 +209,6 @@ export async function liveRaceRoutes(app: FastifyInstance): Promise<void> {
 
     return reply.send({ rooms: summaries });
   });
-}
-
-// ─── Internal Secret Validation ─────────────────────────────────────────────
-
-function validateInternalSecret(
-  request: FastifyRequest,
-  reply: FastifyReply
-): boolean {
-  const secret = process.env.LIVE_INTERNAL_SECRET;
-  if (secret && request.headers["x-live-secret"] !== secret) {
-    reply.code(401).send({ error: "Unauthorized" });
-    return false;
-  }
-  return true;
 }
 
 // ─── Internal Routes (called by Next.js, not exposed to clients) ─────────────

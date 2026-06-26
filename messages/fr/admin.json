@@ -464,7 +464,8 @@
         "variantHelp": "Limite la participation au tirage aux inscrits de cette variante spécifique.",
         "platform": "Plateforme",
         "searchEventPlaceholder": "Rechercher un événement par nom...",
-        "noEventsFound": "Aucun événement trouvé"
+        "noEventsFound": "Aucun événement trouvé",
+        "clearSelection": "Effacer la sélection"
       },
       "form": {
         "title": "Titre",

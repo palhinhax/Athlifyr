@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import {
   Loader2,
   Plus,
@@ -96,6 +97,12 @@ const STATUS_COLORS: Record<GiveawayStatus, string> = {
   CANCELLED: "secondary",
 };
 
+// Debounce window for the server-side event search input.
+const EVENT_SEARCH_DEBOUNCE_MS = 300;
+// Small delay before closing the picker on input blur, so a click on a result
+// button is registered before the dropdown is unmounted.
+const EVENT_PICKER_BLUR_DELAY_MS = 150;
+
 // Valid state transitions — prevents going backwards
 // (Used only for API validation, UI uses action buttons instead)
 
@@ -108,11 +115,9 @@ export default function AdminGiveawaysPage() {
   const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [eventSearch, setEventSearch] = useState("");
-  const filteredEvents = useMemo(() => {
-    const query = eventSearch.trim().toLowerCase();
-    if (!query) return events;
-    return events.filter((e) => e.title.toLowerCase().includes(query));
-  }, [events, eventSearch]);
+  const [isSearchingEvents, setIsSearchingEvents] = useState(false);
+  const [isEventPickerOpen, setIsEventPickerOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -197,14 +202,20 @@ export default function AdminGiveawaysPage() {
     }
   }, []);
 
-  const fetchEvents = useCallback(async () => {
+  const fetchEvents = useCallback(async (search?: string) => {
+    const trimmed = search?.trim() ?? "";
+    const params = new URLSearchParams({ pageSize: "20" });
+    if (trimmed) params.set("search", trimmed);
+    setIsSearchingEvents(true);
     try {
-      const res = await fetch("/api/admin/events?pageSize=100");
+      const res = await fetch(`/api/admin/events?${params.toString()}`);
       if (!res.ok) return;
       const data = await res.json();
       setEvents(data.events);
     } catch {
       // ignore
+    } finally {
+      setIsSearchingEvents(false);
     }
   }, []);
 
@@ -212,6 +223,23 @@ export default function AdminGiveawaysPage() {
     fetchGiveaways();
     fetchEvents();
   }, [fetchGiveaways, fetchEvents]);
+
+  // Debounced server-side search for events as the user types in the picker.
+  // Skip the very first run (covered by the initial fetchEvents above) and
+  // skip while the picker is closed to avoid pointless requests.
+  const eventSearchInitRef = useRef(true);
+  useEffect(() => {
+    if (eventSearchInitRef.current) {
+      eventSearchInitRef.current = false;
+      return;
+    }
+    if (!isEventPickerOpen) return;
+    const timeout = setTimeout(
+      () => fetchEvents(eventSearch),
+      EVENT_SEARCH_DEBOUNCE_MS
+    );
+    return () => clearTimeout(timeout);
+  }, [eventSearch, isEventPickerOpen, fetchEvents]);
 
   const handleCreate = async () => {
     try {
@@ -256,6 +284,8 @@ export default function AdminGiveawaysPage() {
       setIsCreateOpen(false);
       setEditingGiveawayId(null);
       setEditingOriginalStatus(null);
+      setSelectedEvent(null);
+      setEventSearch("");
       setFormData({
         eventId: "",
         drawAt: "",
@@ -476,6 +506,10 @@ export default function AdminGiveawaysPage() {
   const openEditForm = (giveaway: Giveaway) => {
     setEditingGiveawayId(giveaway.id);
     setEditingOriginalStatus(giveaway.status);
+    setSelectedEvent({
+      id: giveaway.event.id,
+      title: giveaway.event.title,
+    });
     setFormData({
       eventId: giveaway.eventId,
       drawAt: giveaway.drawAt
@@ -553,7 +587,12 @@ export default function AdminGiveawaysPage() {
           <h2 className="text-2xl font-bold">{t("title")}</h2>
           <p className="text-muted-foreground">{t("description")}</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <Button
+          onClick={() => {
+            setIsEventPickerOpen(true);
+            setIsCreateOpen(true);
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           {t("new")}
         </Button>
@@ -644,6 +683,8 @@ export default function AdminGiveawaysPage() {
             setEditingGiveawayId(null);
             setEditingOriginalStatus(null);
             setEventSearch("");
+            setSelectedEvent(null);
+            setIsEventPickerOpen(false);
             setFormData({
               eventId: "",
               drawAt: "",
@@ -668,61 +709,107 @@ export default function AdminGiveawaysPage() {
           <div className="space-y-4">
             <div>
               <Label>{t("fields.event")}</Label>
-              <Select
-                value={formData.eventId}
-                onValueChange={(v) => {
-                  setFormData((p) => ({ ...p, eventId: v }));
-                  setEventSearch("");
-                }}
-                disabled={
+              {(() => {
+                const isPickerDisabled =
                   editingOriginalStatus !== null &&
-                  editingOriginalStatus !== GiveawayStatus.DRAFT
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("fields.event")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="sticky top-0 z-10 border-b border-border bg-popover p-2">
+                  editingOriginalStatus !== GiveawayStatus.DRAFT;
+                return (
+                  <div className="space-y-2">
                     <div className="relative">
                       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         type="text"
                         value={eventSearch}
-                        onChange={(e) => setEventSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                          // Prevent Radix Select typeahead from intercepting
-                          // character keys, but allow navigation keys
-                          // (Escape, Tab, Enter, Arrow keys) to propagate
-                          // so the dropdown's keyboard interactions still work.
-                          if (
-                            e.key !== "Escape" &&
-                            e.key !== "Tab" &&
-                            e.key !== "Enter" &&
-                            !e.key.startsWith("Arrow")
-                          ) {
-                            e.stopPropagation();
-                          }
+                        onChange={(e) => {
+                          setEventSearch(e.target.value);
+                          setIsEventPickerOpen(true);
                         }}
-                        placeholder={t("fields.searchEventPlaceholder")}
+                        onFocus={() => {
+                          if (!isPickerDisabled) setIsEventPickerOpen(true);
+                        }}
+                        onBlur={() => {
+                          // Delay so onClick on a result button can fire first.
+                          setTimeout(
+                            () => setIsEventPickerOpen(false),
+                            EVENT_PICKER_BLUR_DELAY_MS
+                          );
+                        }}
+                        disabled={isPickerDisabled}
+                        placeholder={
+                          selectedEvent
+                            ? selectedEvent.title
+                            : t("fields.searchEventPlaceholder")
+                        }
                         aria-label={t("fields.searchEventPlaceholder")}
-                        className="h-10 pl-9"
+                        className={cn(
+                          "h-10 pl-9",
+                          selectedEvent && !eventSearch && "text-foreground"
+                        )}
                       />
+                      {selectedEvent && !isPickerDisabled && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedEvent(null);
+                            setFormData((p) => ({ ...p, eventId: "" }));
+                            setEventSearch("");
+                            setIsEventPickerOpen(true);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                          aria-label={t("fields.clearSelection")}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
+                    {selectedEvent && !eventSearch && !isEventPickerOpen && (
+                      <p className="text-sm text-muted-foreground">
+                        {selectedEvent.title}
+                      </p>
+                    )}
+                    {isEventPickerOpen && !isPickerDisabled && (
+                      <div className="max-h-60 overflow-y-auto rounded-md border bg-popover">
+                        {isSearchingEvents && events.length === 0 ? (
+                          <div className="flex justify-center py-4">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : events.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                            {t("fields.noEventsFound")}
+                          </div>
+                        ) : (
+                          events.map((ev) => (
+                            <button
+                              key={ev.id}
+                              type="button"
+                              onMouseDown={(e) => {
+                                // Prevent input blur from racing with click.
+                                e.preventDefault();
+                              }}
+                              onClick={() => {
+                                setSelectedEvent(ev);
+                                setFormData((p) => ({
+                                  ...p,
+                                  eventId: ev.id,
+                                }));
+                                setEventSearch("");
+                                setIsEventPickerOpen(false);
+                              }}
+                              className={cn(
+                                "block w-full border-b px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent hover:text-accent-foreground",
+                                formData.eventId === ev.id &&
+                                  "bg-accent text-accent-foreground"
+                              )}
+                            >
+                              {ev.title}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
-                  {filteredEvents.length === 0 ? (
-                    <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-                      {t("fields.noEventsFound")}
-                    </div>
-                  ) : (
-                    filteredEvents.map((e) => (
-                      <SelectItem key={e.id} value={e.id}>
-                        {e.title}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                );
+              })()}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

@@ -41,6 +41,7 @@ import { UserNav } from "@/components/user-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
 import { AnalysisButton } from "@/components/analysis-button";
+import { NorthSailCredit } from "@/components/northsail-credit";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -406,6 +407,8 @@ export default async function RootLayout({
                         <span className="text-border/60">·</span>
                         <span>© 2026 Athlifyr • v{packageJson.version}</span>
                       </div>
+
+                      <NorthSailCredit />
                     </div>
                   </footer>
                 </div>

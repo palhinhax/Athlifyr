@@ -78,7 +78,8 @@
       "willYouParticipate": "Will you participate?",
       "chooseDistance": "Choose Distance",
       "markAsGoing": "Mark as Going",
-      "interested": "Interested"
+      "interested": "Interested",
+      "advertisement": "Advertisement"
     },
     "inviteModal": {
       "title": "Invite Friends to {event}",

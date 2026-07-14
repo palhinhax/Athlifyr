@@ -14,7 +14,7 @@ export default function FormsLayout({
       {/* Hide the parent layout chrome (sidebar, header, footer) */}
       <style>{`
         header, footer, aside, nav,
-        [data-sidebar], [data-active-venues] {
+        [data-sidebar], [data-active-venues], [data-site-ad] {
           display: none !important;
         }
         /* Reset the flex parent so the form takes full screen */

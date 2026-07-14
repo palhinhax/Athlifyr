@@ -42,6 +42,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
 import { AnalysisButton } from "@/components/analysis-button";
 import { NorthSailCredit } from "@/components/northsail-credit";
+import { LuzzoLeaderboardAd } from "@/components/luzzo-leaderboard-ad";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -265,6 +266,7 @@ export default async function RootLayout({
                   <main id="main-content" className="flex-1" tabIndex={-1}>
                     {children}
                   </main>
+                  <LuzzoLeaderboardAd className="border-t border-border/60" />
                   <footer
                     className="border-t border-border/60 bg-muted/30 py-4"
                     role="contentinfo"

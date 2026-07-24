@@ -9,7 +9,7 @@ const DEFAULT_LUZZO_RECTANGLE_SRC =
   "https://www.luzzo-eletronica.com/embed/anuncio/retangulo";
 
 /**
- * Sidebar advertising card. Renders a fixed 300x250 Luzzo ad slot inside the
+ * Sidebar advertising card. Renders a 250px-tall Luzzo ad slot inside the
  * rounded card frame used by the other event sidebar cards, edge-to-edge with
  * no margin or padding.
  */
@@ -29,9 +29,9 @@ export function LuzzoRectangleAd({
         title="Luzzo"
         loading="lazy"
         scrolling="no"
-        width={300}
+        width="100%"
         height={250}
-        className="h-[250px] w-[300px] max-w-full border-0"
+        className="h-[250px] w-full border-0"
       />
     </div>
   );

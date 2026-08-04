@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
+import { buildLuzzoAdUrl } from "@/components/luzzo-ad-url";
 
 interface LuzzoLeaderboardAdProps {
   readonly className?: string;
   readonly src?: string;
 }
 
-const DEFAULT_LUZZO_LEADERBOARD_SRC =
-  "https://www.luzzo-eletronica.com/embed/anuncio/faixa";
+const DEFAULT_LUZZO_LEADERBOARD_SRC = buildLuzzoAdUrl("faixa");
 
 export function LuzzoLeaderboardAd({
   className,

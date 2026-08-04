@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
+import { buildLuzzoAdUrl } from "@/components/luzzo-ad-url";
 
 interface LuzzoRectangleAdProps {
   readonly className?: string;
   readonly src?: string;
 }
 
-const DEFAULT_LUZZO_RECTANGLE_SRC =
-  "https://www.luzzo-eletronica.com/embed/anuncio/retangulo";
+const DEFAULT_LUZZO_RECTANGLE_SRC = buildLuzzoAdUrl("retangulo");
 
 /**
  * Sidebar advertising card. Renders a 250px-tall Luzzo ad slot inside the

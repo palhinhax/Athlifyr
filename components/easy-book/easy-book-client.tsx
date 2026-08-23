@@ -11,7 +11,7 @@ import { EasyBookSessionCard } from "@/components/easy-book/easy-book-session-ca
 import { EasyBookFormDialog } from "@/components/easy-book/easy-book-form-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, LogIn, CreditCard } from "lucide-react";
+import { Calendar, MapPin, LogIn, CreditCard, Users } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 
 const localeMap: Record<string, Locale> = {
@@ -39,6 +39,9 @@ const translations: Record<string, Record<string, Record<string, unknown>>> = {
       planRequiredDescription:
         "You need an active plan to book classes at this venue.",
       viewPlans: "View Plans",
+      staffManaged: "Bookings managed by the venue",
+      staffManagedDescription:
+        "Bookings for this venue are managed directly by the staff. Please contact the venue to join a class.",
       bookingForm: {
         title: "Complete your booking",
         name: "Your name",
@@ -90,6 +93,9 @@ const translations: Record<string, Record<string, Record<string, unknown>>> = {
       planRequiredDescription:
         "Precisas de um plano ativo para reservar aulas neste espaço.",
       viewPlans: "Ver Planos",
+      staffManaged: "Reservas geridas pelo espaço",
+      staffManagedDescription:
+        "As reservas deste espaço são geridas diretamente pela equipa. Contacta o espaço para participar numa aula.",
       bookingForm: {
         title: "Completa a tua reserva",
         name: "O teu nome",
@@ -142,6 +148,9 @@ const translations: Record<string, Record<string, Record<string, unknown>>> = {
       planRequiredDescription:
         "Necesitas un plan activo para reservar clases en este espacio.",
       viewPlans: "Ver Planes",
+      staffManaged: "Reservas gestionadas por el centro",
+      staffManagedDescription:
+        "Las reservas de este centro las gestiona directamente el equipo. Contacta con el centro para participar en una clase.",
       bookingForm: {
         title: "Completa tu reserva",
         name: "Tu nombre",
@@ -194,6 +203,9 @@ const translations: Record<string, Record<string, Record<string, unknown>>> = {
       planRequiredDescription:
         "Vous avez besoin d'un plan actif pour réserver des cours dans cet espace.",
       viewPlans: "Voir les Plans",
+      staffManaged: "Réservations gérées par l'établissement",
+      staffManagedDescription:
+        "Les réservations de cet établissement sont gérées directement par l'équipe. Contactez l'établissement pour participer à un cours.",
       bookingForm: {
         title: "Complétez votre réservation",
         name: "Votre nom",
@@ -246,6 +258,9 @@ const translations: Record<string, Record<string, Record<string, unknown>>> = {
       planRequiredDescription:
         "Du brauchst einen aktiven Plan, um Kurse in diesem Raum zu buchen.",
       viewPlans: "Pläne ansehen",
+      staffManaged: "Buchungen werden vom Studio verwaltet",
+      staffManagedDescription:
+        "Die Buchungen für dieses Studio werden direkt vom Team verwaltet. Kontaktiere das Studio, um an einem Kurs teilzunehmen.",
       bookingForm: {
         title: "Buchung abschließen",
         name: "Dein Name",
@@ -298,6 +313,9 @@ const translations: Record<string, Record<string, Record<string, unknown>>> = {
       planRequiredDescription:
         "Hai bisogno di un piano attivo per prenotare lezioni in questo spazio.",
       viewPlans: "Vedi Piani",
+      staffManaged: "Prenotazioni gestite dalla struttura",
+      staffManagedDescription:
+        "Le prenotazioni di questa struttura sono gestite direttamente dal team. Contatta la struttura per partecipare a una lezione.",
       bookingForm: {
         title: "Completa la prenotazione",
         name: "Il tuo nome",
@@ -346,6 +364,7 @@ interface VenueData {
   city: string | null;
   country: string;
   requiresPlanToBook: boolean;
+  allowPublicBooking?: boolean;
 }
 
 interface UserData {
@@ -439,12 +458,18 @@ function EasyBookContent({ venue, locale, user }: EasyBookClientProps) {
   // Determine booking mode
   // requiresPlanToBook = true: user must be logged in AND have active subscription
   // requiresPlanToBook = false: anyone can book (guest or logged in)
-  const canBookAsGuest = !venue.requiresPlanToBook && !user;
+  const staffManaged = venue.allowPublicBooking === false;
+  const canBookAsGuest = !staffManaged && !venue.requiresPlanToBook && !user;
   const canBookAsUser =
-    user && (!venue.requiresPlanToBook || user.hasActiveSubscription);
-  const needsLogin = venue.requiresPlanToBook && !user;
+    !staffManaged &&
+    user &&
+    (!venue.requiresPlanToBook || user.hasActiveSubscription);
+  const needsLogin = !staffManaged && venue.requiresPlanToBook && !user;
   const needsPlan =
-    venue.requiresPlanToBook && user && !user.hasActiveSubscription;
+    !staffManaged &&
+    venue.requiresPlanToBook &&
+    user &&
+    !user.hasActiveSubscription;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -493,6 +518,19 @@ function EasyBookContent({ venue, locale, user }: EasyBookClientProps) {
           </div>
         </div>
       </div>
+
+      {/* Staff Managed Bookings Message */}
+      {staffManaged && (
+        <div className="m-4 rounded-lg border bg-card p-6 text-center">
+          <Users className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
+          <h2 className="mb-2 text-lg font-semibold">
+            {t.staffManaged as string}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t.staffManagedDescription as string}
+          </p>
+        </div>
+      )}
 
       {/* Login Required Message */}
       {needsLogin && (

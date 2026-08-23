@@ -22,6 +22,7 @@ interface VenueSessionsSettingsProps {
     defaultCancellationDeadlineMinutes: number;
     requiresPlanToBook: boolean;
     enableTrialBooking?: boolean;
+    allowPublicBooking?: boolean;
   };
   onRefresh?: () => void;
 }
@@ -73,6 +74,7 @@ export function VenueSessionsSettings({
       venue.defaultCancellationDeadlineMinutes.toString(),
     requiresPlanToBook: venue.requiresPlanToBook,
     enableTrialBooking: venue.enableTrialBooking ?? false,
+    allowPublicBooking: venue.allowPublicBooking ?? true,
   });
 
   const bookingUrl =
@@ -105,6 +107,7 @@ export function VenueSessionsSettings({
         venue.defaultCancellationDeadlineMinutes.toString(),
       requiresPlanToBook: venue.requiresPlanToBook,
       enableTrialBooking: venue.enableTrialBooking ?? false,
+      allowPublicBooking: venue.allowPublicBooking ?? true,
     });
   }, [
     venue.services,
@@ -114,6 +117,7 @@ export function VenueSessionsSettings({
     venue.defaultCancellationDeadlineMinutes,
     venue.requiresPlanToBook,
     venue.enableTrialBooking,
+    venue.allowPublicBooking,
   ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,6 +158,7 @@ export function VenueSessionsSettings({
         ),
         requiresPlanToBook: formData.requiresPlanToBook,
         enableTrialBooking: formData.enableTrialBooking,
+        allowPublicBooking: formData.allowPublicBooking,
       };
 
       const response = await fetch(`/api/venues/${venue.id}`, {
@@ -185,6 +190,7 @@ export function VenueSessionsSettings({
           updatedVenue.defaultCancellationDeadlineMinutes.toString(),
         requiresPlanToBook: updatedVenue.requiresPlanToBook,
         enableTrialBooking: updatedVenue.enableTrialBooking ?? false,
+        allowPublicBooking: updatedVenue.allowPublicBooking ?? true,
       });
 
       toast({
@@ -252,6 +258,35 @@ export function VenueSessionsSettings({
             {t("quickBook.linkHint")}
           </p>
         </div>
+
+        {/* Allow Public Booking Toggle */}
+        <div className="flex items-center justify-between gap-3 rounded-lg border bg-background p-3">
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <Label htmlFor="allowPublicBooking" className="text-sm font-medium">
+              {t("quickBook.allowPublicBooking")}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {t("quickBook.allowPublicBookingHint")}
+            </p>
+          </div>
+          <Switch
+            id="allowPublicBooking"
+            checked={formData.allowPublicBooking}
+            onCheckedChange={(checked) =>
+              setFormData((prev) => ({ ...prev, allowPublicBooking: checked }))
+            }
+            disabled={loading}
+            className="shrink-0"
+          />
+        </div>
+
+        {!formData.allowPublicBooking && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+            <p className="text-xs text-amber-700 dark:text-amber-400">
+              {t("quickBook.staffOnlyBookingNotice")}
+            </p>
+          </div>
+        )}
 
         {/* Require Plan Toggle */}
         <div className="flex items-center justify-between gap-3 rounded-lg border bg-background p-3">

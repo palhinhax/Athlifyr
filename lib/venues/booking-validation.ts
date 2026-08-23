@@ -450,8 +450,15 @@ export async function validateBooking(
 ): Promise<BookingValidationResult> {
   const venue = await prisma.venue.findUnique({
     where: { id: venueId },
-    select: { requiresPlanToBook: true },
+    select: { requiresPlanToBook: true, allowPublicBooking: true },
   });
+
+  if (venue && !venue.allowPublicBooking) {
+    return {
+      allowed: false,
+      reason: "PUBLIC_BOOKING_DISABLED",
+    };
+  }
 
   if (venue && !venue.requiresPlanToBook) {
     return validateBasicBooking(userId, venueId, sessionId);

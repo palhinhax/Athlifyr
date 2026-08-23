@@ -28,6 +28,7 @@ interface VenueSessionsCalendarProps {
   hasActiveSubscription?: boolean;
   isOwnerOrAdmin?: boolean;
   canEditSessions?: boolean; // Coach or higher can edit sessions
+  allowPublicBooking?: boolean; // When false, only staff can manage participants
   venueDefaults?: {
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
@@ -52,6 +53,7 @@ export function VenueSessionsCalendar({
   hasActiveSubscription = false,
   isOwnerOrAdmin = false,
   canEditSessions = false,
+  allowPublicBooking = true,
   venueDefaults,
 }: VenueSessionsCalendarProps) {
   const t = useTranslations("venues.sessions");
@@ -213,6 +215,7 @@ export function VenueSessionsCalendar({
                 hasActiveSubscription={hasActiveSubscription}
                 isOwnerOrAdmin={isOwnerOrAdmin}
                 canEditSessions={canEditSessions}
+                allowPublicBooking={allowPublicBooking}
                 onBook={handleBookSession}
                 onCancel={handleCancelBooking}
                 onEdit={openEditSessionModal}
@@ -247,6 +250,7 @@ export function VenueSessionsCalendar({
         hasActiveSubscription={hasActiveSubscription}
         isOwnerOrAdmin={isOwnerOrAdmin}
         canEditSessions={canEditSessions}
+        allowPublicBooking={allowPublicBooking}
         onBook={handleBookSession}
         onCancel={handleCancelBooking}
         onEdit={openEditSessionModal}

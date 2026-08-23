@@ -74,6 +74,7 @@ interface SessionCardProps {
   hasActiveSubscription: boolean;
   isOwnerOrAdmin: boolean;
   canEditSessions: boolean;
+  allowPublicBooking?: boolean;
   onPress?: (session: VenueSession) => void;
   onBook?: () => void;
   onCancelBooking?: () => void;
@@ -90,6 +91,7 @@ export function SessionCard({
   hasActiveSubscription,
   isOwnerOrAdmin,
   canEditSessions,
+  allowPublicBooking = true,
   onPress,
   onBook,
   onCancelBooking,
@@ -110,6 +112,7 @@ export function SessionCard({
 
   // Booking logic
   const canBook =
+    allowPublicBooking &&
     !!userId &&
     hasActiveSubscription &&
     !session.isBooked &&

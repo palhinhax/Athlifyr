@@ -76,6 +76,7 @@ export interface VenueDetail {
   defaultBookingDeadlineMinutes: number;
   defaultCancellationDeadlineMinutes: number;
   requiresPlanToBook: boolean;
+  allowPublicBooking?: boolean;
   paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
   externalPaymentInstructions: string | null;
   enableTrialBooking: boolean;

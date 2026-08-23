@@ -9,6 +9,7 @@ import { EventImageLightbox } from "@/components/event-image-lightbox";
 import { EventWeather } from "@/components/event-weather";
 import { EventFeaturedVenue } from "@/components/event-featured-venue";
 import { EventParticipationCard } from "@/components/event-participation-card";
+import { LuzzoRectangleAd } from "@/components/luzzo-rectangle-ad";
 import { RelatedEvents } from "@/components/related-events";
 import type { EventRegistrationProps } from "@/components/event-registration/event-registration-types";
 import { SportType } from "@prisma/client";
@@ -113,6 +114,9 @@ export function EventSidebar({
     <>
       <aside className="hidden lg:block">
         <div className="sticky top-[7.5rem] space-y-8">
+          {/* Advertising Card */}
+          <LuzzoRectangleAd />
+
           {/* Weather Widget Card */}
           {weather && weather.length > 0 && (
             <EventWeather weather={weather} isPastEvent={isPastEvent} />

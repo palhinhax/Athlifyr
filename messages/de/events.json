@@ -78,7 +78,8 @@
       "willYouParticipate": "Nimmst du teil?",
       "chooseDistance": "Distanz wählen",
       "markAsGoing": "Als Teilnehmer markieren",
-      "interested": "Interessiert"
+      "interested": "Interessiert",
+      "advertisement": "Werbung"
     },
     "inviteModal": {
       "title": "Freunde einladen zu {event}",

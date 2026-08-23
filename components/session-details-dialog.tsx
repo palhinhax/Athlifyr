@@ -198,6 +198,7 @@ interface SessionDetailsDialogProps {
   hasActiveSubscription?: boolean;
   isOwnerOrAdmin?: boolean;
   canEditSessions?: boolean; // Coach or higher can edit sessions
+  allowPublicBooking?: boolean; // When false, only staff can manage participants
   onBook?: (sessionId: string) => void;
   onCancel?: (bookingId: string, sessionId?: string) => void;
   onEdit?: (session: VenueSession) => void;
@@ -215,6 +216,7 @@ export function SessionDetailsDialog({
   hasActiveSubscription = false,
   isOwnerOrAdmin = false,
   canEditSessions = false,
+  allowPublicBooking = true,
   onBook,
   onCancel,
   onEdit,
@@ -224,6 +226,9 @@ export function SessionDetailsDialog({
 }: SessionDetailsDialogProps) {
   const [addParticipantOpen, setAddParticipantOpen] = useState(false);
   const [removingParticipant, setRemovingParticipant] = useState<string | null>(
+    null
+  );
+  const [updatingAttendance, setUpdatingAttendance] = useState<string | null>(
     null
   );
   const { toast } = useToast();
@@ -275,6 +280,52 @@ export function SessionDetailsDialog({
     }
   };
 
+  // Handle marking attendance (present / no-show)
+  const handleMarkAttendance = async (
+    bookingId: string,
+    currentStatus: string,
+    mark: "ATTENDED" | "NO_SHOW"
+  ) => {
+    if (!session) return;
+
+    // Toggle back to BOOKED when clicking the same status again
+    const newStatus = currentStatus === mark ? "BOOKED" : mark;
+
+    setUpdatingAttendance(bookingId);
+    try {
+      const response = await fetch(
+        `/api/venues/${session.venueId}/sessions/${session.id}/attendance`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId, status: newStatus }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update attendance");
+      }
+
+      toast({
+        title: t("attendanceUpdated"),
+      });
+
+      // Refresh the session data
+      onParticipantAdded?.();
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+      toast({
+        title: tCommon("error"),
+        description:
+          error instanceof Error ? error.message : t("attendanceError"),
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingAttendance(null);
+    }
+  };
+
   if (!session) return null;
 
   const sessionStart = parseISO(session.startsAt);
@@ -298,6 +349,7 @@ export function SessionDetailsDialog({
 
   // Determine if user can book/cancel based on time AND other conditions
   const canBook =
+    allowPublicBooking &&
     userId &&
     hasActiveSubscription &&
     !session.isBooked &&
@@ -616,9 +668,68 @@ export function SessionDetailsDialog({
                             booking.guestName ||
                             "Unknown User"}
                         </span>
-                        <Badge variant="outline" className="text-xs">
-                          {booking.status}
+                        <Badge
+                          variant="outline"
+                          className={
+                            booking.status === "ATTENDED"
+                              ? "border-green-500 text-xs text-green-600"
+                              : booking.status === "NO_SHOW"
+                                ? "border-red-500 text-xs text-red-600"
+                                : "text-xs"
+                          }
+                        >
+                          {booking.status === "ATTENDED"
+                            ? t("statusAttended")
+                            : booking.status === "NO_SHOW"
+                              ? t("statusNoShow")
+                              : booking.status === "BOOKED"
+                                ? t("statusBooked")
+                                : booking.status}
                         </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={
+                            booking.status === "ATTENDED"
+                              ? "h-6 w-6 text-green-600 hover:text-green-700"
+                              : "h-6 w-6 text-muted-foreground hover:text-green-600"
+                          }
+                          title={t("markAttended")}
+                          onClick={() =>
+                            handleMarkAttendance(
+                              booking.id,
+                              booking.status,
+                              "ATTENDED"
+                            )
+                          }
+                          disabled={updatingAttendance === booking.id}
+                        >
+                          {updatingAttendance === booking.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <CheckCircle className="h-3 w-3" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={
+                            booking.status === "NO_SHOW"
+                              ? "h-6 w-6 text-red-600 hover:text-red-700"
+                              : "h-6 w-6 text-muted-foreground hover:text-red-600"
+                          }
+                          title={t("markNoShow")}
+                          onClick={() =>
+                            handleMarkAttendance(
+                              booking.id,
+                              booking.status,
+                              "NO_SHOW"
+                            )
+                          }
+                          disabled={updatingAttendance === booking.id}
+                        >
+                          <XCircle className="h-3 w-3" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -718,6 +829,14 @@ export function SessionDetailsDialog({
                 {tWorkouts("log.title")}
               </Link>
             </Button>
+          )}
+
+          {/* Bookings managed by staff notice */}
+          {!allowPublicBooking && !canEditSessions && (
+            <div className="flex w-full items-center justify-center gap-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground sm:w-auto sm:flex-1">
+              <Users className="h-4 w-4 flex-shrink-0" />
+              <span>{t("bookingManagedByStaff")}</span>
+            </div>
           )}
 
           {canBook && onBook && (

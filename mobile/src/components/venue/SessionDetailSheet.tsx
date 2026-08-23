@@ -25,6 +25,7 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
+  XCircle,
 } from "lucide-react-native";
 import { format, parseISO } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
@@ -157,6 +158,11 @@ interface SessionDetailSheetProps {
   hasActiveSubscription: boolean;
   isOwnerOrAdmin: boolean;
   canEditSessions: boolean;
+  allowPublicBooking?: boolean;
+  onMarkAttendance?: (
+    bookingId: string,
+    status: "ATTENDED" | "NO_SHOW" | "BOOKED"
+  ) => void;
   onBook?: () => void;
   onCancelBooking?: () => void;
   onEdit?: () => void;
@@ -174,6 +180,8 @@ export function SessionDetailSheet({
   hasActiveSubscription,
   isOwnerOrAdmin,
   canEditSessions,
+  allowPublicBooking = true,
+  onMarkAttendance,
   onBook,
   onCancelBooking,
   onEdit,
@@ -208,6 +216,7 @@ export function SessionDetailSheet({
     : 0;
 
   const canBook =
+    allowPublicBooking &&
     !!userId &&
     hasActiveSubscription &&
     !session.isBooked &&
@@ -608,6 +617,7 @@ export function SessionDetailSheet({
                             styles.statusBadge,
                             booking.status === "ATTENDED" &&
                               styles.statusAttended,
+                            booking.status === "NO_SHOW" && styles.statusNoShow,
                             booking.status === "BOOKED" && styles.statusBooked,
                           ]}
                         >
@@ -616,13 +626,67 @@ export function SessionDetailSheet({
                               styles.statusText,
                               booking.status === "ATTENDED" &&
                                 styles.statusTextAttended,
+                              booking.status === "NO_SHOW" &&
+                                styles.statusTextNoShow,
                               booking.status === "BOOKED" &&
                                 styles.statusTextBooked,
                             ]}
                           >
-                            {booking.status}
+                            {booking.status === "ATTENDED"
+                              ? t("sessions.statusAttended")
+                              : booking.status === "NO_SHOW"
+                                ? t("sessions.statusNoShow")
+                                : booking.status === "BOOKED"
+                                  ? t("sessions.statusBooked")
+                                  : booking.status}
                           </Text>
                         </View>
+                        {canEditSessions && onMarkAttendance && (
+                          <View style={styles.attendanceActions}>
+                            <TouchableOpacity
+                              style={styles.attendanceButton}
+                              onPress={() =>
+                                onMarkAttendance(
+                                  booking.id,
+                                  booking.status === "ATTENDED"
+                                    ? "BOOKED"
+                                    : "ATTENDED"
+                                )
+                              }
+                              activeOpacity={0.7}
+                            >
+                              <CheckCircle
+                                size={20}
+                                color={
+                                  booking.status === "ATTENDED"
+                                    ? "#16a34a"
+                                    : theme.colors.textTertiary
+                                }
+                              />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.attendanceButton}
+                              onPress={() =>
+                                onMarkAttendance(
+                                  booking.id,
+                                  booking.status === "NO_SHOW"
+                                    ? "BOOKED"
+                                    : "NO_SHOW"
+                                )
+                              }
+                              activeOpacity={0.7}
+                            >
+                              <XCircle
+                                size={20}
+                                color={
+                                  booking.status === "NO_SHOW"
+                                    ? "#ef4444"
+                                    : theme.colors.textTertiary
+                                }
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        )}
                       </View>
                     ))}
                   </View>
@@ -658,8 +722,19 @@ export function SessionDetailSheet({
               </TouchableOpacity>
             )}
 
+            {/* Bookings managed by staff */}
+            {!allowPublicBooking && !canEditSessions && !session.isBooked && (
+              <View style={styles.noSubMessage}>
+                <AlertCircle size={14} color={theme.colors.textSecondary} />
+                <Text style={styles.noSubMessageText}>
+                  {t("sessions.bookingManagedByStaff")}
+                </Text>
+              </View>
+            )}
+
             {/* No subscription message */}
-            {!!userId &&
+            {allowPublicBooking &&
+              !!userId &&
               !hasActiveSubscription &&
               !session.isBooked &&
               !canEditSessions && (
@@ -1128,6 +1203,21 @@ const styles = StyleSheet.create({
   },
   statusTextAttended: {
     color: "#16a34a",
+  },
+  statusNoShow: {
+    backgroundColor: "#fee2e2",
+  },
+  statusTextNoShow: {
+    color: "#ef4444",
+  },
+  attendanceActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginLeft: 8,
+  },
+  attendanceButton: {
+    padding: 4,
   },
 
   // ── Action Bar ──

@@ -67,6 +67,7 @@ interface Venue {
   paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
   externalPaymentInstructions: string | null;
   enableTrialBooking: boolean;
+  allowPublicBooking?: boolean;
   visibleTabs?: string[];
   isCurrentUserMember?: boolean;
   userSubscriptionStatus?: {
@@ -773,6 +774,7 @@ export function VenueDetailClient({
                 }
                 isOwnerOrAdmin={isOwnerOrAdmin}
                 canEditSessions={isCoachOrHigher}
+                allowPublicBooking={venue.allowPublicBooking ?? true}
                 venueDefaults={{
                   defaultSessionCapacity: venue.defaultSessionCapacity,
                   defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays,

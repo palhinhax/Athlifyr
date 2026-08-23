@@ -955,6 +955,7 @@ model Venue {
   stripeOnboardingStatus             StripeOnboardingStatus  @default(NOT_STARTED)
   stripePayoutsEnabled               Boolean                 @default(false)
   requiresPlanToBook                 Boolean                 @default(true)
+  allowPublicBooking                 Boolean                 @default(true)
   enableTrialBooking                 Boolean                 @default(false)
   visibleTabs                        String[]                @default(["feed", "about", "plans", "sessions", "team", "clients", "subscriptions"])
   paymentIntents                     PaymentIntent[]

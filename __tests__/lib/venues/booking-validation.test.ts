@@ -34,11 +34,22 @@ jest.mock("@/lib/prisma", () => ({
 }));
 
 describe("booking-validation", () => {
+  // Freeze time so the hardcoded 2026-06-xx session dates stay in the future
+  beforeAll(() => {
+    jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] });
+    jest.setSystemTime(new Date("2026-06-01T00:00:00Z"));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    // Default: venue requires plan to book
+    // Default: venue requires plan to book and allows public booking
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
       requiresPlanToBook: true,
+      allowPublicBooking: true,
     });
   });
 
@@ -396,6 +407,7 @@ describe("booking-validation", () => {
     it("should allow booking when all validations pass", async () => {
       (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
         requiresPlanToBook: true,
+        allowPublicBooking: true,
       });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
@@ -434,6 +446,7 @@ describe("booking-validation", () => {
 
       (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
         requiresPlanToBook: true,
+        allowPublicBooking: true,
       });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
@@ -475,6 +488,7 @@ describe("booking-validation", () => {
 
       (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
         requiresPlanToBook: true,
+        allowPublicBooking: true,
       });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
@@ -514,6 +528,7 @@ describe("booking-validation", () => {
 
       (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
         requiresPlanToBook: true,
+        allowPublicBooking: true,
       });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
@@ -561,6 +576,7 @@ describe("booking-validation", () => {
 
       (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
         requiresPlanToBook: true,
+        allowPublicBooking: true,
       });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
@@ -609,6 +625,7 @@ describe("booking-validation", () => {
 
       (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
         requiresPlanToBook: true,
+        allowPublicBooking: true,
       });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
@@ -656,6 +673,7 @@ describe("booking-validation", () => {
 
       (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
         requiresPlanToBook: true,
+        allowPublicBooking: true,
       });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",

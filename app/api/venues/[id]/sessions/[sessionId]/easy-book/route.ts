@@ -24,6 +24,7 @@ export async function POST(
         id: true,
         name: true,
         requiresPlanToBook: true,
+        allowPublicBooking: true,
         isActive: true,
       },
     });
@@ -39,7 +40,18 @@ export async function POST(
       );
     }
 
-    // 2. If venue requires plan, don't allow guest bookings
+    // 2. If staff manages all bookings, block public/guest bookings entirely
+    if (!venue.allowPublicBooking) {
+      return NextResponse.json(
+        {
+          error: "Bookings for this venue are managed by the staff",
+          reason: "PUBLIC_BOOKING_DISABLED",
+        },
+        { status: 403 }
+      );
+    }
+
+    // 3. If venue requires plan, don't allow guest bookings
     if (venue.requiresPlanToBook) {
       return NextResponse.json(
         {

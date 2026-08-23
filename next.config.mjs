@@ -13,17 +13,17 @@ const railwayLive = "https://*.up.railway.app wss://*.up.railway.app";
 // Content Security Policy - carefully configured for Next.js compatibility
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com https://cdn.userway.org;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com https://cdn.userway.org https://www.north-sail.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.userway.org;
   img-src 'self' blob: data: https: http:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' ${liveServerUrl} ${liveServerWs} ${railwayLive} https://api.stripe.com https://hooks.stripe.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live https://*.sentry.io https://*.ingest.de.sentry.io https://api.mapbox.com https://events.mapbox.com https://*.userway.org;
+  connect-src 'self' ${liveServerUrl} ${liveServerWs} ${railwayLive} https://api.stripe.com https://hooks.stripe.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live https://*.sentry.io https://*.ingest.de.sentry.io https://api.mapbox.com https://events.mapbox.com https://*.userway.org https://www.north-sail.com;
   media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
   frame-ancestors 'none';
-  frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live https://cdn.userway.org;
+  frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live https://cdn.userway.org https://voga-services.com https://www.voga-services.com https://luzzo-eletronica.com https://www.luzzo-eletronica.com;
   worker-src 'self' blob:;
   manifest-src 'self';
   ${process.env.NODE_ENV === "production" ? "upgrade-insecure-requests;" : ""}

@@ -90,6 +90,7 @@ export interface VenueSessionCardProps {
   hasActiveSubscription?: boolean;
   isOwnerOrAdmin?: boolean;
   canEditSessions?: boolean; // Coach or higher can edit sessions
+  allowPublicBooking?: boolean; // When false, only staff can manage participants
   isCompact?: boolean;
   onBook?: (sessionId: string) => void;
   onCancel?: (bookingId: string, sessionId?: string) => void;
@@ -106,6 +107,7 @@ export function VenueSessionCard({
   hasActiveSubscription = false,
   isOwnerOrAdmin = false,
   canEditSessions = false,
+  allowPublicBooking = true,
   isCompact = false,
   onBook,
   onCancel,
@@ -139,6 +141,7 @@ export function VenueSessionCard({
 
   // Determine if user can book/cancel based on time AND other conditions
   const canBook =
+    allowPublicBooking &&
     userId &&
     hasActiveSubscription &&
     !session.isBooked &&

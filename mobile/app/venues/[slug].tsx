@@ -195,6 +195,7 @@ export default function VenueDetailScreen() {
             isOwnerOrAdmin={isOwnerOrAdmin}
             canEditSessions={canEditSessions}
             hasActiveSubscription={hasActiveSubscription}
+            allowPublicBooking={venue.allowPublicBooking ?? true}
             showToast={showToast}
           />
         );

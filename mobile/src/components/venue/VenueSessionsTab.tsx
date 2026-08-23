@@ -59,6 +59,7 @@ interface VenueSessionsTabProps {
   isOwnerOrAdmin: boolean;
   canEditSessions: boolean;
   hasActiveSubscription: boolean;
+  allowPublicBooking?: boolean;
   showToast: (message: string, type?: ToastType) => void;
 }
 
@@ -80,6 +81,7 @@ export function VenueSessionsTab({
   isOwnerOrAdmin,
   canEditSessions,
   hasActiveSubscription,
+  allowPublicBooking = true,
   showToast,
 }: VenueSessionsTabProps) {
   const { t, i18n } = useTranslation();
@@ -194,6 +196,7 @@ export function VenueSessionsTab({
             MAX_BOOKINGS_PER_MONTH_REACHED: t("sessions.limitReached"),
             BOOKING_DEADLINE_PASSED: t("sessions.bookingDeadlinePassed"),
             SESSION_ALREADY_STARTED: t("sessions.sessionAlreadyStarted"),
+            PUBLIC_BOOKING_DISABLED: t("sessions.publicBookingDisabled"),
           };
           if (reason && reasonMap[reason]) {
             message = reasonMap[reason];
@@ -205,6 +208,26 @@ export function VenueSessionsTab({
       }
     },
     [userId, venueId, optimisticBook, refetch, t, showToast]
+  );
+
+  const handleMarkAttendance = useCallback(
+    async (
+      session: VenueSession,
+      bookingId: string,
+      status: "ATTENDED" | "NO_SHOW" | "BOOKED"
+    ) => {
+      try {
+        await api.post(`/venues/${venueId}/sessions/${session.id}/attendance`, {
+          bookingId,
+          status,
+        });
+        showToast(t("sessions.attendanceUpdated"), "success");
+        refetch();
+      } catch {
+        showToast(t("sessions.attendanceError"), "error");
+      }
+    },
+    [venueId, refetch, t, showToast]
   );
 
   const handleCancelBooking = useCallback((session: VenueSession) => {
@@ -477,6 +500,7 @@ export function VenueSessionsTab({
               hasActiveSubscription={hasActiveSubscription}
               isOwnerOrAdmin={isOwnerOrAdmin}
               canEditSessions={canEditSessions}
+              allowPublicBooking={allowPublicBooking}
               onPress={() => handleSessionPress(session)}
               onBook={() => handleBook(session)}
               onCancelBooking={() => handleCancelBooking(session)}
@@ -500,6 +524,12 @@ export function VenueSessionsTab({
         hasActiveSubscription={hasActiveSubscription}
         isOwnerOrAdmin={isOwnerOrAdmin}
         canEditSessions={canEditSessions}
+        allowPublicBooking={allowPublicBooking}
+        onMarkAttendance={(bookingId, status) => {
+          if (currentSelectedSession) {
+            handleMarkAttendance(currentSelectedSession, bookingId, status);
+          }
+        }}
         onBook={() => {
           if (currentSelectedSession) handleBook(currentSelectedSession);
         }}

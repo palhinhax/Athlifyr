@@ -20,6 +20,7 @@ async function getVenueForEasyBook(slug: string) {
       city: true,
       country: true,
       requiresPlanToBook: true,
+      allowPublicBooking: true,
       defaultBookingAdvanceDays: true,
       defaultBookingDeadlineMinutes: true,
       defaultCancellationDeadlineMinutes: true,
@@ -183,6 +184,7 @@ export default async function EasyBookPage({
         city: venue.city,
         country: venue.country,
         requiresPlanToBook: venue.requiresPlanToBook,
+        allowPublicBooking: venue.allowPublicBooking,
       }}
       locale={locale}
       user={
